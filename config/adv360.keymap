@@ -12,17 +12,17 @@
 
 / {
     behaviors {
-      // REMOVED includes to prevent label collisions
-
       // CUSTOM BEHAVIOR: Home Row Mods
-      // Tap = Key, Hold = Modifier. 200ms Tapping Term.
+      // Tap = Key, Hold = Modifier.
+      // Tapping Term: 300ms (Longer wait time)
+      // Flavor: Balanced (Best for reliable triggering)
       hm: home_row_mods {
           compatible = "zmk,behavior-hold-tap";
           label = "HOME_ROW_MODS";
           #binding-cells = <2>;
-          tapping-term-ms = <200>;
+          tapping-term-ms = <300>;
           quick-tap-ms = <175>;
-          flavor = "tap-preferred";
+          flavor = "balanced";
           bindings = <&kp>, <&kp>;
       };
     };
