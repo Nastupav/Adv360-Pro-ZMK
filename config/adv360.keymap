@@ -11,41 +11,55 @@
 
 / {
     behaviors {
-        // CUSTOM BEHAVIOR: Home Row Mods
-        // Tap = Key, Hold = Modifier.
-        // Tapping Term: 300ms (Longer wait time)
-        // Flavor: Balanced (Best for reliable triggering)
-
+        // HOME ROW MODS (Variant B tuning):
+        // - quick-tap-ms = 0 disables "double tap always taps" behavior (helps HRM reliability)
+        // - require-prior-idle-ms makes HRMs resolve to tap when typing quickly (reduces misfires)
+        // See ZMK hold-tap docs for quick-tap-ms + require-prior-idle-ms. :contentReference[oaicite:1]{index=1}
         hm: home_row_mods {
             compatible = "zmk,behavior-hold-tap";
             label = "HOME_ROW_MODS";
             #binding-cells = <2>;
-            tapping-term-ms = <200>;
-            quick-tap-ms = <175>;
+
             flavor = "tap-preferred";
+            tapping-term-ms = <200>;
+            quick-tap-ms = <0>;
+            require-prior-idle-ms = <150>;
+
             bindings = <&kp>, <&kp>;
         };
     };
 
     macros {
-        // MACRO: Close Window (Alt + Shift + Q)
-        // MACRO: Toggle Tiling (Alt + Space)
-        // MACRO: Version (Mod + V) - Types "-clique"
+        // Existing "macro-to-Fkeys" kept where useful (mon/workspace),
+        // but tile/float now send actual GlazeWM-friendly chords.
 
+        // Toggle tiling direction (GlazeWM default sample uses alt+v). :contentReference[oaicite:2]{index=2}
         g_tile: g_tile {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&kp F13>;
             label = "G_TILE";
+            bindings
+              = <&macro_press &kp LALT>
+              , <&macro_tap &kp V>
+              , <&macro_release &kp LALT>
+              ;
         };
 
+        // Toggle floating (GlazeWM default commonly uses alt+shift+space). :contentReference[oaicite:3]{index=3}
         g_float: g_float {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
-            bindings = <&kp F14>;
             label = "G_FLOAT";
+            bindings
+              = <&macro_press &kp LALT>
+              , <&macro_press &kp LSHFT>
+              , <&macro_tap &kp SPACE>
+              , <&macro_release &kp LSHFT>
+              , <&macro_release &kp LALT>
+              ;
         };
 
+        // Keep these as F-keys and bind them in GlazeWM config.
         g_mon_l: g_mon_l {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
@@ -60,6 +74,7 @@
             label = "G_MON_R";
         };
 
+        // Re-purpose these in GlazeWM config as "prev/next active workspace on monitor".
         prof_wk: prof_wk {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
@@ -74,6 +89,97 @@
             label = "PROF_PS";
         };
 
+        // WM focus (Alt+H/J/K/L) — avoids Alt+Arrow conflicts with browser back/forward.
+        gw_fl: gw_fl {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            label = "GW_FOCUS_L";
+            bindings = <&macro_press &kp LALT>, <&macro_tap &kp H>, <&macro_release &kp LALT>;
+        };
+        gw_fd: gw_fd {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            label = "GW_FOCUS_D";
+            bindings = <&macro_press &kp LALT>, <&macro_tap &kp J>, <&macro_release &kp LALT>;
+        };
+        gw_fu: gw_fu {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            label = "GW_FOCUS_U";
+            bindings = <&macro_press &kp LALT>, <&macro_tap &kp K>, <&macro_release &kp LALT>;
+        };
+        gw_fr: gw_fr {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            label = "GW_FOCUS_R";
+            bindings = <&macro_press &kp LALT>, <&macro_tap &kp L>, <&macro_release &kp LALT>;
+        };
+
+        // WM move window (Alt+Shift+H/J/K/L)
+        gw_ml: gw_ml {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            label = "GW_MOVE_L";
+            bindings
+              = <&macro_press &kp LALT>
+              , <&macro_press &kp LSHFT>
+              , <&macro_tap &kp H>
+              , <&macro_release &kp LSHFT>
+              , <&macro_release &kp LALT>
+              ;
+        };
+        gw_md: gw_md {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            label = "GW_MOVE_D";
+            bindings
+              = <&macro_press &kp LALT>
+              , <&macro_press &kp LSHFT>
+              , <&macro_tap &kp J>
+              , <&macro_release &kp LSHFT>
+              , <&macro_release &kp LALT>
+              ;
+        };
+        gw_mu: gw_mu {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            label = "GW_MOVE_U";
+            bindings
+              = <&macro_press &kp LALT>
+              , <&macro_press &kp LSHFT>
+              , <&macro_tap &kp K>
+              , <&macro_release &kp LSHFT>
+              , <&macro_release &kp LALT>
+              ;
+        };
+        gw_mr: gw_mr {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            label = "GW_MOVE_R";
+            bindings
+              = <&macro_press &kp LALT>
+              , <&macro_press &kp LSHFT>
+              , <&macro_tap &kp L>
+              , <&macro_release &kp LSHFT>
+              , <&macro_release &kp LALT>
+              ;
+        };
+
+        // Close window (Alt+Shift+Q)
+        gw_close: gw_close {
+            compatible = "zmk,behavior-macro";
+            #binding-cells = <0>;
+            label = "GW_CLOSE";
+            bindings
+              = <&macro_press &kp LALT>
+              , <&macro_press &kp LSHFT>
+              , <&macro_tap &kp Q>
+              , <&macro_release &kp LSHFT>
+              , <&macro_release &kp LALT>
+              ;
+        };
+
+        // Your existing AFN macro untouched
         afn: afn {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
@@ -109,8 +215,13 @@
             bindings = <
 &trans  &trans  &trans  &trans  &trans  &trans  &none                                       &none   &trans  &trans    &trans          &trans        &trans     &trans
 &trans  &trans  &trans  &trans  &trans  &trans  &none                                       &none   &trans  &kp HOME  &kp PG_DN       &kp PAGE_UP   &kp END    &trans
-&trans  &trans  &trans  &trans  &trans  &trans  &none   &trans  &trans      &trans  &trans  &none   &none   &kp LEFT  &kp DOWN_ARROW  &kp UP_ARROW  &kp RIGHT  &trans
-&trans  &trans  &trans  &trans  &trans  &trans                  &trans      &trans                  &none   &kp LBKT  &kp RBKT        &trans        &kp BSLH   &trans
+
+/* row with ESC A S D F G ... H J K L ; */
+&trans  &gw_fl  &gw_fd  &gw_fu  &gw_fr  &trans  &none   &trans  &trans      &trans  &trans  &none   &none   &kp LEFT  &kp DOWN_ARROW  &kp UP_ARROW  &kp RIGHT  &trans
+
+/* row with LSHFT Z X C V B ... N M , . / */
+&trans  &gw_ml  &gw_md  &gw_mu  &gw_mr  &gw_close               &trans      &trans                  &none   &kp LC(LS(TAB))  &kp LC(TAB)   &trans        &kp BSLH   &trans
+
 &trans  &trans  &trans  &trans  &trans          &trans  &trans  &trans      &trans  &trans  &trans          &trans    &trans          &trans        &trans     &trans
             >;
         };
