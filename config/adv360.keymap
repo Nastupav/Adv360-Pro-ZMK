@@ -1,23 +1,12 @@
 /*
  * ZMK keymap for Kinesis Advantage360 Pro
+ *
  * Layers:
  * 0 BASE (QWERTY + HRM)
  * 1 SYM  (hold BSPC/DEL)
  * 2 NAV  (hold SPACE)
  * 3 MOD  (BT/RGB/boot)
- * 4 WM   (hold ENTER) -> emits F-keys (+ modifiers) for GlazeWM
- *
- * WM Layer (reliability fix):
- * - ASDF = monitor/workspace anchors (always works, even if no active window)
- *   A -> ws 1 (Left primary)
- *   D -> ws 6 (Mid-Top primary)
- *   S -> ws 11 (Mid-Bot primary)
- *   F -> ws 16 (Right primary)
- * - HJKL = focus direction (only meaningful when windows exist)
- * - ZXCV = move window direction
- * - G/H (G=prev, H=next) = cycle workspaces on current monitor
- * - QWER = send window + follow to monitor primary
- * - T/Y/U/I/O/P = tiling/float/fullscreen/minimize/cycle-focus/close
+ * 4 WM   (hold ENTER) -> GlazeWM API via F13..F24 + modifiers
  */
 
 #include <behaviors.dtsi>
@@ -25,10 +14,9 @@
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/rgb.h>
 
- / {
+/ {
     behaviors {
-        // Home Row Mods - reliability tuning
-        // Tap = key, Hold = modifier
+        // Home Row Mods (your HRM)
         hm: home_row_mods {
             compatible = "zmk,behavior-hold-tap";
             label = "HOME_ROW_MODS";
@@ -44,59 +32,43 @@
     };
 
     macros {
-        // ---------- Pairing macros (programming) ----------
-        // Inserts pair then moves cursor inside.
+        // Pairing macros (programming)
         pair_paren: pair_paren {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
             label = "PAIR_PAREN";
-            bindings =
-                <&macro_tap &kp LPAR>,
-                <&macro_tap &kp RPAR>,
-                <&macro_tap &kp LEFT>;
+            bindings = <&macro_tap &kp LPAR>, <&macro_tap &kp RPAR>, <&macro_tap &kp LEFT>;
         };
 
         pair_brace: pair_brace {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
             label = "PAIR_BRACE";
-            bindings =
-                <&macro_tap &kp LBRC>,
-                <&macro_tap &kp RBRC>,
-                <&macro_tap &kp LEFT>;
+            bindings = <&macro_tap &kp LBRC>, <&macro_tap &kp RBRC>, <&macro_tap &kp LEFT>;
         };
 
         pair_bracket: pair_bracket {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
             label = "PAIR_BRACKET";
-            bindings =
-                <&macro_tap &kp LBKT>,
-                <&macro_tap &kp RBKT>,
-                <&macro_tap &kp LEFT>;
+            bindings = <&macro_tap &kp LBKT>, <&macro_tap &kp RBKT>, <&macro_tap &kp LEFT>;
         };
 
         pair_dq: pair_dq {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
             label = "PAIR_DQUOTE";
-            bindings =
-                <&macro_tap &kp DOUBLE_QUOTES>,
-                <&macro_tap &kp DOUBLE_QUOTES>,
-                <&macro_tap &kp LEFT>;
+            bindings = <&macro_tap &kp DOUBLE_QUOTES>, <&macro_tap &kp DOUBLE_QUOTES>, <&macro_tap &kp LEFT>;
         };
 
         pair_sq: pair_sq {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
             label = "PAIR_SQUOTE";
-            bindings =
-                <&macro_tap &kp SQT>,
-                <&macro_tap &kp SQT>,
-                <&macro_tap &kp LEFT>;
+            bindings = <&macro_tap &kp SQT>, <&macro_tap &kp SQT>, <&macro_tap &kp LEFT>;
         };
 
-        // Your AFN macro (kept as-is from your setup)
+        // Your AFN macro kept as-is (from your last file)
         afn: afn {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
@@ -122,8 +94,8 @@
         default_layer {
             bindings = <
 &kp EQUAL  &kp N1      &kp N2      &kp N3       &kp N4            &kp N5  &none                                                      &mo 3        &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
-&kp TAB    &kp Q       &kp W       &kp E        &kp R             &kp T   &kp F13                                                     &kp F14      &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
-&kp ESC    &hm LGUI A  &hm LALT S  &hm LCTRL D  &hm LEFT_SHIFT F  &kp G   &kp F15     &kp LCTRL  &kp LALT      &kp LGUI   &kp RCTRL  &kp F16      &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
+&kp TAB    &kp Q       &kp W       &kp E        &kp R             &kp T   &trans                                                     &trans       &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
+&kp ESC    &hm LGUI A  &hm LALT S  &hm LCTRL D  &hm LEFT_SHIFT F  &kp G   &trans      &kp LCTRL  &kp LALT      &kp LGUI   &kp RCTRL  &trans       &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
 &kp LSHFT  &kp Z       &kp X       &kp C        &kp V             &kp B                          &kp HOME      &kp PG_UP                          &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
 &kp GRAVE  &kp GRAVE   &kp CAPS    &kp LEFT     &kp RIGHT                 &lt 1 BSPC  &lt 1 DEL  &kp END       &kp PG_DN  &lt 4 ENTER  &lt 2 SPACE          &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
             >;
@@ -169,51 +141,43 @@
         };
 
         // =========================================================
-        // LAYER 4: WM (hold ENTER) - RELIABLE monitor anchors on ASDF
+        // LAYER 4: WM (hold ENTER)
         //
-        // ASDF = jump to monitor primary workspaces (always works)
-        //   A -> ws 1   (Left)
-        //   D -> ws 6   (Mid-Top)
-        //   S -> ws 11  (Mid-Bot)
-        //   F -> ws 16  (Right)
+        // Core ideas:
+        // - Window focus = J K L ;  (left/down/up/right)  -> F19..F22
+        // - Move window  = hold physical Shift + (J/K/L/;) -> shift+F19..F22
         //
-        // HJKL = focus direction (vim-like, when windows exist)
-        // ZXCV = move window direction
+        // - Monitor-to-monitor workspace focus (workspace-in-direction):
+        //     Z = left, X = down, C = up, V = right -> F15..F18
         //
-        // G/H = prev/next workspace on current monitor (Ctrl+F17/Ctrl+F18)
-        // QWER = send window + follow to monitor primaries
+        // - Cycle workspaces on CURRENT monitor:
+        //     G = prev  -> F23
+        //     B = next  -> Ctrl+F23
         //
-        // T/Y/U/I/O/P = tiling/float/fullscreen/minimize/cycle-focus/close
+        // - 20 workspaces (5 per monitor) as an ergonomic grid:
+        //     Left monitor (1-5):      Q W E R T
+        //     Mid-Top monitor (6-10):  A S D F G
+        //     Mid-Bot monitor (11-15): Y U I O P
+        //     Right monitor (16-20):   H N M , .
+        //
+        //   These emit:
+        //     focus ws 1..10  = Ctrl+F13..Ctrl+F22
+        //     focus ws 11..20 = Ctrl+Alt+F13..Ctrl+Alt+F22
+        //
+        //   Move+follow:
+        //     hold physical Shift as well -> Ctrl+Shift+Fx or Ctrl+Alt+Shift+Fx
+        //
+        // - Toggle tiling direction = F13
+        // - Toggle floating         = F14
+        // - Close window            = F24
         // =========================================================
         layer_wm {
             bindings = <
-/* row 1: numbers row (keep existing anchors for muscle memory) */
-&trans  &kp LC(F13)   &kp LC(F14)   &kp LC(F15)   &kp LC(F16)   &trans     &none                                      &none  &trans      &trans      &trans      &trans      &trans      &trans
-
-/* row 2: QWERT row (send-to-monitor + power controls) */
-&trans  &kp LC(LS(F13)) &kp LC(LS(F14)) &kp LC(LS(F15)) &kp LC(LS(F16)) &kp F13  &none                                     &none  &kp F14      &kp F23      &kp F12      &kp F11      &kp F24      &trans
-
-/* row 3: ASDF row (monitor anchors) + cycle + HJKL focus */
-&trans
-&kp LC(F13)   /* A -> ws 1 (Left primary) */
-&kp LC(F15)   /* S -> ws 11 (Mid-Bot primary) */
-&kp LC(F14)   /* D -> ws 6 (Mid-Top primary) */
-&kp LC(F16)   /* F -> ws 16 (Right primary) */
-&kp LC(F17)   /* G -> prev workspace on this monitor */
-&none
-&trans  &trans  &trans  &trans
-&none
-&kp F19       /* H -> focus left */
-&kp F20       /* J -> focus down */
-&kp F21       /* K -> focus up */
-&kp F22       /* L -> focus right */
-&trans
-
-/* row 4: ZXCV row (move window) */
-&trans  &kp LS(F19)   &kp LS(F20)   &kp LS(F21)   &kp LS(F22)   &trans                 &trans      &trans                 &trans  &trans  &trans  &trans  &trans  &trans
-
-/* thumbs/extra row */
-&trans  &trans        &trans        &trans        &trans               &trans  &trans  &trans    &trans  &trans  &trans            &trans  &trans  &trans  &trans  &trans  &trans
+&trans     &kp F13          &kp F14          &trans            &trans            &trans   &trans                                          &trans   &trans            &trans            &trans            &trans            &trans            &kp F24
+&trans     &kp LC(F13)      &kp LC(F14)      &kp LC(F15)       &kp LC(F16)       &kp LC(F17)  &trans                                      &trans   &kp LC(LA(F13))   &kp LC(LA(F14))   &kp LC(LA(F15))   &kp LC(LA(F16))   &kp LC(LA(F17))   &trans
+&trans     &kp LC(F18)      &kp LC(F19)      &kp LC(F20)       &kp LC(F21)       &kp LC(F22)  &trans   &trans  &trans   &trans  &trans  &trans   &kp LC(LA(F18))   &kp F23           &kp F19           &kp F20           &kp F21           &kp F22           &trans
+&trans     &kp F15          &kp F18          &kp F17           &kp F16           &kp LC(LA(F19))             &trans                          &kp LC(LA(F20))   &kp LC(LA(F21))   &kp LC(LA(F22))   &kp LC(F23)       &trans
+&trans     &trans           &trans           &trans           &trans                  &trans    &trans    &trans     &trans  &trans  &trans               &trans           &kp LC(F18)       &kp LC(LA(F18))   &kp LC(LA(F20))   &kp LC(LA(F21))   &kp LC(LA(F22))   &trans
             >;
         };
     };
