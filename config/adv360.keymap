@@ -5,7 +5,19 @@
  * 1 SYM  (hold BSPC/DEL)
  * 2 NAV  (hold SPACE)
  * 3 MOD  (BT/RGB/boot)
- * 4 WM   (hold ENTER) -> emits F13..F24 (+ modifiers) for GlazeWM
+ * 4 WM   (hold ENTER) -> emits F-keys (+ modifiers) for GlazeWM
+ *
+ * WM Layer (reliability fix):
+ * - ASDF = monitor/workspace anchors (always works, even if no active window)
+ *   A -> ws 1 (Left primary)
+ *   D -> ws 6 (Mid-Top primary)
+ *   S -> ws 11 (Mid-Bot primary)
+ *   F -> ws 16 (Right primary)
+ * - HJKL = focus direction (only meaningful when windows exist)
+ * - ZXCV = move window direction
+ * - G/H (G=prev, H=next) = cycle workspaces on current monitor
+ * - QWER = send window + follow to monitor primary
+ * - T/Y/U/I/O/P = tiling/float/fullscreen/minimize/cycle-focus/close
  */
 
 #include <behaviors.dtsi>
@@ -15,7 +27,7 @@
 
  / {
     behaviors {
-        // Home Row Mods - "Variant B" reliability tuning
+        // Home Row Mods - reliability tuning
         // Tap = key, Hold = modifier
         hm: home_row_mods {
             compatible = "zmk,behavior-hold-tap";
@@ -84,7 +96,7 @@
                 <&macro_tap &kp LEFT>;
         };
 
-        // Your AFN macro (kept as-is)
+        // Your AFN macro (kept as-is from your setup)
         afn: afn {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
@@ -157,35 +169,45 @@
         };
 
         // =========================================================
-        // LAYER 4: WM (hold ENTER) - ergonomic "next level" version
+        // LAYER 4: WM (hold ENTER) - RELIABLE monitor anchors on ASDF
         //
-        // Core:
-        //   ASDF = focus left/down/up/right  (F19..F22)
-        //   ZXCV = move window left/down/up/right (Shift+F19..Shift+F22)
-        //   G/H  = prev/next workspace on current monitor (Ctrl+F17 / Ctrl+F18)
+        // ASDF = jump to monitor primary workspaces (always works)
+        //   A -> ws 1   (Left)
+        //   D -> ws 6   (Mid-Top)
+        //   S -> ws 11  (Mid-Bot)
+        //   F -> ws 16  (Right)
         //
-        // Anchors:
-        //   1/2/3/4 = jump to ws 1 / 6 / 11 / 16 (Ctrl+F13..F16)
-        //   Q/W/E/R = send window+follow to ws 1 / 6 / 11 / 16 (Ctrl+Shift+F13..F16)
+        // HJKL = focus direction (vim-like, when windows exist)
+        // ZXCV = move window direction
         //
-        // Power:
-        //   T = toggle tiling direction (F13)
-        //   Y = toggle floating (F14)
-        //   U = toggle fullscreen (F23)
-        //   I = toggle minimized (F12)
-        //   O = cycle focus mode (F11)
-        //   P = close (F24)
+        // G/H = prev/next workspace on current monitor (Ctrl+F17/Ctrl+F18)
+        // QWER = send window + follow to monitor primaries
+        //
+        // T/Y/U/I/O/P = tiling/float/fullscreen/minimize/cycle-focus/close
         // =========================================================
         layer_wm {
             bindings = <
-/* row 1: numbers row (anchors) */
+/* row 1: numbers row (keep existing anchors for muscle memory) */
 &trans  &kp LC(F13)   &kp LC(F14)   &kp LC(F15)   &kp LC(F16)   &trans     &none                                      &none  &trans      &trans      &trans      &trans      &trans      &trans
 
-/* row 2: QWERTY row (send + power) */
+/* row 2: QWERT row (send-to-monitor + power controls) */
 &trans  &kp LC(LS(F13)) &kp LC(LS(F14)) &kp LC(LS(F15)) &kp LC(LS(F16)) &kp F13  &none                                     &none  &kp F14      &kp F23      &kp F12      &kp F11      &kp F24      &trans
 
-/* row 3: ASDFGH row (focus + workspace cycle) */
-&trans  &kp F19       &kp F20       &kp F21       &kp F22       &kp LC(F17) &none   &trans  &trans   &trans  &trans  &none  &kp LC(F18)  &trans      &trans      &trans      &trans      &trans
+/* row 3: ASDF row (monitor anchors) + cycle + HJKL focus */
+&trans
+&kp LC(F13)   /* A -> ws 1 (Left primary) */
+&kp LC(F15)   /* S -> ws 11 (Mid-Bot primary) */
+&kp LC(F14)   /* D -> ws 6 (Mid-Top primary) */
+&kp LC(F16)   /* F -> ws 16 (Right primary) */
+&kp LC(F17)   /* G -> prev workspace on this monitor */
+&none
+&trans  &trans  &trans  &trans
+&none
+&kp F19       /* H -> focus left */
+&kp F20       /* J -> focus down */
+&kp F21       /* K -> focus up */
+&kp F22       /* L -> focus right */
+&trans
 
 /* row 4: ZXCV row (move window) */
 &trans  &kp LS(F19)   &kp LS(F20)   &kp LS(F21)   &kp LS(F22)   &trans                 &trans      &trans                 &trans  &trans  &trans  &trans  &trans  &trans
