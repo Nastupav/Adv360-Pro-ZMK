@@ -118,10 +118,10 @@
 
         layer_wm {
             bindings = <
-&trans  &kp LC(LA(F13))  &kp LC(LA(F14))  &kp LC(LA(F15))  &kp LC(LA(F16))  &kp LC(LA(F17))  &none                                       &none   &kp LC(LA(F18))  &kp LC(LA(F19))  &kp LC(LA(F20))  &kp LC(LA(F21))  &kp LC(LA(F22))  &kp LC(LA(F22))
+&trans  &none            &none            &none            &none            &none            &none                                       &none   &none            &none            &none            &none            &none            &none
 &trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &none                                       &none   &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F21)      &kp LC(F22)      &trans
 &trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &none   &none   &none       &none   &none   &none   &kp F23          &kp F19          &kp F20          &kp F21          &kp F22          &none
-&trans  &trans           &kp Z            &kp F24          &trans           &trans                           &trans      &trans                  &trans           &trans           &trans           &trans           &trans           &trans
+&trans  &kp LC(LA(F13))  &kp LC(LA(F14))  &kp LC(LA(F15))  &kp LC(LA(F16))  &kp LC(LA(F17))                  &trans      &trans                  &kp LC(LA(F18))  &kp LC(LA(F19))  &kp LC(LA(F20))  &kp LC(LA(F21))  &kp LC(LA(F22))  &kp LC(LA(F23))
 &trans  &trans           &trans           &trans           &trans                            &trans  &trans  &trans      &trans  &trans  &trans                   &trans           &trans           &trans           &trans           &trans
             >;
         };
