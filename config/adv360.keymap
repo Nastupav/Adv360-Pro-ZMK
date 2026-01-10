@@ -1,12 +1,11 @@
 /*
  * ZMK keymap for Kinesis Advantage360 Pro
- *
  * Layers:
  * 0 BASE (QWERTY + HRM)
  * 1 SYM  (hold BSPC/DEL)
  * 2 NAV  (hold SPACE)
  * 3 MOD  (BT/RGB/boot)
- * 4 WM   (hold ENTER) -> GlazeWM API via F13..F24 + modifiers
+ * 4 WM   (hold ENTER) -> GlazeWM via F13..F24 (+ modifiers)
  */
 
 #include <behaviors.dtsi>
@@ -14,9 +13,8 @@
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/rgb.h>
 
-/ {
+ / {
     behaviors {
-        // Home Row Mods (your HRM)
         hm: home_row_mods {
             compatible = "zmk,behavior-hold-tap";
             label = "HOME_ROW_MODS";
@@ -32,7 +30,6 @@
     };
 
     macros {
-        // Pairing macros (programming)
         pair_paren: pair_paren {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
@@ -68,7 +65,6 @@
             bindings = <&macro_tap &kp SQT>, <&macro_tap &kp SQT>, <&macro_tap &kp LEFT>;
         };
 
-        // Your AFN macro kept as-is (from your last file)
         afn: afn {
             compatible = "zmk,behavior-macro";
             #binding-cells = <0>;
@@ -88,9 +84,6 @@
     keymap {
         compatible = "zmk,keymap";
 
-        // =========================================================
-        // LAYER 0: BASE (QWERTY + HRM)
-        // =========================================================
         default_layer {
             bindings = <
 &kp EQUAL  &kp N1      &kp N2      &kp N3       &kp N4            &kp N5  &none                                                      &mo 3        &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
@@ -101,9 +94,6 @@
             >;
         };
 
-        // =========================================================
-        // LAYER 1: SYM (hold BSPC/DEL)
-        // =========================================================
         layer_sym {
             bindings = <
 &trans  &kp F1      &kp F2       &kp F3       &kp F4        &kp F5     &afn                                           &none  &kp F6    &kp F7     &kp F8     &kp F9     &kp F10          &kp F11
@@ -114,9 +104,6 @@
             >;
         };
 
-        // =========================================================
-        // LAYER 2: NAV (hold SPACE)
-        // =========================================================
         layer_nav {
             bindings = <
 &trans  &trans        &trans         &trans          &trans         &trans  &none                                     &none  &trans        &trans          &trans           &trans            &trans      &trans
@@ -127,9 +114,6 @@
             >;
         };
 
-        // =========================================================
-        // LAYER 3: MOD (BT/RGB/boot)
-        // =========================================================
         layer_mod {
             bindings = <
 &none  &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &bt BT_CLR                                        &trans                  &none  &none  &none  &none  &none  &none
@@ -140,44 +124,40 @@
             >;
         };
 
-        // =========================================================
-        // LAYER 4: WM (hold ENTER)
-        //
-        // Core ideas:
-        // - Window focus = J K L ;  (left/down/up/right)  -> F19..F22
-        // - Move window  = hold physical Shift + (J/K/L/;) -> shift+F19..F22
-        //
-        // - Monitor-to-monitor workspace focus (workspace-in-direction):
-        //     Z = left, X = down, C = up, V = right -> F15..F18
-        //
-        // - Cycle workspaces on CURRENT monitor:
-        //     G = prev  -> F23
-        //     B = next  -> Ctrl+F23
-        //
-        // - 20 workspaces (5 per monitor) as an ergonomic grid:
-        //     Left monitor (1-5):      Q W E R T
-        //     Mid-Top monitor (6-10):  A S D F G
-        //     Mid-Bot monitor (11-15): Y U I O P
-        //     Right monitor (16-20):   H N M , .
-        //
-        //   These emit:
-        //     focus ws 1..10  = Ctrl+F13..Ctrl+F22
-        //     focus ws 11..20 = Ctrl+Alt+F13..Ctrl+Alt+F22
-        //
-        //   Move+follow:
-        //     hold physical Shift as well -> Ctrl+Shift+Fx or Ctrl+Alt+Shift+Fx
-        //
-        // - Toggle tiling direction = F13
-        // - Toggle floating         = F14
-        // - Close window            = F24
-        // =========================================================
+        /*
+         * LAYER 4: WM (hold ENTER)
+         *
+         * OPTIMAL MENTAL MODEL:
+         * - J K L ;  = focus window (left/down/up/right)  -> F19..F22
+         * - Shift+J/K/L/; = move window (left/down/up/right) -> shift+F19..F22 (handled by Glaze)
+         *
+         * - Z X C V = jump workspace/monitor in direction (left/down/up/right) -> F15/F18/F17/F16
+         *
+         * - Workspaces (20 total, 5 per monitor):
+         *   1..5   (LEFT monitor 0):   Q W E R T  => Ctrl+F13..Ctrl+F17
+         *   6..10  (MID-TOP monitor 1):A S D F G  => Ctrl+F18..Ctrl+F22
+         *   11..15 (MID-BOT monitor 2):Y U I O P  => Alt+F13..Alt+F17
+         *   16..20 (RIGHT monitor 3):  H N M , .  => Alt+F18..Alt+F22
+         *
+         * - Move window to workspace + follow:
+         *   Hold physical Shift while pressing the workspace key.
+         *
+         * - Cycle workspaces on current monitor:
+         *   Enter+LEFT  = prev on monitor -> F23
+         *   Enter+RIGHT = next on monitor -> Ctrl+F23
+         *
+         * - Toggles / close:
+         *   Enter+1 = toggle tiling direction -> F13
+         *   Enter+2 = toggle floating         -> F14
+         *   Enter+3 or Enter+BSPC = close     -> F24
+         */
         layer_wm {
             bindings = <
-&trans     &kp F13          &kp F14          &trans            &trans            &trans   &trans                                          &trans   &trans            &trans            &trans            &trans            &trans            &kp F24
-&trans     &kp LC(F13)      &kp LC(F14)      &kp LC(F15)       &kp LC(F16)       &kp LC(F17)  &trans                                      &trans   &kp LC(LA(F13))   &kp LC(LA(F14))   &kp LC(LA(F15))   &kp LC(LA(F16))   &kp LC(LA(F17))   &trans
-&trans     &kp LC(F18)      &kp LC(F19)      &kp LC(F20)       &kp LC(F21)       &kp LC(F22)  &trans   &trans  &trans   &trans  &trans  &trans   &kp LC(LA(F18))   &kp F23           &kp F19           &kp F20           &kp F21           &kp F22           &trans
-&trans     &kp F15          &kp F18          &kp F17           &kp F16           &kp LC(LA(F19))             &trans                          &kp LC(LA(F20))   &kp LC(LA(F21))   &kp LC(LA(F22))   &kp LC(F23)       &trans
-&trans     &trans           &trans           &trans           &trans                  &trans    &trans    &trans     &trans  &trans  &trans               &trans           &kp LC(F18)       &kp LC(LA(F18))   &kp LC(LA(F20))   &kp LC(LA(F21))   &kp LC(LA(F22))   &trans
+&trans   &kp F13        &kp F14        &kp F24        &trans        &trans    &trans                                          &trans   &trans        &trans        &trans        &trans        &trans        &trans
+&trans   &kp LC(F13)    &kp LC(F14)    &kp LC(F15)    &kp LC(F16)   &kp LC(F17)  &trans                                       &trans   &kp LA(F13)   &kp LA(F14)   &kp LA(F15)   &kp LA(F16)   &kp LA(F17)   &trans
+&trans   &kp LC(F18)    &kp LC(F19)    &kp LC(F20)    &kp LC(F21)   &kp LC(F22)  &trans   &trans  &trans   &trans  &trans  &trans   &kp LA(F18)   &kp F19        &kp F20        &kp F21        &kp F22        &trans
+&trans   &kp F15        &kp F18        &kp F17        &kp F16       &trans                 &trans                          &trans   &kp LA(F19)   &kp LA(F20)   &kp LA(F21)   &kp LA(F22)   &trans        &trans
+&trans   &trans         &trans         &kp F23        &kp LC(F23)          &kp F24   &trans  &trans     &trans   &trans   &trans              &kp F24        &trans        &trans        &trans        &trans        &trans
             >;
         };
     };
