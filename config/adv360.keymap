@@ -51,11 +51,11 @@
 
         layer_sym {
             bindings = <
-&trans    &kp F1     &kp F2     &kp F3                &kp F4                 &kp F5     &kp PSCRN                                                        &kp INS    &kp F6     &kp F7    &kp F8         &kp F9    &kp F10   &kp F11
-&trans    &kp EXCL   &kp AT     &kp HASH              &kp DLLR               &kp PRCNT  &kp K_APP                                                        &kp CAPS   &kp CARET  &kp AMPS  &kp STAR       &kp LPAR  &kp RPAR  &kp F12
-&trans    &kp LBRC   &kp RBRC   &kp LBKT              &kp RBKT               &none      &kp PAUSE_BREAK  &kp KP_NUM  &kp UNDER      &kp MINUS  &kp PLUS  &kp EQUAL  &kp COLON  &kp SEMI  &kp BACKSLASH  &kp PIPE  &kp LT    &kp GT
-&kp BSLH  &kp GRAVE  &kp TILDE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &trans                                  &kp QMARK      &kp SQT                         &kp COMMA  &kp DOT   &kp FSLH       &trans    &trans    &trans
-&trans    &trans     &trans     &trans                &trans                            &trans           &trans      &trans         &trans     &trans    &trans                &trans
+&trans    &kp F1     &kp F2     &kp F3                &kp F4                 &kp F5           &kp C_AL_KEYBOARD_LAYOUT                                                  &kp INS    &kp F6     &kp F7    &kp F8         &kp F9    &kp F10   &kp F11
+&trans    &kp EXCL   &kp AT     &kp HASH              &kp DLLR               &kp PRCNT        &kp K_APP                                                                 &kp CAPS   &kp CARET  &kp AMPS  &kp STAR       &kp LPAR  &kp RPAR  &kp F12
+&trans    &kp LBRC   &kp RBRC   &kp LBKT              &kp RBKT               &kp PRINTSCREEN  &kp PAUSE_BREAK           &kp KP_NUM  &kp UNDER      &kp MINUS  &kp PLUS  &kp EQUAL  &kp COLON  &kp SEMI  &kp BACKSLASH  &kp PIPE  &kp LT    &kp GT
+&kp BSLH  &kp GRAVE  &kp TILDE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &trans                                                 &kp QMARK      &kp SQT                         &kp COMMA  &kp DOT   &kp FSLH       &trans    &trans    &trans
+&trans    &trans     &trans     &trans                &trans                                  &trans                    &trans      &trans         &trans     &trans    &trans                &trans
             >;
         };
 
@@ -95,11 +95,11 @@
 
         layer_wm {
             bindings = <
-&trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &kp K_CALC                                                            &kp K_WWW        &kp LG(F18)      &kp LG(F19)      &kp LG(F20)      &kp LG(F21)      &kp LG(F22)  &none
-&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &kp C_AL_FILES                                                        &kp C_AL_MAIL    &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F21)      &kp LC(F22)  &trans
-&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &kp PSCRN       &trans  &trans               &trans           &trans  &kp PAUSE_BREAK  &kp F23          &kp F19          &kp F20          &kp F21          &kp F22      &none
-&trans  &kp LC(LA(F13))  &kp LC(LA(F14))  &kp LC(LA(F15))  &kp LC(LA(F16))  &kp LC(LA(F17))                          &kp LC(LA(F18))      &kp LC(LA(F19))                           &kp LC(LA(F20))  &kp LC(LA(F21))  &kp LC(LA(F22))  &kp LC(LA(F23))  &trans       &trans
-&trans  &trans           &trans           &trans           &trans                            &trans          &trans  &trans               &trans           &trans  &trans                            &trans           &trans           &trans
+&trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &kp K_CALC                                          &kp K_WWW        &kp LG(F18)      &kp LG(F19)      &kp LG(F20)      &kp LG(F21)      &kp LG(F22)      &none
+&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &kp C_AL_FILES                                      &kp C_AL_MAIL    &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F21)      &kp LC(F22)      &trans
+&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &kp PSCRN       &trans  &trans      &trans  &trans  &kp PAUSE_BREAK  &kp F23          &kp F19          &kp F20          &kp F21          &kp F22          &none
+&trans  &kp LC(LA(F13))  &kp LC(LA(F14))  &kp LC(LA(F15))  &kp LC(LA(F16))  &kp LC(LA(F17))                          &none       &none                            &kp LC(LA(F18))  &kp LC(LA(F19))  &kp LC(LA(F20))  &kp LC(LA(F21))  &kp LC(LA(F22))  &trans
+&trans  &trans           &trans           &trans           &trans                            &trans          &trans  &trans      &trans  &trans  &trans                            &trans           &trans           &trans
             >;
         };
 
