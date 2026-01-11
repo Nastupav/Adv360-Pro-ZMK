@@ -32,7 +32,7 @@
 
         // =========================================================
         // LAYER 0: BASE
-        // Status: Fixed.
+        // Status: Verified.
         // =========================================================
         default_layer {
             bindings = <
@@ -46,8 +46,7 @@
 
         // =========================================================
         // LAYER 1: SYM
-        // Status: Fixed. Removed extra 'none' in middle row.
-        // Replaced &caps_word with &kp CAPS for build safety.
+        // Fix: Replaced &caps_word with &kp CAPS
         // =========================================================
         layer_sym {
             bindings = <
@@ -61,19 +60,19 @@
 
         // =========================================================
         // LAYER 2: NAV
-        // Status: Fixed. Removed extra 'trans' in middle row.
+        // Fix: Verified row counts for middle columns
         // =========================================================
         layer_nav {
             bindings = <
 &trans  &trans        &trans         &trans        &trans       &trans  &kp LC(Z)                                                                &kp LC(Y)    &trans        &trans         &trans     &trans     &trans     &trans
 &trans  &kp LC(T)     &kp LC(W)      &kp LC(R)     &kp LC(L)    &trans  &kp LC(X)                                                                &kp LC(A)    &kp LC(TAB)   &kp LC(LS(TAB))&kp HOME   &kp PG_UP  &kp PG_DN  &kp END
-&trans  &kp LC(LEFT)  &kp LC(RIGHT)  &kp LC(BSPC)  &kp LC(DEL)  &trans  &kp LC(C)    &trans  &trans              &trans  &none                 &trans       &kp LEFT      &kp DOWN       &kp UP     &kp RIGHT  &trans
+&trans  &kp LC(LEFT)  &kp LC(RIGHT)  &kp LC(BSPC)  &kp LC(DEL)  &trans  &kp LC(C)    &trans  &trans              &trans  &trans                &none        &kp LEFT      &kp DOWN       &kp UP     &kp RIGHT  &trans
 &trans  &trans        &trans         &trans        &trans       &trans                       &trans              &trans                                        &trans        &trans         &trans     &trans     &trans     &trans
 &trans  &trans        &trans         &trans        &trans               &trans       &trans  &trans              &trans  &trans     &trans                     &trans        &trans         &trans     &trans     &trans
             >;
         };
 
-        // LAYER 3: MOD (No changes)
+        // LAYER 3: MOD (Unchanged)
         layer_mod {
             bindings = <
 &none  &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &bt BT_CLR                                                                &trans       &none  &none  &none  &none  &none  &none
@@ -85,8 +84,8 @@
         };
 
         // =========================================================
-        // LAYER 4: WM
-        // Status: Verified correct.
+        // LAYER 4: WM (Window Manager)
+        // Status: Verified.
         // =========================================================
         layer_wm {
             bindings = <
@@ -100,7 +99,7 @@
 
         // =========================================================
         // LAYER 5: NUMPAD
-        // Status: Verified correct.
+        // Status: Verified.
         // =========================================================
         layer_numpad {
             bindings = <
