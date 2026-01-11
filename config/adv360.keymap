@@ -16,7 +16,6 @@
 #include <dt-bindings/zmk/rgb.h>
 
 / {
-/ {
     behaviors {
         hm: home_row_mods {
             compatible = "zmk,behavior-hold-tap";
