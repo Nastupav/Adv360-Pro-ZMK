@@ -38,11 +38,11 @@
 
         default_layer {
             bindings = <
-&kp EQUAL  &kp N1      &kp N2      &kp N3       &kp N4       &kp N5  &mo 5                                                                  &mo 3               &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
-&kp TAB    &kp Q       &kp W       &kp E        &kp R        &kp T   &kp PRINTSCREEN                                                        &kp K_CONTEXT_MENU  &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
-&kp ESC    &hm LGUI A  &hm LALT S  &hm LCTRL D  &hm LSHFT F  &kp G   &kp PRINTSCREEN  &kp LCTRL  &kp LALT           &kp LGUI   &kp RCTRL    &none               &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
-&kp LSHFT  &kp Z       &kp X       &kp C        &kp V        &kp B                               &lt 6 CAPS         &kp PG_UP                                   &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
-&kp GRAVE  &kp GRAVE   &kp TILDE   &kp LEFT     &kp RIGHT            &lt 1 BSPC       &lt 5 DEL  &mt LSHFT END      &kp K_APP  &lt 4 ENTER  &lt 2 SPACE                 &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
+&kp EQUAL  &kp N1      &kp N2      &kp N3       &kp N4       &kp N5  &mo 5                                                                               &mo 3               &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
+&kp TAB    &kp Q       &kp W       &kp E        &kp R        &kp T   &kp PRINTSCREEN                                                                     &kp K_CONTEXT_MENU  &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
+&kp ESC    &hm LGUI A  &hm LALT S  &hm LCTRL D  &hm LSHFT F  &kp G   &kp LC(PRINTSCREEN)  &kp LEFT_GUI  &kp LCTRL          &kp RCTRL  &kp RIGHT_COMMAND  &none               &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
+&kp LSHFT  &kp Z       &kp X       &kp C        &kp V        &kp B                                      &lt 6 CAPS         &kp PG_UP                                         &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
+&kp GRAVE  &kp GRAVE   &kp TILDE   &kp LEFT     &kp RIGHT            &lt 1 BSPC           &lt 5 DEL     &mt LSHFT END      &kp K_APP  &lt 4 ENTER        &lt 2 SPACE                 &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
             >;
         };
 
