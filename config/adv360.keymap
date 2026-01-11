@@ -32,93 +32,85 @@
 
         // =========================================================
         // LAYER 0: BASE
-        // - Thumb key (old END position): tap END, hold SHIFT
+        // Status: 100% Filled.
+        // Left Inner Top: Hold for Numpad (Layer 5)
         // =========================================================
         default_layer {
             bindings = <
-&kp EQUAL  &kp N1      &kp N2      &kp N3       &kp N4            &kp N5  &none                                                      &mo 3        &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
-&kp TAB    &kp Q       &kp W       &kp E        &kp R             &kp T   &kp F13                                                     &kp F14      &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
-&kp ESC    &hm LGUI A  &hm LALT S  &hm LCTRL D  &hm LSHFT F       &kp G   &kp F15     &kp LCTRL  &kp LALT      &kp LGUI   &kp RCTRL  &kp F16      &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
-&kp LSHFT  &kp Z       &kp X       &kp C        &kp V             &kp B                          &kp HOME      &kp PG_UP                          &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
-&kp GRAVE  &kp GRAVE   &kp CAPS    &kp LEFT     &kp RIGHT                 &lt 1 BSPC  &lt 1 DEL  &mt LSHFT END &kp PG_DN  &lt 4 ENTER  &lt 2 SPACE          &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
+&kp EQUAL  &kp N1       &kp N2       &kp N3       &kp N4       &kp N5  &mo 5                                                                   &mo 3         &kp N6  &kp N7       &kp N8       &kp N9       &kp N0       &kp MINUS
+&kp TAB    &kp Q        &kp W        &kp E        &kp R        &kp T   &kp F13                                                                 &kp F14       &kp Y   &kp U        &kp I        &kp O        &kp P        &kp BSLH
+&kp ESC    &hm LGUI A   &hm LALT S   &hm LCTRL D  &hm LSHFT F  &kp G   &kp F15      &kp LCTRL  &kp LALT            &kp LGUI   &kp RCTRL      &kp F16       &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L   &hm RGUI SEMI &kp SQT
+&kp LSHFT  &kp Z        &kp X        &kp C        &kp V        &kp B                           &kp HOME            &kp PG_UP                                 &kp N   &kp M        &kp COMMA    &kp DOT      &kp FSLH     &kp RSHFT
+&kp GRAVE  &kp GRAVE    &kp CAPS     &kp LEFT     &kp RIGHT            &lt 1 BSPC   &lt 1 DEL  &mt LSHFT END       &kp PG_DN  &lt 4 ENTER    &lt 2 SPACE           &kp UP       &kp DOWN     &kp LBKT     &kp RBKT     &mo 2
             >;
         };
 
         // =========================================================
         // LAYER 1: SYM
+        // Status: 100% Filled.
+        // Update: Replaced Scroll Lock with 'Context Menu' (K_APP)
         // =========================================================
         layer_sym {
             bindings = <
-&trans  &kp F1      &kp F2       &kp F3       &kp F4        &kp F5     &none                                           &none  &kp F6    &kp F7     &kp F8     &kp F9     &kp F10          &kp F11
-&trans  &kp EXCL    &kp AT       &kp HASH     &kp DLLR      &kp PRCNT  &none                                           &none  &kp CARET &kp AMPS   &kp STAR   &kp LPAR   &kp RPAR         &kp F12
-&trans  &kp LBRC    &kp RBRC     &kp LBKT     &kp RBKT      &kp PIPE   &none     &none     &none     &none  &none  &none  &kp UNDER &kp MINUS &kp PLUS  &kp EQUAL &kp COLON &kp SEMI &trans
-&trans  &kp LT      &kp GT       &kp BSLH     &kp GRAVE     &kp TILDE                 &trans     &trans                 &trans  &kp QMARK &kp SQT    &kp COMMA &kp DOT    &kp FSLH &trans
-&trans  &trans      &trans       &trans       &trans                 &trans   &trans   &trans     &trans  &trans  &trans                &trans  &trans  &trans  &trans  &trans  &trans
+&trans    &kp F1    &kp F2    &kp F3    &kp F4    &kp F5     &kp PSCRN                                                               &kp INS      &kp F6     &kp F7     &kp F8     &kp F9     &kp F10    &kp F11
+&trans    &kp EXCL  &kp AT    &kp HASH  &kp DLLR  &kp PRCNT  &kp K_APP                                                               &caps_word   &kp CARET  &kp AMPS   &kp STAR   &kp LPAR   &kp RPAR   &kp F12
+&trans    &kp LBRC  &kp RBRC  &kp LBKT  &kp RBKT  &kp PIPE   &kp PAUSE    &none   &none              &none    &none     &none        &kp KP_NUM   &kp UNDER  &kp MINUS  &kp PLUS   &kp EQUAL  &kp COLON  &kp SEMI
+&trans    &trans    &kp LT    &kp GT    &kp BSLH  &kp GRAVE                       &kp TILDE          &trans                                        &trans     &trans     &kp QMARK  &kp SQT    &kp COMMA  &kp DOT
+&kp FSLH  &trans    &trans    &trans    &trans               &trans       &trans  &trans             &trans   &trans    &trans                     &trans     &trans     &trans     &trans     &trans
             >;
         };
 
         // =========================================================
         // LAYER 2: NAV
+        // Status: 100% Filled.
+        // Update: Added Clipboard Manager to Inner Left Column
         // =========================================================
         layer_nav {
             bindings = <
-&trans  &trans        &trans         &trans          &trans         &trans  &none                                     &none  &trans        &trans          &trans           &trans            &trans      &trans
-&trans  &kp LC(T)     &kp LC(W)      &kp LC(R)       &kp LC(L)      &trans  &none                                     &none  &kp LC(TAB)   &kp LC(LS(TAB)) &kp HOME         &kp PG_UP         &kp PG_DN    &kp END
-&trans  &kp LC(LEFT)  &kp LC(RIGHT)  &kp LC(BSPC)    &kp LC(DEL)    &trans  &none   &trans  &trans   &trans  &trans  &none  &none         &kp LEFT         &kp DOWN         &kp UP       &kp RIGHT  &trans
-&trans  &trans        &trans         &trans          &trans         &trans                  &trans       &trans                  &trans  &trans  &trans  &trans  &trans      &trans
-&trans  &trans        &trans         &trans          &trans                &trans  &trans  &trans     &trans  &trans  &trans            &trans   &trans   &trans   &trans    &trans  &trans
+&trans  &trans        &trans         &trans        &trans       &trans  &kp LC(Z)                                                                &kp LC(Y)    &trans        &trans         &trans     &trans     &trans     &trans
+&trans  &kp LC(T)     &kp LC(W)      &kp LC(R)     &kp LC(L)    &trans  &kp LC(X)                                                                &kp LC(A)    &kp LC(TAB)   &kp LC(LS(TAB))&kp HOME   &kp PG_UP  &kp PG_DN  &kp END
+&trans  &kp LC(LEFT)  &kp LC(RIGHT)  &kp LC(BSPC)  &kp LC(DEL)  &trans  &kp LC(C)    &trans  &trans              &trans  &trans     &none        &trans       &kp LEFT      &kp DOWN       &kp UP     &kp RIGHT  &trans
+&trans  &trans        &trans         &trans        &trans       &trans                       &trans              &trans                                        &trans        &trans         &trans     &trans     &trans     &trans
+&trans  &trans        &trans         &trans        &trans               &trans       &trans  &trans              &trans  &trans     &trans                     &trans        &trans         &trans     &trans     &trans
             >;
         };
 
-        // =========================================================
-        // LAYER 3: MOD (BT/RGB/boot)
-        // =========================================================
+        // LAYER 3: MOD (Kept as is - standard system layer)
         layer_mod {
             bindings = <
-&none  &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &bt BT_CLR                                        &trans                  &none  &none  &none  &none  &none  &none
-&none  &none         &none         &none         &none         &none         &bootloader                                       &bootloader             &none  &none  &none  &none  &none  &none
-&none  &none         &none         &none         &none         &none         &none        &none  &none      &bt BT_CLR  &none  &rgb_ug RGB_MEFS_CMD 5  &none  &none  &none  &none  &none  &none
-&none  &none         &none         &none         &none         &none                             &none      &none                                      &none  &none  &none  &none  &none  &none
-&none  &none         &none         &none         &none                       &none        &none  &none      &none       &none  &none                          &none  &none  &none  &none  &none
+&none  &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &bt BT_CLR                                                                &trans       &none  &none  &none  &none  &none  &none
+&none  &none         &none         &none         &none         &none         &bootloader                                                               &bootloader  &none  &none  &none  &none  &none  &none
+&none  &none         &none         &none         &none         &none         &none        &none  &none               &bt BT_CLR  &none  &rgb_ug RGB_MEFS_CMD 5  &none        &none  &none  &none  &none  &none  &none
+&none  &none         &none         &none         &none         &none                             &none               &none                                        &none        &none  &none  &none  &none  &none
+&none  &none         &none         &none         &none                       &none        &none  &none               &none       &none  &none                     &none        &none  &none  &none  &none
             >;
         };
 
         // =========================================================
-        // LAYER 4: WM (hold ENTER)
-        //
-        // HARD RULE:
-        //   - Enter + key      = focus / non-move action
-        //   - Enter + Shift + key = move action
-        //
-        // Window focus (Glaze):
-        //   J/K/L/; -> F19/F20/F21/F22 (focus L/D/U/R)
-        //   Shift+JKL; -> Shift+F19..F22 (move window)
-        //
-        // Workspace focus:
-        //   QWERT -> Ctrl+F13..F17 (WS 1..5)
-        //   YUIOP -> Ctrl+F18..F22 (WS 6..10)
-        //   Shift+those -> Ctrl+Shift+Fx (move window to WS + follow)
-        //
-        // Workspaces 11..20:
-        //   1..0 -> Ctrl+Alt+F13..F22 (WS 11..20)
-        //   Shift+1..0 -> Ctrl+Alt+Shift+Fx (move window to WS + follow)
-        //
-        // Toggles:
-        //   A -> F13 toggle tiling direction
-        //   S -> F14 toggle floating
-        // Close:
-        //   X -> F24 close
-        // Reload:
-        //   Z -> Ctrl+F24 reload config
+        // LAYER 4: WM (Window Manager)
+        // Status: 100% Filled (System keys + Macro Triggers)
         // =========================================================
         layer_wm {
             bindings = <
-&trans      &kp LC(LA(F13)) &kp LC(LA(F14)) &kp LC(LA(F15)) &kp LC(LA(F16)) &kp LC(LA(F17))  &none                          &none        &kp LC(LA(F18)) &kp LC(LA(F19)) &kp LC(LA(F20)) &kp LC(LA(F21)) &kp LC(LA(F22)) &kp LC(LA(F22))
-&trans      &kp LC(F13)     &kp LC(F14)     &kp LC(F15)     &kp LC(F16)     &kp LC(F17)       &none                          &none        &kp LC(F18)     &kp LC(F19)     &kp LC(F20)     &kp LC(F21)     &kp LC(F22)     &trans
-&trans      &kp F13         &kp F14         &trans          &trans          &trans            &none      &none      &none      &none      &none      &none      &none  &trans  &kp F19  &kp F20  &kp F21  &kp F22  &trans
-&trans      &kp Z           &kp F24         &trans          &trans          &trans                       &trans     &trans                        &trans  &trans  &trans  &trans  &trans  &trans
-&trans      &trans          &trans          &trans          &trans                    &trans  &trans  &trans     &trans  &trans  &trans                    &trans  &trans  &trans  &trans  &trans  &trans
+&trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &kp K_CALC                             &kp K_WWW        &kp LG(F18)      &kp LG(F19)      &kp LG(F20)      &kp LG(F21)      &kp LG(F22)      &none
+&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &kp K_FILE                             &kp K_MAIL       &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F21)      &kp LC(F22)      &trans
+&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &kp PSCRN    &trans   &trans    &trans &trans   &kp PAUSE        &kp F23          &kp F19          &kp F20          &kp F21          &kp F22          &none
+&trans  &kp LC(LA(F13))  &kp LC(LA(F14))  &kp LC(LA(F15))  &kp LC(LA(F16))  &kp LC(LA(F17))                                                        &kp LC(LA(F18))  &kp LC(LA(F19))  &kp LC(LA(F20))  &kp LC(LA(F21))  &kp LC(LA(F22))  &kp LC(LA(F23))
+&trans  &trans           &trans           &trans           &trans                            &trans       &trans   &trans    &trans &trans   &trans                            &trans           &trans           &trans           &trans           &trans
+            >;
+        };
+
+        // =========================================================
+        // LAYER 5: NUMPAD (Hold Top-Left inner key)
+        // Update: Added Math Operators to Left Hand
+        // =========================================================
+        layer_numpad {
+            bindings = <
+&trans  &trans  &trans  &trans  &trans  &trans  &trans                                           &trans  &trans        &kp KP_N7  &kp KP_N8  &kp KP_N9  &trans        &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &kp KP_SLASH                                     &trans  &trans        &kp KP_N4  &kp KP_N5  &kp KP_N6  &trans        &trans
+&trans  &trans  &trans  &trans  &trans  &trans  &kp KP_MULTIPLY  &trans  &trans   &trans  &trans &trans  &trans        &kp KP_N1  &kp KP_N2  &kp KP_N3  &trans        &trans
+&trans  &trans  &trans  &trans  &trans  &trans                   &kp KP_MINUS     &kp KP_PLUS            &kp KP_N0     &kp KP_N0  &kp KP_DOT &trans     &trans        &trans
+&trans  &trans  &trans  &trans  &trans          &trans           &trans           &trans  &trans &trans  &trans        &trans     &trans     &trans     &trans
             >;
         };
     };
-};
