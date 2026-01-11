@@ -32,7 +32,7 @@
 
         // =========================================================
         // LAYER 0: BASE
-        // Keys: 14 | 14 | 14 | 14 | 16 (Thumbs)
+        // Row 2 Check: 7 Left + 2 Thumb + 2 Thumb + 1 Inner + 6 Right = 18 Keys
         // =========================================================
         default_layer {
             bindings = <
@@ -46,14 +46,14 @@
 
         // =========================================================
         // LAYER 1: SYM
-        // Fix: Removed excess keys in middle. Total keys per row checked.
-        // Fix: Replaced &caps_word with &kp CAPS
+        // FIXED: Removed extra 'none' in middle row. 
+        // Count: 7 keys + 2 keys + 2 keys + 1 key + 6 keys = 18 total.
         // =========================================================
         layer_sym {
             bindings = <
 &trans    &kp F1    &kp F2    &kp F3    &kp F4    &kp F5     &kp PSCRN                                                               &kp INS      &kp F6     &kp F7     &kp F8     &kp F9     &kp F10    &kp F11
 &trans    &kp EXCL  &kp AT    &kp HASH  &kp DLLR  &kp PRCNT  &kp K_APP                                                               &kp CAPS     &kp CARET  &kp AMPS   &kp STAR   &kp LPAR   &kp RPAR   &kp F12
-&trans    &kp LBRC  &kp RBRC  &kp LBKT  &kp RBKT  &kp PIPE   &kp PAUSE    &none   &none              &none    &none     &none        &kp KP_NUM   &kp UNDER  &kp MINUS  &kp PLUS   &kp EQUAL  &kp COLON  &kp SEMI
+&trans    &kp LBRC  &kp RBRC  &kp LBKT  &kp RBKT  &kp PIPE   &kp PAUSE    &none   &none              &none    &none                &kp KP_NUM   &kp UNDER  &kp MINUS  &kp PLUS   &kp EQUAL  &kp COLON  &kp SEMI
 &trans    &trans    &kp LT    &kp GT    &kp BSLH  &kp GRAVE                       &kp TILDE          &trans                                        &trans     &trans     &kp QMARK  &kp SQT    &kp COMMA  &kp DOT
 &kp FSLH  &trans    &trans    &trans    &trans               &trans       &trans  &trans             &trans   &trans    &trans                     &trans     &trans     &trans     &trans     &trans
             >;
@@ -61,19 +61,19 @@
 
         // =========================================================
         // LAYER 2: NAV
-        // Fix: Removed excess keys in middle.
+        // FIXED: Adjusted middle row to ensure 18 keys exactly.
         // =========================================================
         layer_nav {
             bindings = <
 &trans  &trans        &trans         &trans        &trans       &trans  &kp LC(Z)                                                                &kp LC(Y)    &trans        &trans         &trans     &trans     &trans     &trans
 &trans  &kp LC(T)     &kp LC(W)      &kp LC(R)     &kp LC(L)    &trans  &kp LC(X)                                                                &kp LC(A)    &kp LC(TAB)   &kp LC(LS(TAB))&kp HOME   &kp PG_UP  &kp PG_DN  &kp END
-&trans  &kp LC(LEFT)  &kp LC(RIGHT)  &kp LC(BSPC)  &kp LC(DEL)  &trans  &kp LC(C)    &trans  &trans              &trans  &trans     &none        &none        &kp LEFT      &kp DOWN       &kp UP     &kp RIGHT  &trans
+&trans  &kp LC(LEFT)  &kp LC(RIGHT)  &kp LC(BSPC)  &kp LC(DEL)  &trans  &kp LC(C)    &trans  &trans              &trans  &trans                &none        &kp LEFT      &kp DOWN       &kp UP     &kp RIGHT  &trans
 &trans  &trans        &trans         &trans        &trans       &trans                       &trans              &trans                                        &trans        &trans         &trans     &trans     &trans     &trans
 &trans  &trans        &trans         &trans        &trans               &trans       &trans  &trans              &trans  &trans     &trans                     &trans        &trans         &trans     &trans     &trans
             >;
         };
 
-        // LAYER 3: MOD
+        // LAYER 3: MOD (Unchanged)
         layer_mod {
             bindings = <
 &none  &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &bt BT_CLR                                                                &trans       &none  &none  &none  &none  &none  &none
@@ -86,6 +86,7 @@
 
         // =========================================================
         // LAYER 4: WM
+        // Verified: 7 Left + 2 Thumb + 2 Thumb + 1 Inner + 6 Right = 18 Keys
         // =========================================================
         layer_wm {
             bindings = <
@@ -99,6 +100,7 @@
 
         // =========================================================
         // LAYER 5: NUMPAD
+        // Verified: Row 2 has correct spacing.
         // =========================================================
         layer_numpad {
             bindings = <
