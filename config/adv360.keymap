@@ -14,7 +14,7 @@
  *              Bottom row= Cmd+Shift          → monitor focus
  *              +Shift variants                → move window + follow
  *   5 NUM    Right-hand numpad (hold top-left key)
- *   6 APP    Quick-launch / system (hold CAPS) → Ctrl+Alt+Cmd/Win+<key>
+ *   6 APP    Quick-launch / system (hold CAPS, tap=ESC) → Ctrl+Alt+Cmd/Win+<key>
  *
  * Cross-platform:
  *   - WM layer outputs are pure F-key combos — consumed by skhd (macOS)
@@ -71,7 +71,7 @@
 &kp EQUAL  &kp N1                &kp N2                 &kp N3       &kp N4       &kp N5  &mo 5                                                                            &mo 3               &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
 &kp TAB    &kp Q                 &kp W                  &kp E        &kp R        &kp T   &kp PRINTSCREEN                                                                  &kp K_CONTEXT_MENU  &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
 &kp ESC    &hm LGUI A            &hm LALT S             &hm LCTRL D  &hm LSHFT F  &kp G   &mt LC(V) LC(C)  &kp LCTRL  &kp LEFT_ALT       &kp RCTRL  &kp RIGHT_COMMAND  &mt LC(V) LC(C)     &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
-&kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                                &lt 6 CAPS         &kp PG_UP                                           &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
+&kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                                &lt 6 ESC          &kp PG_UP                                           &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
 &kp GRAVE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp LEFT     &kp RIGHT            &lt 1 BSPC       &lt 5 DEL  &mt LSHFT END      &kp K_APP  &lt 4 ENTER        &lt 2 SPACE                 &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
             >;
         };
@@ -138,10 +138,17 @@
          * Row modifiers (consumed by skhd / GlazeWM):
          *   HOME ROW   (bare)       → window management
          *   +SHIFT                  → move / swap
+         *     ⚠ Use physical corner LSHFT/RSHFT keys.
+         *       hm LSHFT F is a BASE-layer mod only — in WM layer F sends
+         *       bare F16, not Shift.  Home-row Shift is inactive here.
          *   2ND ROW    (Ctrl)       → focus workspace 1-10
          *   +SHIFT     (Ctrl+Shift) → move to workspace 1-10
+         *     ⚠ Same corner-Shift rule applies.
          *   NUM ROW    (Cmd)        → resize & utilities
-         *   BOTTOM ROW (Cmd+Shift)  → monitor focus
+         *   BOTTOM ROW (Cmd+Shift)  → left half: monitor focus 1-5
+         *                             right half: space create/destroy,
+         *                             native-fullscreen, send-to-display-3,
+         *                             focus-recent  (see skhd for details)
          * ========================================================= */
 
         layer_wm {
@@ -172,7 +179,11 @@
         };
 
         /* =========================================================
-         * LAYER 6: APP  (hold CAPS)
+         * LAYER 6: APP  (hold CAPS, tap=ESC)
+         *
+         * CAPS was changed from tap=CAPS_LOCK to tap=ESC to prevent
+         * accidental macOS CAPS lock toggling when quickly activating
+         * this layer.  If you need CAPS lock, hold Shift and tap Shift.
          *
          * Every key sends Ctrl+Alt+Cmd+<key> (macOS) / Ctrl+Alt+Win+<key> (Windows).
          * Consumed by skhd on macOS and GlazeWM on Windows for:
