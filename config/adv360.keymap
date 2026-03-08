@@ -1,13 +1,26 @@
 /*
  * ZMK keymap for Kinesis Advantage360 Pro
+ *
  * Layers:
- * 0 BASE (QWERTY + HRM; thumb: tap End / hold Shift)
- * 1 SYM  (hold BSPC/DEL)
- * 2 NAV  (hold SPACE)
- * 3 MOD  (BT/RGB/boot)
- * 4 WM   (hold ENTER) -> focus with Enter+key; move requires Shift
- * 5 NUMPAD (momentary from base top row)
- * 6 APP  (hold CAPS) -> Ctrl+Alt+Win+<key> for quicklaunch/system binds
+ *   0 BASE   QWERTY + home-row mods (GACS order)
+ *   1 SYM    Symbols & F-keys (hold BSPC)
+ *   2 NAV    Vim-style navigation + editing (hold SPACE)
+ *   3 MOD    Bluetooth / RGB / bootloader
+ *   4 WM     Window manager (hold ENTER)
+ *              Home row  = bare F13-F23       → focus/toggle (skhd / GlazeWM)
+ *              2nd row   = Ctrl+F13-F22       → workspace focus
+ *              Num row   = Ctrl+Cmd+F13-F22   → resize / WM utilities
+ *              Bottom row= Ctrl+Alt+F13-F22   → monitor workspaces
+ *              +Shift variants                → move window + follow
+ *   5 NUM    Right-hand numpad (hold top-left key)
+ *   6 APP    Quick-launch / system (hold CAPS) → Ctrl+Alt+Cmd/Win+<key>
+ *
+ * Cross-platform:
+ *   - WM layer outputs are pure F-key combos — consumed by skhd (macOS)
+ *     and GlazeWM (Windows) identically.
+ *   - APP layer sends Ctrl+Alt+Cmd+<key> (macOS) / Ctrl+Alt+Win+<key> (Windows).
+ *   - Base layer uses LC/LA/LG which map to Ctrl/Alt/Cmd on macOS
+ *     and Ctrl/Alt/Win on Windows.  Swap LGUI↔LALT in OS settings if needed.
  */
 
 #include <behaviors.dtsi>
@@ -22,10 +35,10 @@
             compatible = "zmk,behavior-hold-tap";
             label = "HOME_ROW_MODS";
             #binding-cells = <2>;
-            tapping-term-ms = <200>;
-            quick-tap-ms = <0>;
+            tapping-term-ms = <220>;
+            quick-tap-ms = <175>;
             require-prior-idle-ms = <150>;
-            flavor = "tap-preferred";
+            flavor = "balanced";
             bindings = <&kp>, <&kp>;
         };
     };
@@ -33,51 +46,73 @@
     keymap {
         compatible = "zmk,keymap";
 
-        // =========================================================
-        // LAYER 0: BASE
-        // =========================================================
+        /* =========================================================
+         * LAYER 0: BASE
+         *
+         * ┌──────┬──────┬──────┬──────┬──────┬──────┬──────┐         ┌──────┬──────┬──────┬──────┬──────┬──────┬──────┐
+         * │  =   │  1   │  2   │  3   │  4   │  5   │ NUM  │         │ MOD  │  6   │  7   │  8   │  9   │  0   │  -   │
+         * ├──────┼──────┼──────┼──────┼──────┼──────┼──────┤         ├──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+         * │ TAB  │  Q   │  W   │  E   │  R   │  T   │PrtSc │         │ Menu │  Y   │  U   │  I   │  O   │  P   │  \   │
+         * ├──────┼──────┼──────┼──────┼──────┼──────┼──────┤         ├──────┼──────┼──────┼──────┼──────┼──────┼──────┤
+         * │ ESC  │GUI/A │ALT/S │CTL/D │SFT/F │  G   │Cp/Ps │ L  C  R│Cp/Ps │  H   │SFT/J │CTL/K │ALT/L │GUI/; │  '   │
+         * ├──────┼──────┼──────┼──────┼──────┼──────┤      │ Ctrl Alt│      ├──────┼──────┼──────┼──────┼──────┼──────┤
+         * │SHIFT │  Z   │  X   │  C   │  V   │  B   │      │APP PgUp│      │  N   │  M   │  ,   │  .   │  /   │SHIFT │
+         * ├──────┼──────┼──────┼──────┼──────┤      │      │        │      │      ├──────┼──────┼──────┼──────┼──────┤
+         * │  `   │  (   │  )   │ LEFT │RIGHT │      │      │        │      │      │  UP  │DOWN  │  [   │  ]   │ NAV  │
+         * └──────┴──────┴──────┴──────┴──────┘      │      │        │      │      └──────┴──────┴──────┴──────┴──────┘
+         *                        ┌─────────┬────────┤      │        │      ├────────┬─────────┐
+         *                        │SYM/BSPC │NUM/DEL │SH/End│KApp    │WM/Ent│NAV/SPC │
+         *                        └─────────┴────────┴──────┘        └──────┴────────┴─────────┘
+         * ========================================================= */
 
         default_layer {
             bindings = <
 &kp EQUAL  &kp N1                &kp N2                 &kp N3       &kp N4       &kp N5  &mo 5                                                                            &mo 3               &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
 &kp TAB    &kp Q                 &kp W                  &kp E        &kp R        &kp T   &kp PRINTSCREEN                                                                  &kp K_CONTEXT_MENU  &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
-&kp ESC    &hm LGUI A            &hm LALT S             &hm LCTRL D  &hm LSHFT F  &kp G   &kp LC(PRINTSCREEN)  &kp LCTRL  &kp LEFT_ALT       &kp RCTRL  &kp RIGHT_COMMAND  &mt LC(V) LC(C)     &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
-&kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                                   &lt 6 CAPS         &kp PG_UP                                         &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
-&kp GRAVE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp LEFT     &kp RIGHT            &lt 1 BSPC           &lt 5 DEL  &mt LSHFT END      &kp K_APP  &lt 4 ENTER        &lt 2 SPACE                 &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
+&kp ESC    &hm LGUI A            &hm LALT S             &hm LCTRL D  &hm LSHFT F  &kp G   &mt LC(V) LC(C)  &kp LCTRL  &kp LEFT_ALT       &kp RCTRL  &kp RIGHT_COMMAND  &mt LC(V) LC(C)     &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
+&kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                                &lt 6 CAPS         &kp PG_UP                                           &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
+&kp GRAVE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp LEFT     &kp RIGHT            &lt 1 BSPC       &lt 5 DEL  &mt LSHFT END      &kp K_APP  &lt 4 ENTER        &lt 2 SPACE                 &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
             >;
         };
 
-        // =========================================================
-        // LAYER 1: SYM
-        // =========================================================
+        /* =========================================================
+         * LAYER 1: SYM  (hold BSPC)
+         *
+         * Left hand  = F-keys (F1-F5) + shifted symbols
+         * Right hand = F-keys (F6-F12) + paired brackets
+         * Home row   = brackets & braces for programming
+         * ========================================================= */
 
         layer_sym {
             bindings = <
-&trans    &kp F1     &kp F2     &kp F3                &kp F4                 &kp F5           &kp C_AL_KEYBOARD_LAYOUT                                                  &kp INS    &kp F6     &kp F7    &kp F8         &kp F9    &kp F10   &kp F11
-&trans    &kp EXCL   &kp AT     &kp HASH              &kp DLLR               &kp PRCNT        &kp K_PLAY_PAUSE                                                          &kp CAPS   &kp CARET  &kp AMPS  &kp STAR       &kp LPAR  &kp RPAR  &kp F12
-&trans    &kp LBRC   &kp RBRC   &kp LBKT              &kp RBKT               &kp PRINTSCREEN  &kp PAUSE_BREAK           &kp KP_NUM  &kp UNDER      &kp MINUS  &kp PLUS  &kp EQUAL  &kp COLON  &kp SEMI  &kp BACKSLASH  &kp PIPE  &kp LT    &kp GT
-&kp BSLH  &kp GRAVE  &kp TILDE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &trans                                                 &kp QMARK      &kp SQT                         &kp COMMA  &kp DOT   &kp FSLH       &trans    &trans    &trans
-&trans    &trans     &trans     &trans                &trans                                  &trans                    &trans      &trans         &trans     &trans    &trans                &trans    &trans         &kp F1    &kp F2    &kp F3
+&trans    &kp F1     &kp F2     &kp F3    &kp F4    &kp F5     &kp C_AL_KEYBOARD_LAYOUT                                                  &kp INS    &kp F6     &kp F7    &kp F8    &kp F9    &kp F10   &kp F11
+&trans    &kp EXCL   &kp AT     &kp HASH  &kp DLLR  &kp PRCNT  &kp K_PLAY_PAUSE                                                          &kp CAPS   &kp CARET  &kp AMPS  &kp STAR  &kp LPAR  &kp RPAR  &kp F12
+&trans    &kp LBRC   &kp RBRC   &kp LBKT  &kp RBKT  &kp GRAVE  &kp PAUSE_BREAK           &kp KP_NUM  &kp UNDER      &kp MINUS  &kp PLUS  &kp EQUAL  &kp COLON  &kp SEMI  &kp BSLH  &kp PIPE  &kp LT    &kp GT
+&kp BSLH  &kp TILDE  &kp GRAVE  &kp LPAR  &kp RPAR  &kp PRCNT                                        &kp QMARK      &kp SQT                        &kp COMMA  &kp DOT   &kp FSLH  &kp STAR  &kp PLUS  &trans
+&trans    &trans     &trans     &trans    &trans                &trans                     &trans       &trans         &trans     &trans    &trans                &trans    &trans    &trans    &trans    &trans
             >;
         };
 
-        // =========================================================
-        // LAYER 2: NAV
-        // =========================================================
+        /* =========================================================
+         * LAYER 2: NAV  (hold SPACE)
+         *
+         * Right hand = Vim-style HJKL arrows + Home/End/PgUp/PgDn
+         * Left hand  = Word-level ops (Ctrl+arrows, Ctrl+Bspc/Del)
+         * ========================================================= */
 
         layer_nav {
             bindings = <
 &trans  &trans        &trans         &trans        &trans       &trans  &kp LC(Z)                                      &kp LC(Y)  &trans       &trans    &trans          &trans        &trans     &trans
-&trans  &none         &none          &kp LC(C)     &kp LC(V)    &trans  &kp LC(X)                                      &kp LC(A)  &kp LC(TAB)  &kp HOME  &kp PAGE_DOWN   &kp PG_UP     &kp END    &none
-&trans  &kp LC(LEFT)  &kp LC(RIGHT)  &kp LC(BSPC)  &kp LC(DEL)  &trans  &kp LC(C)  &trans  &trans      &trans  &trans  &none      &none        &kp LEFT  &kp DOWN_ARROW  &kp UP_ARROW  &kp RIGHT  &trans
-&trans  &trans        &trans         &trans        &trans       &trans                     &trans      &trans                     &trans       &trans    &trans          &trans        &trans     &trans
-&trans  &trans        &trans         &trans        &trans               &trans     &trans  &trans      &trans  &trans  &trans                  &trans    &trans          &trans        &trans     &trans
+&trans  &none         &kp LC(LEFT)   &kp LC(C)     &kp LC(V)    &kp LC(X)  &kp LC(A)                                  &none      &kp LC(TAB)  &kp HOME  &kp PAGE_DOWN   &kp PG_UP     &kp END    &none
+&trans  &kp LGUI      &kp LALT       &kp LCTRL     &kp LSHFT    &none      &kp LC(C)  &trans  &trans      &trans  &trans  &none   &kp LEFT     &kp DOWN  &kp UP_ARROW    &kp RIGHT     &none      &trans
+&trans  &kp LC(Z)     &kp LC(X)      &kp LC(C)     &kp LC(V)    &kp LC(Y)                     &trans      &trans                  &kp HOME     &kp PG_DN &kp PG_UP       &kp END       &none      &trans
+&trans  &trans        &trans         &trans        &trans               &kp DEL    &kp BSPC &trans      &trans  &trans  &trans                  &trans    &trans          &trans        &trans     &trans
             >;
         };
 
-        // =========================================================
-        // LAYER 3: MOD (BT/RGB/boot)
-        // =========================================================
+        /* =========================================================
+         * LAYER 3: MOD  (BT / RGB / bootloader)
+         * ========================================================= */
 
         layer_mod {
             bindings = <
@@ -89,40 +124,75 @@
             >;
         };
 
-        // =========================================================
-        // LAYER 4: WM
-        // =========================================================
+        /* =========================================================
+         * LAYER 4: WM  (hold ENTER)
+         *
+         * Outputs F-key combos consumed by skhd (macOS) and GlazeWM (Windows).
+         *
+         * HOME ROW (bare F-keys) → window management:
+         *   A=F13 prev-space   S=F14 fullscreen   D=F15 float
+         *   F=F16 next-space   G=F17 close
+         *   H=F23 rotate       J=F19 stack-prev   K=F20 stack-next
+         *   L=F21 focus-up     ;=F22 focus-right
+         *
+         * HOME ROW + SHIFT → move/swap:
+         *   Shift+A=Shift+F13 move-to-prev-space
+         *   Shift+F=Shift+F16 move-to-next-space
+         *   Shift+J=Shift+F19 swap-west    Shift+K=Shift+F20 swap-south
+         *   Shift+L=Shift+F21 swap-north   Shift+;=Shift+F22 swap-east
+         *
+         * 2ND ROW (Ctrl+F13-F22) → focus workspace 1-10
+         * 2ND ROW + SHIFT (Ctrl+Shift+F13-F22) → move to workspace 1-10
+         *
+         * NUM ROW (Ctrl+Cmd+F13-F22) → resize / WM utilities
+         *   1=redraw 2=toggle-dir 3=minimize 4=move-mon1 5=reload-cfg
+         *   6=move-mon2 7=resize-w- 8=resize-h+ 9=resize-h- 0=resize-w+
+         *
+         * BOTTOM ROW (Ctrl+Alt+F13-F22) → monitor workspace focus
+         *   Z-B = monitor 1 ws 11-15    N-/ = monitor 2 ws 16-20
+         * ========================================================= */
 
         layer_wm {
             bindings = <
-&trans  &kp LC(LG(F13))  &kp LC(LG(F14))  &kp LC(LG(F15))  &kp LC(LG(F16))  &kp LC(LG(F17))  &kp LA(PRINTSCREEN)                                      &kp LG(LC(F23))  &kp LG(LC(F18))  &kp LG(LC(F19))  &kp LG(LC(F20))  &kp LG(LC(F21))  &kp LG(LC(F22))  &none
-&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &kp PRINTSCREEN                                          &kp C_AL_MAIL    &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F21)      &kp LC(F22)      &trans
-&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &kp LC(PSCRN)        &trans  &trans      &trans  &trans  &kp PAUSE_BREAK  &kp F23          &kp F19          &kp F20          &kp F21          &kp F22          &none
-&trans  &kp LC(LA(F13))  &kp LC(LA(F14))  &kp LC(LA(F15))  &kp LC(LA(F16))  &kp LC(LA(F17))                               &none       &none                            &kp LC(LA(F18))  &kp LC(LA(F19))  &kp LC(LA(F20))  &kp LC(LA(F21))  &kp LC(LA(F22))  &trans
-&trans  &trans           &trans           &trans           &trans                            &trans               &trans  &trans      &trans  &trans  &trans                            &trans           &trans           &trans           &trans           &kp LC(LG(F13))
+&trans  &kp LC(LG(F13))  &kp LC(LG(F14))  &kp LC(LG(F15))  &kp LC(LG(F16))  &kp LC(LG(F17))  &kp LC(LG(F23))                                      &none            &kp LC(LG(F18))  &kp LC(LG(F19))  &kp LC(LG(F20))  &kp LC(LG(F21))  &kp LC(LG(F22))  &none
+&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &none                                                  &none            &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F21)      &kp LC(F22)      &trans
+&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &none            &trans  &trans      &trans  &trans  &none            &kp F23          &kp F19          &kp F20          &kp F21          &kp F22          &none
+&trans  &kp LC(LA(F13))  &kp LC(LA(F14))  &kp LC(LA(F15))  &kp LC(LA(F16))  &kp LC(LA(F17))                          &none       &none                            &kp LC(LA(F18))  &kp LC(LA(F19))  &kp LC(LA(F20))  &kp LC(LA(F21))  &kp LC(LA(F22))  &trans
+&trans  &trans           &trans           &trans           &trans                            &trans           &trans  &trans      &trans  &trans  &trans                            &trans           &trans           &trans           &trans           &none
             >;
         };
 
-        // =========================================================
-        // LAYER 5: NUMPAD
-        // =========================================================
+        /* =========================================================
+         * LAYER 5: NUMPAD  (hold top-left key)
+         *
+         * Right hand = numpad 0-9 with operators
+         * Left hand  = common symbols (!@#$%) for quick data entry
+         * ========================================================= */
 
         layer_numpad {
             bindings = <
 &trans  &trans    &trans  &trans     &trans    &trans       &trans                                                                 &trans  &trans           &kp MINUS     &kp PLUS      &kp EQUAL     &kp PIPE       &trans
 &trans  &trans    &trans  &trans     &trans    &trans       &kp KP_SLASH                                                           &trans  &trans           &kp N7        &kp N8        &kp N9        &kp BACKSLASH  &trans
 &trans  &kp EXCL  &kp AT  &kp POUND  &kp DLLR  &kp PERCENT  &kp KP_MULTIPLY  &trans  &trans            &trans       &trans         &trans  &kp LOCKING_NUM  &kp NUMBER_4  &kp N5        &kp NUMBER_6  &kp DOT        &trans
-&trans  &trans    &trans  &trans     &trans    &trans                                &kp KP_MINUS      &kp KP_PLUS                         &kp N0           &kp NUMBER_1  &kp NUMBER_2  &kp NUMBER_3  &kp SLASH      &trans
-&trans  &trans    &trans  &trans     &trans                 &trans           &trans  &trans            &trans       &kp BACKSPACE  &trans                   &kp N0        &trans        &trans        &trans
+&trans  &trans    &trans  &trans     &trans    &trans                                 &kp KP_MINUS      &kp KP_PLUS                         &kp N0           &kp NUMBER_1  &kp NUMBER_2  &kp NUMBER_3  &kp SLASH      &trans
+&trans  &trans    &trans  &trans     &trans                 &trans           &trans   &trans            &trans       &kp BACKSPACE  &trans                   &kp N0        &trans        &trans        &trans         &trans
             >;
         };
 
-        // =========================================================
-        // LAYER 6: APP (USE ALL KEYS)
-        // Hold CAPS to access.
-        // Sends Ctrl+Alt+Win+<key> for every position (except CAPS itself which is held).
-        // Bind these in GlazeWM to launch apps / scripts.
-        // =========================================================
+        /* =========================================================
+         * LAYER 6: APP  (hold CAPS)
+         *
+         * Every key sends Ctrl+Alt+Cmd+<key> (macOS) / Ctrl+Alt+Win+<key> (Windows).
+         * Consumed by skhd on macOS and GlazeWM on Windows for:
+         *   - App launching / switching
+         *   - Raycast commands
+         *   - OBS scene switching (number row)
+         *   - BetterTouchTool triggers (F1-F4)
+         *   - System utilities
+         *
+         * This layer intentionally maps EVERY physical key position
+         * so you can assign any app/action to any key on either OS.
+         * ========================================================= */
 
         layer_app {
             bindings = <
