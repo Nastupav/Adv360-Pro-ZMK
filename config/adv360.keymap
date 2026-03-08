@@ -7,10 +7,11 @@
  *   2 NAV    Vim-style navigation + editing (hold SPACE)
  *   3 MOD    Bluetooth / RGB / bootloader
  *   4 WM     Window manager (hold ENTER)
- *              Home row  = bare F13-F23       → focus/toggle (skhd / GlazeWM)
- *              2nd row   = Ctrl+F13-F22       → workspace focus
- *              Num row   = Ctrl+Cmd+F13-F22   → resize / WM utilities
- *              Bottom row= Ctrl+Alt+F13-F22   → monitor workspaces
+ *              F13-F20 only; L/; use Alt+F13/Alt+F14
+ *              Home row  = bare               → window management
+ *              2nd row   = Ctrl               → workspace focus
+ *              Num row   = Cmd                → resize & utilities
+ *              Bottom row= Cmd+Shift          → monitor focus
  *              +Shift variants                → move window + follow
  *   5 NUM    Right-hand numpad (hold top-left key)
  *   6 APP    Quick-launch / system (hold CAPS) → Ctrl+Alt+Cmd/Win+<key>
@@ -127,37 +128,28 @@
         /* =========================================================
          * LAYER 4: WM  (hold ENTER)
          *
-         * Outputs F-key combos consumed by skhd (macOS) and GlazeWM (Windows).
+         * Uses F13-F20 only (macOS natively supports these).
+         * Columns L and ; use Alt as a column marker.
          *
-         * HOME ROW (bare F-keys) → window management:
-         *   A=F13 prev-space   S=F14 fullscreen   D=F15 float
-         *   F=F16 next-space   G=F17 close
-         *   H=F23 rotate       J=F19 stack-prev   K=F20 stack-next
-         *   L=F21 focus-up     ;=F22 focus-right
+         * Column map:
+         *   A=F13  S=F14  D=F15  F=F16  G=F17
+         *   H=F18  J=F19  K=F20  L=Alt+F13  ;=Alt+F14
          *
-         * HOME ROW + SHIFT → move/swap:
-         *   Shift+A=Shift+F13 move-to-prev-space
-         *   Shift+F=Shift+F16 move-to-next-space
-         *   Shift+J=Shift+F19 swap-west    Shift+K=Shift+F20 swap-south
-         *   Shift+L=Shift+F21 swap-north   Shift+;=Shift+F22 swap-east
-         *
-         * 2ND ROW (Ctrl+F13-F22) → focus workspace 1-10
-         * 2ND ROW + SHIFT (Ctrl+Shift+F13-F22) → move to workspace 1-10
-         *
-         * NUM ROW (Ctrl+Cmd+F13-F22) → resize / WM utilities
-         *   1=redraw 2=toggle-dir 3=minimize 4=move-mon1 5=reload-cfg
-         *   6=move-mon2 7=resize-w- 8=resize-h+ 9=resize-h- 0=resize-w+
-         *
-         * BOTTOM ROW (Ctrl+Alt+F13-F22) → monitor workspace focus
-         *   Z-B = monitor 1 ws 11-15    N-/ = monitor 2 ws 16-20
+         * Row modifiers (consumed by skhd / GlazeWM):
+         *   HOME ROW   (bare)       → window management
+         *   +SHIFT                  → move / swap
+         *   2ND ROW    (Ctrl)       → focus workspace 1-10
+         *   +SHIFT     (Ctrl+Shift) → move to workspace 1-10
+         *   NUM ROW    (Cmd)        → resize & utilities
+         *   BOTTOM ROW (Cmd+Shift)  → monitor focus
          * ========================================================= */
 
         layer_wm {
             bindings = <
-&trans  &kp LC(LG(F13))  &kp LC(LG(F14))  &kp LC(LG(F15))  &kp LC(LG(F16))  &kp LC(LG(F17))  &kp LC(LG(F23))                                      &none            &kp LC(LG(F18))  &kp LC(LG(F19))  &kp LC(LG(F20))  &kp LC(LG(F21))  &kp LC(LG(F22))  &none
-&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &none                                                  &none            &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F21)      &kp LC(F22)      &trans
-&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &none            &trans  &trans      &trans  &trans  &none            &kp F23          &kp F19          &kp F20          &kp F21          &kp F22          &none
-&trans  &kp LC(LA(F13))  &kp LC(LA(F14))  &kp LC(LA(F15))  &kp LC(LA(F16))  &kp LC(LA(F17))                          &none       &none                            &kp LC(LA(F18))  &kp LC(LA(F19))  &kp LC(LA(F20))  &kp LC(LA(F21))  &kp LC(LA(F22))  &trans
+&trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &none                                                  &none            &kp LG(F18)      &kp LG(F19)      &kp LG(F20)      &kp LG(LA(F13))  &kp LG(LA(F14))  &none
+&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &none                                                  &none            &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(LA(F13))  &kp LC(LA(F14))  &trans
+&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &none            &trans  &trans      &trans  &trans  &none            &kp F18          &kp F19          &kp F20          &kp LA(F13)      &kp LA(F14)      &none
+&trans  &kp LG(LS(F13))  &kp LG(LS(F14))  &kp LG(LS(F15))  &kp LG(LS(F16))  &kp LG(LS(F17))                          &none       &none                            &kp LG(LS(F18))  &kp LG(LS(F19))  &kp LG(LS(F20))  &kp LG(LS(LA(F13)))  &kp LG(LS(LA(F14)))  &trans
 &trans  &trans           &trans           &trans           &trans                            &trans           &trans  &trans      &trans  &trans  &trans                            &trans           &trans           &trans           &trans           &none
             >;
         };
