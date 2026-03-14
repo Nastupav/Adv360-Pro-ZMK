@@ -369,8 +369,17 @@ keybindings:
   - commands: ["set-minimized"]
     bindings: ["lwin+f15"]
 
+  # ---- Focus monitor directly (Win+Shift+FXX — ZMK WM layer bottom row) ----
+  # A=F13 → monitor 0, S=F14 → monitor 1, D=F15 → monitor 2
+  - commands: ["focus --monitor 0"]
+    bindings: ["lwin+shift+f13"]   # WM layer bottom row A (ZMK: LG(LS(F13)))
+  - commands: ["focus --monitor 1"]
+    bindings: ["lwin+shift+f14"]   # WM layer bottom row S (ZMK: LG(LS(F14)))
+  - commands: ["focus --monitor 2"]
+    bindings: ["lwin+shift+f15"]   # WM layer bottom row D (ZMK: LG(LS(F15)))
+
   # ---- Move window to monitor (Win+Shift+FXX — ZMK num row + corner Shift) ----
-  # D=F15 → monitor 0, F=F16 → monitor 1, H=F18 → monitor 2
+  # F=F16 → monitor 1, H=F18 → monitor 2
   - commands: ["move --workspace 1", "focus --workspace 1"]
     bindings: ["lwin+shift+f16"]   # send current window to monitor 1 first WS
   - commands: ["move --workspace 16", "focus --workspace 16"]
