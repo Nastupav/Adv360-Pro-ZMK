@@ -7,7 +7,7 @@
  *   2 NAV    Vim-style navigation + editing (hold SPACE)
  *   3 MOD    Bluetooth / RGB / bootloader
  *   4 WM     Window manager (hold ENTER)
- *              F13-F20 only; L/; use Alt+F13/Alt+F14
+ *              F13-F20 core + Alt+F11/Alt+F12 for L/; (avoids F21/F22)
  *              Home row  = bare               → window management
  *              2nd row   = Ctrl               → workspace focus
  *              Num row   = Cmd                → resize & utilities
@@ -128,12 +128,13 @@
         /* =========================================================
          * LAYER 4: WM  (hold ENTER)
          *
-         * Uses F13-F20 only (macOS natively supports these).
+         * Uses F13-F20 core plus Alt+F11/Alt+F12 markers.
+         * This avoids host-side F21/F22 translation issues on macOS.
          * Columns L and ; use Alt as a column marker.
          *
          * Column map:
          *   A=F13  S=F14  D=F15  F=F16  G=F17
-         *   H=F18  J=F19  K=F20  L=Alt+F13  ;=Alt+F14
+         *   H=F18  J=F19  K=F20  L=Alt+F11  ;=Alt+F12
          *
          * Row modifiers (consumed by skhd / GlazeWM):
          *   HOME ROW   (bare)       → window management
@@ -153,10 +154,10 @@
 
         layer_wm {
             bindings = <
-&trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &none                                                  &none            &kp LG(F18)      &kp LG(F19)      &kp LG(F20)      &kp LG(LA(F13))  &kp LG(LA(F14))  &none
-&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &none                                                  &none            &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(LA(F13))  &kp LC(LA(F14))  &trans
-&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &none            &trans  &trans      &trans  &trans  &none            &kp F18          &kp F19          &kp F20          &kp LA(F13)      &kp LA(F14)      &none
-&trans  &kp LG(LS(F13))  &kp LG(LS(F14))  &kp LG(LS(F15))  &kp LG(LS(F16))  &kp LG(LS(F17))                          &none       &none                            &kp LG(LS(F18))  &kp LG(LS(F19))  &kp LG(LS(F20))  &kp LG(LS(LA(F13)))  &kp LG(LS(LA(F14)))  &trans
+&trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &none                                                  &none            &kp LG(F18)      &kp LG(F19)      &kp LG(F20)      &kp LG(LA(F11))  &kp LG(LA(F12))  &none
+&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &none                                                  &none            &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(LA(F11))  &kp LC(LA(F12))  &trans
+&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &none            &trans  &trans      &trans  &trans  &none            &kp F18          &kp F19          &kp F20          &kp LA(F11)      &kp LA(F12)      &none
+&trans  &kp LG(LS(F13))  &kp LG(LS(F14))  &kp LG(LS(F15))  &kp LG(LS(F16))  &kp LG(LS(F17))                          &none       &none                            &kp LG(LS(F18))  &kp LG(LS(F19))  &kp LG(LS(F20))  &kp LG(LS(LA(F11)))  &kp LG(LS(LA(F12)))  &trans
 &trans  &trans           &trans           &trans           &trans                            &trans           &trans  &trans      &trans  &trans  &trans                            &trans           &trans           &trans           &trans           &none
             >;
         };
