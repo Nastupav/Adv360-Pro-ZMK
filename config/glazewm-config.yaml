@@ -182,31 +182,34 @@ keybindings:
     bindings: ["alt+f24"]
 
   # ==========================================================
-  # WM HOME ROW (bare FXX — ZMK sends these directly)
+  # WM HOME ROW
+  # Bare right home row now uses APP-layer hyper chords:
+  # H/J/K/L/; -> Ctrl+Alt+Win+H/J/K/L/;
+  #
+  # Other rows still use direct F-key outputs from ZMK:
   # A=F13  S=F14  D=F15  F=F16  G=F17
-  # H=F18  J=F19  K=F20  L=F11  ;=F12
+  # H=F18  J=F19  K=F20  L=F10  ;=F12
   # ==========================================================
 
-  # ---- Window focus (J=F19, K=F20, L=F11, ;=F12) ----
-  # Matches ZMK home row H/J/K/L/; → F18/F19/F20/F11/F12
+  # ---- Window focus (ZMK WM layer bare right home row = Ctrl+Alt+Win+J/K/L/;) ----
   - commands: ["focus --direction left"]
-    bindings: ["f18"]   # H
+    bindings: ["ctrl+alt+lwin+j"]
   - commands: ["focus --direction down"]
-    bindings: ["f19"]   # J
+    bindings: ["ctrl+alt+lwin+k"]
   - commands: ["focus --direction up"]
-    bindings: ["f20"]   # K
+    bindings: ["ctrl+alt+lwin+l"]
   - commands: ["focus --direction right"]
-    bindings: ["f11"]   # L
+    bindings: ["ctrl+alt+lwin+semicolon"]
 
-  # ---- Window move (Shift + home row) ----
+  # ---- Window move ONLY with Shift (ZMK WM layer + corner Shift) ----
   - commands: ["move --direction left"]
-    bindings: ["shift+f18"]
+    bindings: ["ctrl+alt+shift+lwin+j"]
   - commands: ["move --direction down"]
-    bindings: ["shift+f19"]
+    bindings: ["ctrl+alt+shift+lwin+k"]
   - commands: ["move --direction up"]
-    bindings: ["shift+f20"]
+    bindings: ["ctrl+alt+shift+lwin+l"]
   - commands: ["move --direction right"]
-    bindings: ["shift+f11"]
+    bindings: ["ctrl+alt+shift+lwin+semicolon"]
 
   # ---- Monitor navigation (F=F16 next, A=F13 prev on current monitor) ----
   - commands: ["focus --next-active-workspace-on-monitor"]
@@ -258,7 +261,7 @@ keybindings:
   - commands: ["focus --workspace 8"]
     bindings: ["ctrl+f20"]
   - commands: ["focus --workspace 9"]
-    bindings: ["ctrl+f11"]
+    bindings: ["ctrl+f10"]
   - commands: ["focus --workspace 10"]
     bindings: ["ctrl+f12"]
 
@@ -280,7 +283,7 @@ keybindings:
   - commands: ["move --workspace 8", "focus --workspace 8"]
     bindings: ["ctrl+shift+f20"]
   - commands: ["move --workspace 9", "focus --workspace 9"]
-    bindings: ["ctrl+shift+f11"]
+    bindings: ["ctrl+shift+f10"]
   - commands: ["move --workspace 10", "focus --workspace 10"]
     bindings: ["ctrl+shift+f12"]
 
@@ -311,7 +314,7 @@ keybindings:
   - commands: ["focus --workspace 18"]
     bindings: ["ctrl+alt+f20"]
   - commands: ["focus --workspace 19"]
-    bindings: ["ctrl+alt+f11"]
+    bindings: ["ctrl+alt+f10"]
   - commands: ["focus --workspace 20"]
     bindings: ["ctrl+alt+f12"]
 
@@ -334,7 +337,7 @@ keybindings:
   - commands: ["move --workspace 18", "focus --workspace 18"]
     bindings: ["ctrl+alt+shift+f20"]
   - commands: ["move --workspace 19", "focus --workspace 19"]
-    bindings: ["ctrl+alt+shift+f11"]
+    bindings: ["ctrl+alt+shift+f10"]
   - commands: ["move --workspace 20", "focus --workspace 20"]
     bindings: ["ctrl+alt+shift+f12"]
 
@@ -343,7 +346,7 @@ keybindings:
   # FIXED: was ctrl+lwin+fXX but ZMK sends lwin+fXX (bare Win key).
   #
   # A=F13  S=F14  D=F15  F=F16  G=F17
-  # H=F18  J=F19  K=F20  L=F11  ;=F12
+  # H=F18  J=F19  K=F20  L=F10  ;=F12
   # ==========================================================
 
   # ---- WM Utilities (left num row A..G = Win+F13..Win+F17) ----
@@ -355,7 +358,7 @@ keybindings:
   # To re-enable, wire ZMK to send a unique combo and add it here.
 
   # ---- Resize (Win+FXX, right num row) ----
-  # H=F18 → shrink width, J=F19 → grow height, K=F20 → shrink height, L=F11 → grow width
+  # H=F18 → shrink width, J=F19 → grow height, K=F20 → shrink height, L=F10 → grow width
   - commands: ["resize --width -4%"]
     bindings: ["lwin+f18"]   # H (left = shrink width)
   - commands: ["resize --height +4%"]
@@ -363,7 +366,7 @@ keybindings:
   - commands: ["resize --height -4%"]
     bindings: ["lwin+f20"]   # K (up = shrink height)
   - commands: ["resize --width +4%"]
-    bindings: ["lwin+f11"]   # L (right = grow width)
+    bindings: ["lwin+f10"]   # L (right = grow width)
 
   # ---- WM set-minimized (D=F15, num row) ----
   - commands: ["set-minimized"]
@@ -449,14 +452,14 @@ keybindings:
     bindings: ["ctrl+alt+lwin+y"]       # PyAutoGUI script
 
   - commands: ['shell-exec cmd /c start "" "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\KeePass 2.lnk"']
-    bindings: ["ctrl+alt+lwin+k"]       # KeePass
+    bindings: ["ctrl+alt+lwin+slash"]       # KeePass
 
-  # ---- Additional dev tools (right-hand keys) ----
+  # ---- Additional dev tools (moved off H/J/K/L/; because ZMK WM layer now uses those) ----
   - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\Postman\Postman.exe"']
-    bindings: ["ctrl+alt+lwin+h"]       # Postman / HTTP client
+    bindings: ["ctrl+alt+lwin+comma"]       # Postman / HTTP client
 
   - commands: ['shell-exec cmd /c start "" "C:\Program Files\Azure Data Studio\azuredatastudio.exe"']
-    bindings: ["ctrl+alt+lwin+j"]       # Azure Data Studio / DB
+    bindings: ["ctrl+alt+lwin+period"]       # Azure Data Studio / DB
 
   - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\Programs\Obsidian\Obsidian.exe" "C:\Users\PavelNastulczyk\AppData\Local\Programs\Obsidian"']
     bindings: ["ctrl+alt+lwin+o"]       # Obsidian notes
@@ -464,7 +467,7 @@ keybindings:
   - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\gitkraken\gitkraken.exe"']
     bindings: ["ctrl+alt+lwin+g"]       # GitKraken / Git GUI
 
-  - commands: ['shell-exec cmd /c start "" spotify:']
+  - commands: ['shell-exec cmd /c start spotify:']
     bindings: ["ctrl+alt+lwin+u"]       # Spotify
 
   # ---- Direct Monitor Focus (APP layer arrows = Ctrl+Alt+Win+arrow) ----
@@ -475,12 +478,12 @@ keybindings:
   - commands: ["focus --monitor 2"]
     bindings: ["ctrl+alt+lwin+up"]
 
-  # ---- Extra Dev Quicklaunch ----
+  # ---- Extra Dev Quicklaunch (unused APP layer keys) ----
   - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\JetBrains\Toolbox\bin\jetbrains-toolbox.exe"']
     bindings: ["ctrl+alt+lwin+i"]       # JetBrains Toolbox
 
   - commands: ['shell-exec cmd /c start "" "C:\Program Files\Everything\Everything.exe"']
-    bindings: ["ctrl+alt+lwin+l"]       # Everything (file search)
+    bindings: ["ctrl+alt+lwin+backslash"]       # Everything (file search)
 
   - commands: ['shell-exec wt -p "PowerShell 7" new-tab --startingDirectory "C:\my"']
-    bindings: ["ctrl+alt+lwin+semicolon"]  # Terminal in project dir
+    bindings: ["ctrl+alt+lwin+minus"]  # Terminal in project dir

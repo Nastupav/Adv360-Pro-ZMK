@@ -205,12 +205,13 @@
          *
          * F-key column map (same physical positions on both halves):
          *   A=F13  S=F14  D=F15  F=F16  G=F17
-         *   H=F18  J=F19  K=F20  L=F10  ;=F12
+         *   H=Ctrl+Alt+Cmd+H  J=Ctrl+Alt+Cmd+J  K=Ctrl+Alt+Cmd+K
+         *   L=Ctrl+Alt+Cmd+L  ;=Ctrl+Alt+Cmd+;
          *
          * Row → ZMK output → consumed by:
          * ─────────────────────────────────────────────────────────
-         * HOME ROW   bare FXX         GlazeWM: fXX
-         *                             skhd+Amethyst: fXX
+         * HOME ROW   bare             Right hand WM nav via Ctrl+Alt+Cmd+H/J/K/L/;
+         *                             Left hand remains F13-F17 utilities
          * HOME ROW   + corner Shift   GlazeWM: shift+fXX
          *   (physical LSHFT/RSHFT)    skhd: shift+fXX   → move/swap window
          * 2ND ROW    LC(FXX)          GlazeWM: ctrl+fXX → focus workspace
@@ -227,19 +228,19 @@
          *   Right ENTER       → held (WM layer activation key — passthrough)
          *   Right SPACE       → LA(F24)            (skhd: balance sizes / Amethyst: equalize)
          *
-         * ⚠ Home-row mods on BASE (hm LSHFT F etc.) are inactive here — in WM layer
-         *   every home-row key sends a bare F-key. Use corner LSHFT/RSHFT for +Shift rows.
+         * ⚠ Home-row mods on BASE (hm LSHFT F etc.) are inactive here.
+         *   WM layer right home row sends explicit Ctrl+Alt+Cmd chords for AeroSpace.
          *
          * AeroSpace direction mapping (JKL; navigation):
          *   J=left  K=down  L=up  ;=right  H=back-and-forth
-         *   → F19=focus-left  F20=focus-down  F10=focus-up  F12=focus-right
+         *   → Ctrl+Alt+Cmd+J/K/L/; consumed directly by AeroSpace
          * ========================================================= */
 
         layer_wm {
             bindings = <
 &trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &trans                                                             &trans           &kp LG(F18)      &kp LG(F19)      &kp LG(F20)      &kp LG(F10)      &kp LG(F12)      &trans
 &trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &trans                                                             &trans           &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F10)      &kp LC(F12)      &trans
-&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &trans           &trans  &trans              &trans  &trans  &trans &kp F18          &kp F19          &kp F20          &kp F10          &kp F12          &trans
+&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &trans           &trans  &trans              &trans  &trans  &trans &kp LC(LA(LG(H))) &kp LC(LA(LG(J))) &kp LC(LA(LG(K))) &kp LC(LA(LG(L))) &kp LC(LA(LG(SEMI))) &trans
 &trans  &kp LG(LS(F13))  &kp LG(LS(F14))  &kp LG(LS(F15))  &kp LG(LS(F16))  &kp LG(LS(F17))                          &trans              &trans                &kp LG(LS(F18))  &kp LG(LS(F19))  &kp LG(LS(F20))  &kp LG(LS(F10))  &kp LG(LS(F12))  &trans
 &trans  &trans           &trans           &trans           &trans                            &kp F24          &kp LS(F24) &kp LG(F24)    &kp LC(F24) &trans  &kp LA(F24)                       &trans           &trans           &trans           &trans           &trans
             >;
@@ -299,4 +300,3 @@
         };
     };
 };
-
