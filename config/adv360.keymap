@@ -239,11 +239,11 @@
 
         layer_wm {
             bindings = <
-&trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &trans                                                      &trans       &kp LG(F18)        &kp LG(F19)        &kp LG(F20)        &kp LG(F10)        &kp LG(F12)           &trans
-&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &trans                                                      &trans       &kp LC(F18)        &kp LC(F19)        &kp LC(F20)        &kp LC(F10)        &kp LC(F12)           &trans
-&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &trans   &trans       &trans           &trans       &trans  &trans       &kp LC(LA(LG(H)))  &kp LC(LA(LG(J)))  &kp LC(LA(LG(K)))  &kp LC(LA(LG(L)))  &kp LC(LA(LG(SEMI)))  &trans
-&trans  &kp LG(LA(F13))  &kp LG(LA(F14))  &kp LG(LA(F15))  &kp LG(LA(F16))  &kp LG(LA(F17))                        &trans           &trans                            &kp LG(LA(F18))    &kp LG(LA(F19))    &kp LG(LA(F20))    &kp LG(LA(F10))    &kp LG(LA(F12))       &trans
-&trans  &trans           &trans           &trans           &trans                            &kp F24  &kp LS(F24)  &kp LG(F24)      &kp LC(F24)  &trans  &kp LA(F24)                     &trans             &trans             &trans             &trans                &trans
+&trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &trans                                                                 &trans       &kp LG(F18)        &kp LG(F19)        &kp LG(F20)        &kp LG(F10)        &kp LG(F12)           &trans
+&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &trans                                                                 &trans       &kp LC(F18)        &kp LC(F19)        &kp LC(F20)        &kp LC(F10)        &kp LC(F12)           &trans
+&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &trans   &trans                  &trans           &trans       &trans  &trans       &kp LC(LA(LG(H)))  &kp LC(LA(LG(J)))  &kp LC(LA(LG(K)))  &kp LC(LA(LG(L)))  &kp LC(LA(LG(SEMI)))  &trans
+&trans  &kp LG(LA(F13))  &kp LG(LA(F14))  &kp LG(LA(F15))  &kp LG(LA(F16))  &kp LG(LA(F17))                                   &trans           &trans                            &kp LG(LA(F18))    &kp LG(LA(F19))    &kp LG(LA(F20))    &kp LG(LA(F10))    &kp LG(LA(F12))       &trans
+&trans  &trans           &trans           &trans           &trans                            &kp F24  &hm LEFT_SHIFT LS(F24)  &kp LG(F24)      &kp LC(F24)  &trans  &kp LA(F24)                     &trans             &trans             &trans             &trans                &trans
             >;
         };
 
