@@ -230,11 +230,9 @@
          * ⚠ Home-row mods on BASE (hm LSHFT F etc.) are inactive here — in WM layer
          *   every home-row key sends a bare F-key. Use corner LSHFT/RSHFT for +Shift rows.
          *
-         * Amethyst default bindings:
-         *   Focus:  opt+shift+hjkl   → mapped to bare fXX via skhd
-         *   Move:   ctrl+shift+hjkl  → mapped to shift+fXX via skhd
-         *   Rotate: opt+shift+space  → LA(F24) via skhd
-         *   Float:  opt+shift+t      → LG(F24) via skhd
+         * AeroSpace direction mapping (JKL; navigation):
+         *   J=left  K=down  L=up  ;=right  H=back-and-forth
+         *   → F19=focus-left  F20=focus-down  F10=focus-up  F12=focus-right
          * ========================================================= */
 
         layer_wm {
