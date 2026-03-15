@@ -93,7 +93,7 @@
          *   Left  inner-bottom: NAV-layer hold / TAB tap  (second NAV activator;
          *     useful when right hand is on mouse.  TAB on thumb = fast terminal
          *     autocomplete and IDE indentation without reaching the top row.)
-         *   Right inner-top: K_APP (context menu, niche but accessible)
+         *   Right inner-top: APP layer momentary (faster launcher/hyper access)
          * ========================================================= */
 
         default_layer {
@@ -102,7 +102,7 @@
 &kp TAB    &kp Q                 &kp W                  &kp E        &kp R        &kp T   &kp PRINTSCREEN                                                                        &kp K_CONTEXT_MENU  &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
 &kp ESC    &hm LGUI A            &hm LALT S             &hm LCTRL D  &hm LSHFT F  &kp G   &kp K_COPY       &kp LCTRL  &kp LEFT_ALT       &kp RCTRL  &kp RIGHT_COMMAND  &kp K_PASTE         &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
 &kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                                &td_caps 6 ESC     &kp PG_UP                                             &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
-&kp GRAVE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp LEFT     &kp RIGHT            &lt 1 BSPC       &lt 5 DEL  &lt 2 TAB          &kp K_APP  &lt 4 ENTER        &lt 2 SPACE                   &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
+&kp GRAVE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp LEFT     &kp RIGHT            &lt 1 BSPC       &lt 5 DEL  &lt 2 TAB          &mo 6      &lt 4 ENTER        &lt 2 SPACE                   &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
             >;
         };
 
@@ -137,7 +137,7 @@
         layer_sym {
             bindings = <
 &trans    &kp F1     &kp F2     &kp F3    &kp F4    &kp F5     &kp C_AL_KEYBOARD_LAYOUT                                                     &kp INS    &kp F6     &kp F7    &kp F8    &kp F9    &kp F10   &kp F11
-&trans    &kp EXCL   &kp AT     &kp HASH  &kp DLLR  &kp PRCNT  &kp K_PLAY_PAUSE                                                             &kp CAPS   &kp CARET  &kp AMPS  &kp STAR  &kp LPAR  &kp RPAR  &kp F12
+&trans    &kp EXCL   &kp AT     &kp HASH  &kp DLLR  &kp PRCNT  &kp K_PLAY_PAUSE                                                             &kp INS    &kp CARET  &kp AMPS  &kp STAR  &kp LPAR  &kp RPAR  &kp F12
 &trans    &kp LBKT   &kp RBKT   &kp LBRC  &kp RBRC  &kp GRAVE  &kp LC(GRAVE)             &kp KP_NUM  &kp UNDER         &kp MINUS  &kp PLUS  &kp EQUAL  &kp COLON  &kp SEMI  &kp LT    &kp GT    &kp PIPE  &kp BSLH
 &kp BSLH  &kp TILDE  &kp GRAVE  &kp LPAR  &kp RPAR  &kp PRCNT                                        &kp QMARK         &kp SQT                        &kp COMMA  &kp DOT   &kp FSLH  &kp STAR  &kp PLUS  &trans
 &trans    &trans     &trans     &trans    &trans                &trans                     &trans       &kp TAB           &kp LS(TAB)  &trans   &trans                &trans    &trans    &trans    &trans    &trans
@@ -179,9 +179,9 @@
         layer_nav {
             bindings = <
 &trans  &trans     &trans          &trans          &trans          &trans         &kp K_UNDO                                                          &kp K_REDO   &trans              &kp LA(LEFT)        &kp HOME            &kp END             &kp LA(RIGHT) &trans
-&trans  &kp K_FIND &kp K_CUT       &kp K_COPY      &kp K_PASTE     &kp LG(A)      &kp K_REDO                                                          &none        &kp LC(TAB)         &kp LEFT            &kp DOWN            &kp UP              &kp RIGHT     &none
-&trans  &kp LGUI   &kp LALT        &kp LCTRL       &kp LSHFT       &none          &kp K_COPY      &trans  &trans        &trans  &trans   &none           &kp LG(LEFT)        &kp PG_DN           &kp PG_UP           &kp LG(RIGHT)       &none         &trans
-&trans  &kp K_UNDO &kp K_CUT       &kp K_COPY      &kp K_PASTE     &kp K_REDO                              &trans        &trans                          &kp LA(LS(LEFT))    &kp LG(LS(LEFT))    &kp LG(LS(RIGHT))   &kp LA(LS(RIGHT))   &none         &trans
+&trans  &kp K_FIND &kp K_CUT       &kp K_COPY      &kp K_PASTE     &kp LG(A)      &kp K_REDO                                                          &kp LC(LS(TAB))  &kp LC(TAB)         &kp LEFT            &kp DOWN            &kp UP              &kp RIGHT     &kp LC(TAB)
+&trans  &kp LGUI   &kp LALT        &kp LCTRL       &kp LSHFT       &kp TAB        &kp K_COPY      &trans  &trans        &trans  &trans   &kp INSERT      &kp LG(LEFT)        &kp PG_DN           &kp PG_UP           &kp LG(RIGHT)       &kp INSERT    &trans
+&trans  &kp K_UNDO &kp K_CUT       &kp K_COPY      &kp K_PASTE     &kp K_REDO                              &trans        &trans                          &kp LA(LS(LEFT))    &kp LG(LS(LEFT))    &kp LG(LS(RIGHT))   &kp LA(LS(RIGHT))   &kp DEL       &trans
 &trans  &trans     &trans          &trans          &trans                         &kp DEL         &kp BSPC &trans       &trans  &kp K_UNDO  &trans                &trans              &trans              &trans              &trans              &trans
             >;
         };
@@ -192,11 +192,11 @@
 
         layer_mod {
             bindings = <
-&none  &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &bt BT_CLR                                        &trans           &none            &none            &none            &none            &none            &none
-&none  &none         &none         &none         &none         &none         &bootloader                                       &bootloader      &none            &none            &none            &none            &none            &none
-&none  &none         &none         &none         &none         &none         &none        &none  &none      &bt BT_CLR  &none  &rgb_ug RGB_TOG  &rgb_ug RGB_BRI  &rgb_ug RGB_BRD  &rgb_ug RGB_EFF  &rgb_ug RGB_EFR  &rgb_ug RGB_SPI  &rgb_ug RGB_SPD
-&none  &none         &none         &none         &none         &none                             &none      &none                               &none            &bl BL_ON        &bl BL_OFF       &bl BL_CYCLE     &none            &none
-&none  &none         &none         &none         &none                       &none        &none  &none      &none       &none  &none                             &bl BL_INC       &bl BL_DEC       &none            &none            &none
+&trans &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &bt BT_CLR                                        &trans           &trans           &trans           &trans           &trans           &trans           &trans
+&trans &trans        &trans        &trans        &trans        &trans        &bootloader                                       &bootloader      &trans           &trans           &trans           &trans           &trans           &trans
+&trans &trans        &trans        &trans        &trans        &trans        &trans       &trans &trans     &bt BT_CLR  &trans &rgb_ug RGB_TOG  &rgb_ug RGB_BRI  &rgb_ug RGB_BRD  &rgb_ug RGB_EFF  &rgb_ug RGB_EFR  &rgb_ug RGB_SPI  &rgb_ug RGB_SPD
+&trans &trans        &trans        &trans        &trans        &trans                            &trans     &trans                              &trans           &bl BL_ON        &bl BL_OFF       &bl BL_CYCLE     &trans           &trans
+&trans &trans        &trans        &trans        &trans                      &trans       &trans &trans     &trans      &trans &trans                            &bl BL_INC       &bl BL_DEC       &trans           &trans           &trans
             >;
         };
 
@@ -237,11 +237,11 @@
 
         layer_wm {
             bindings = <
-&trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &none                                                              &none            &kp LG(F18)      &kp LG(F19)      &kp LG(F20)      &kp LG(F10)      &kp LG(F12)      &none
-&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &none                                                              &none            &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F10)      &kp LC(F12)      &trans
-&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &none            &trans  &trans              &trans  &trans  &none  &kp F18          &kp F19          &kp F20          &kp F10          &kp F12          &none
-&trans  &kp LG(LS(F13))  &kp LG(LS(F14))  &kp LG(LS(F15))  &kp LG(LS(F16))  &kp LG(LS(F17))                          &none               &none                 &kp LG(LS(F18))  &kp LG(LS(F19))  &kp LG(LS(F20))  &kp LG(LS(F10))  &kp LG(LS(F12))  &trans
-&trans  &trans           &trans           &trans           &trans                            &kp F24          &kp LS(F24) &kp LG(F24)    &kp LC(F24) &trans  &kp LA(F24)                       &trans           &trans           &trans           &trans           &none
+&trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &trans                                                             &trans           &kp LG(F18)      &kp LG(F19)      &kp LG(F20)      &kp LG(F10)      &kp LG(F12)      &trans
+&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &trans                                                             &trans           &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F10)      &kp LC(F12)      &trans
+&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &trans           &trans  &trans              &trans  &trans  &trans &kp F18          &kp F19          &kp F20          &kp F10          &kp F12          &trans
+&trans  &kp LG(LS(F13))  &kp LG(LS(F14))  &kp LG(LS(F15))  &kp LG(LS(F16))  &kp LG(LS(F17))                          &trans              &trans                &kp LG(LS(F18))  &kp LG(LS(F19))  &kp LG(LS(F20))  &kp LG(LS(F10))  &kp LG(LS(F12))  &trans
+&trans  &trans           &trans           &trans           &trans                            &kp F24          &kp LS(F24) &kp LG(F24)    &kp LC(F24) &trans  &kp LA(F24)                       &trans           &trans           &trans           &trans           &trans
             >;
         };
 
@@ -261,10 +261,10 @@
 
         layer_numpad {
             bindings = <
-&trans  &trans        &trans        &trans        &trans        &trans        &trans                                                                         &trans  &trans           &kp MINUS     &kp PLUS      &kp EQUAL     &kp PIPE       &trans
-&trans  &kp LG(N6)    &kp LG(N7)    &kp LG(N8)    &kp LG(N9)    &kp LG(N0)    &kp KP_SLASH                                                                   &trans  &trans           &kp N7        &kp N8        &kp N9        &kp BACKSLASH  &trans
-&trans  &kp LG(N1)    &kp LG(N2)    &kp LG(N3)    &kp LG(N4)    &kp LG(N5)    &kp KP_MULTIPLY  &trans  &trans                  &trans       &trans          &trans  &kp LOCKING_NUM  &kp NUMBER_4  &kp N5        &kp NUMBER_6  &kp DOT        &trans
-&trans  &trans        &trans        &trans        &trans        &trans                                 &kp KP_MINUS            &kp KP_PLUS                          &kp N0           &kp NUMBER_1  &kp NUMBER_2  &kp NUMBER_3  &kp SLASH      &trans
+&trans  &trans        &trans        &trans        &trans        &trans        &trans                                                                         &trans  &trans           &kp MINUS     &kp KP_SLASH  &kp KP_MULTIPLY &kp KP_PLUS    &trans
+&trans  &kp LG(N6)    &kp LG(N7)    &kp LG(N8)    &kp LG(N9)    &kp LG(N0)    &kp KP_SLASH                                                                   &trans  &trans           &kp N7        &kp N8        &kp N9        &kp BSLH       &trans
+&trans  &kp LG(N1)    &kp LG(N2)    &kp LG(N3)    &kp LG(N4)    &kp LG(N5)    &kp KP_MULTIPLY  &trans  &trans                  &trans       &trans          &trans  &kp KP_MINUS    &kp N4        &kp N5        &kp N6        &kp DOT        &trans
+&trans  &trans        &trans        &trans        &trans        &trans                                 &kp KP_MINUS            &kp KP_PLUS                          &kp N0           &kp N1        &kp N2        &kp N3        &kp FSLH       &trans
 &trans  &trans        &trans        &trans        &trans                      &kp BSPC         &trans  &trans                  &trans       &kp ENTER       &kp SPACE               &kp N0        &trans        &trans        &trans         &trans
             >;
         };
@@ -293,9 +293,10 @@
 &kp LC(LA(LG(EQUAL)))  &kp LC(LA(LG(N1)))     &kp LC(LA(LG(N2)))  &kp LC(LA(LG(N3)))    &kp LC(LA(LG(N4)))     &kp LC(LA(LG(N5)))  &kp LC(LA(LG(F1)))                                                                                                 &kp LC(LA(LG(F2)))     &kp LC(LA(LG(N6)))  &kp LC(LA(LG(N7)))  &kp LC(LA(LG(N8)))     &kp LC(LA(LG(N9)))    &kp LC(LA(LG(N0)))    &kp LC(LA(LG(MINUS)))
 &kp LC(LA(LG(TAB)))    &kp LC(LA(LG(Q)))      &kp LC(LA(LG(W)))   &kp LC(LA(LG(E)))     &kp LC(LA(LG(R)))      &kp LC(LA(LG(T)))   &kp LC(LA(LG(F3)))                                                                                                 &kp LC(LA(LG(F4)))     &kp LC(LA(LG(Y)))   &kp LC(LA(LG(U)))   &kp LC(LA(LG(I)))      &kp LC(LA(LG(O)))     &kp LC(LA(LG(P)))     &kp LC(LA(LG(BSLH)))
 &kp LC(LA(LG(ESC)))    &kp LC(LA(LG(A)))      &kp LC(LA(LG(S)))   &kp LC(LA(LG(D)))     &kp LC(LA(LG(F)))      &kp LC(LA(LG(G)))   &kp LC(LA(LG(F5)))    &kp LC(LA(LG(F6)))   &kp LC(LA(LG(F7)))        &kp LC(LA(LG(F8)))     &kp LC(LA(LG(F9)))     &kp LC(LA(LG(F10)))    &kp LC(LA(LG(H)))   &kp LC(LA(LG(J)))   &kp LC(LA(LG(K)))      &kp LC(LA(LG(L)))     &kp LC(LA(LG(SEMI)))  &kp LC(LA(LG(SQT)))
-&kp LC(LA(LG(LSHFT)))  &kp LC(LA(LG(Z)))      &kp LC(LA(LG(X)))   &kp LC(LA(LG(C)))     &kp LC(LA(LG(V)))      &kp LC(LA(LG(B)))                                              &kp LC(LA(LG(HOME)))      &kp LC(LA(LG(PG_UP)))                                                &kp LC(LA(LG(N)))   &kp LC(LA(LG(M)))   &kp LC(LA(LG(COMMA)))  &kp LC(LA(LG(DOT)))   &kp LC(LA(LG(FSLH)))  &kp LC(LA(LG(RSHFT)))
-&kp LC(LA(LG(GRAVE)))  &kp LC(LA(LG(GRAVE)))  &trans              &kp LC(LA(LG(LEFT)))  &kp LC(LA(LG(RIGHT)))                      &kp LC(LA(LG(BSPC)))  &kp LC(LA(LG(DEL)))  &kp LC(LA(LG(END)))       &kp LC(LA(LG(PG_DN)))  &kp LC(LA(LG(ENTER)))  &kp LC(LA(LG(SPACE)))                      &kp LC(LA(LG(UP)))  &kp LC(LA(LG(DOWN)))   &kp LC(LA(LG(LBKT)))  &kp LC(LA(LG(RBKT)))  &kp LC(LA(LG(F11)))
+&kp LC(LA(LG(F11)))    &kp LC(LA(LG(Z)))      &kp LC(LA(LG(X)))   &kp LC(LA(LG(C)))     &kp LC(LA(LG(V)))      &kp LC(LA(LG(B)))                                              &kp LC(LA(LG(HOME)))      &kp LC(LA(LG(PG_UP)))                                                &kp LC(LA(LG(N)))   &kp LC(LA(LG(M)))   &kp LC(LA(LG(COMMA)))  &kp LC(LA(LG(DOT)))   &kp LC(LA(LG(FSLH)))  &kp LC(LA(LG(F12)))
+&kp LC(LA(LG(GRAVE)))  &kp LC(LA(LG(TAB)))    &kp LC(LA(LG(LS(TAB))))  &kp LC(LA(LG(LEFT)))  &kp LC(LA(LG(RIGHT)))                      &kp LC(LA(LG(BSPC)))  &kp LC(LA(LG(DEL)))  &kp LC(LA(LG(END)))       &kp LC(LA(LG(PG_DN)))  &kp LC(LA(LG(ENTER)))  &kp LC(LA(LG(SPACE)))                      &kp LC(LA(LG(UP)))  &kp LC(LA(LG(DOWN)))   &kp LC(LA(LG(LBKT)))  &kp LC(LA(LG(RBKT)))  &kp LC(LA(LG(PRINTSCREEN)))
             >;
         };
     };
 };
+
