@@ -124,6 +124,7 @@
          *
          * Top row = F1-F12 (left F1-F5, right F6-F12)
          *   F12 promoted to right inner-top cluster (dev tools).
+         *   Right inner qwerty key = DQUOTE to flatten JSON/JSX/string entry.
          *
          * Shift row (left) = ~ ` ( ) — parens reachable without SYM
          *   hold; also reaches % for modulus and regex patterns.
@@ -138,7 +139,7 @@
         layer_sym {
             bindings = <
 &trans    &kp F1     &kp F2     &kp F3    &kp F4    &kp F5     &kp C_AL_KEYBOARD_LAYOUT                                                    &kp INS    &kp F6     &kp F7    &kp F8    &kp F9    &kp F10   &kp F11
-&trans    &kp EXCL   &kp AT     &kp HASH  &kp DLLR  &kp PRCNT  &kp K_PLAY_PAUSE                                                            &kp INS    &kp CARET  &kp AMPS  &kp STAR  &kp LPAR  &kp RPAR  &kp F12
+&trans    &kp EXCL   &kp AT     &kp HASH  &kp DLLR  &kp PRCNT  &kp K_PLAY_PAUSE                                                            &kp DQT    &kp CARET  &kp AMPS  &kp STAR  &kp LPAR  &kp RPAR  &kp F12
 &trans    &kp LBKT   &kp RBKT   &kp LBRC  &kp RBRC  &kp GRAVE  &kp LC(GRAVE)             &kp KP_NUM  &kp UNDER      &kp MINUS    &kp PLUS  &kp EQUAL  &kp COLON  &kp SEMI  &kp LT    &kp GT    &kp PIPE  &kp BSLH
 &kp BSLH  &kp TILDE  &kp GRAVE  &kp LPAR  &kp RPAR  &kp PRCNT                                        &kp QMARK      &kp SQT                           &kp COMMA  &kp DOT   &kp FSLH  &kp STAR  &kp PLUS  &trans
 &trans    &trans     &trans     &trans    &trans               &trans                    &trans      &kp TAB        &kp LS(TAB)  &trans    &trans                &trans    &trans    &trans    &trans    &trans
@@ -148,26 +149,33 @@
         /* =========================================================
          * LAYER 2: NAV  (hold SPACE or left inner-thumb TAB key)
          *
-         * Spatial hierarchy on the right hand — bigger movement unit = higher row:
+         * ML-weighted navigation model for editor-heavy work:
+         *   char-nav > word-nav > page/doc-nav > insert.
+         *   The most frequent motions are therefore promoted to the actual
+         *   right-hand home row instead of the row above it.
          *
-         *   Top row:   word-left  | HOME        | END         | word-right  (word-level)
-         *   Home row:  ← char     | ↓ char      | ↑ char      | → char      (char-level)
-         *   Shift row: sel-w-left | sel-to-home | sel-to-end  | sel-w-right (selection)
+         * Right hand ladder:
+         *   Num row    = page/doc nav    (PgUp | Home | End | PgDn)
+         *   QWERTY row = word nav        (word-left | Home | End | word-right)
+         *   Home row   = char nav        (H/J/K/L = left/down/up/right)
+         *                + inner delete previous word / outer line-start,line-end
+         *   Shift row  = selection       (sel-w-left | sel-to-home | sel-to-end | sel-w-right)
          *
          *   word-left    = LA(LEFT)        = Option+Left     (macOS word-skip)
          *   word-right   = LA(RIGHT)       = Option+Right
          *   line-start   = LG(LEFT)        = Cmd+Left        (macOS line-start)
          *   line-end     = LG(RIGHT)       = Cmd+Right       (macOS line-end)
-         *   sel-word-L   = LA(LS(LEFT))    = Opt+Shift+Left  (extend selection left by word)
+         *   delete-word  = LA(BSPC)        = Option+Backspace
+         *   sel-word-L   = LA(LS(LEFT))    = Opt+Shift+Left
          *   sel-word-R   = LA(LS(RIGHT))   = Opt+Shift+Right
-         *   sel-to-home  = LG(LS(LEFT))    = Cmd+Shift+Left  (extend selection to line start)
-         *   sel-to-end   = LG(LS(RIGHT))   = Cmd+Shift+Right (extend selection to line end)
+         *   sel-to-home  = LG(LS(LEFT))    = Cmd+Shift+Left
+         *   sel-to-end   = LG(LS(RIGHT))   = Cmd+Shift+Right
          *
          * Left hand:
-         *   Home row  = one-shot modifiers (GUI / Alt / Ctrl / Shift).
-         *   2nd row   = clipboard cluster: Find | Cut | Copy | Paste | SelectAll
+         *   Home row  = plain modifiers (GUI / Alt / Ctrl / Shift).
+         *   QWERTY row = clipboard cluster: Find | Cut | Copy | Paste | SelectAll
          *   Shift row = Undo | Cut | Copy | Paste | Redo (duplicate path for roll-access)
-         *   Inner col = top: K_UNDO / home: K_REDO — undo+redo always on left hand
+         *   Inner col = top: K_UNDO / qwerty: K_REDO — undo+redo stay on the left
          *
          * Thumb cluster:
          *   Left DEL     → forward-delete
@@ -179,9 +187,9 @@
 
         layer_nav {
             bindings = <
-&trans  &trans      &trans     &trans      &trans       &trans      &kp K_UNDO                                            &kp K_REDO       &trans            &kp LA(LEFT)      &kp HOME           &kp END            &kp LA(RIGHT)  &trans
-&trans  &kp K_FIND  &kp K_CUT  &kp K_COPY  &kp K_PASTE  &kp LG(A)   &kp K_REDO                                            &kp LC(LS(TAB))  &kp LC(TAB)       &kp LEFT          &kp DOWN           &kp UP             &kp RIGHT      &kp LC(TAB)
-&trans  &kp LGUI    &kp LALT   &kp LCTRL   &kp LSHFT    &kp TAB     &kp K_COPY  &trans    &trans      &trans  &trans      &kp INSERT       &kp LG(LEFT)      &kp PG_DN         &kp PG_UP          &kp LG(RIGHT)      &kp INSERT     &trans
+&trans  &trans      &trans     &trans      &trans       &trans      &kp K_UNDO                                            &kp K_REDO       &trans            &kp PG_UP         &kp HOME           &kp END            &kp PG_DN      &trans
+&trans  &kp K_FIND  &kp K_CUT  &kp K_COPY  &kp K_PASTE  &kp LG(A)   &kp K_REDO                                            &kp LC(LS(TAB))  &kp LC(TAB)       &kp LA(LEFT)      &kp HOME           &kp END            &kp LA(RIGHT)  &kp LC(TAB)
+&trans  &kp LGUI    &kp LALT   &kp LCTRL   &kp LSHFT    &kp TAB     &kp K_COPY  &trans    &trans      &trans  &trans      &kp LA(BSPC)     &kp LEFT          &kp DOWN          &kp UP             &kp RIGHT         &kp LG(LEFT)  &kp LG(RIGHT)
 &trans  &kp K_UNDO  &kp K_CUT  &kp K_COPY  &kp K_PASTE  &kp K_REDO                        &trans      &trans                               &kp LA(LS(LEFT))  &kp LG(LS(LEFT))  &kp LG(LS(RIGHT))  &kp LA(LS(RIGHT))  &kp DEL        &trans
 &trans  &trans      &trans     &trans      &trans                   &kp DEL     &kp BSPC  &trans      &trans  &kp K_UNDO  &trans                             &trans            &trans             &trans             &trans         &trans
             >;
@@ -223,7 +231,7 @@
          *
          * THUMB CLUSTER — dedicated WM actions (no modifier combos needed):
          *   Left  BSPC thumb  → F24                (skhd: close window / GlazeWM: close)
-         *   Left  DEL thumb   → Shift+F24          (skhd: quit app)
+         *   Left  DEL thumb   → Shift+F24          (skhd: quit app, tap-only for safety)
          *   Left  End thumb   → LG(F24)            (skhd: toggle float)
          *   Right K_APP       → LC(F24)            (skhd/GlazeWM: toggle tiling direction)
          *   Right ENTER       → held (WM layer activation key — passthrough)
@@ -243,7 +251,7 @@
 &trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &trans                                                                 &trans       &kp LC(F18)        &kp LC(F19)        &kp LC(F20)        &kp LC(F10)        &kp LC(F12)           &trans
 &trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &trans   &trans                  &trans           &trans       &trans  &trans       &kp LC(LA(LG(H)))  &kp LC(LA(LG(J)))  &kp LC(LA(LG(K)))  &kp LC(LA(LG(L)))  &kp LC(LA(LG(SEMI)))  &trans
 &trans  &kp LG(LA(F13))  &kp LG(LA(F14))  &kp LG(LA(F15))  &kp LG(LA(F16))  &kp LG(LA(F17))                                   &trans           &trans                            &kp LG(LA(F18))    &kp LG(LA(F19))    &kp LG(LA(F20))    &kp LG(LA(F10))    &kp LG(LA(F12))       &trans
-&trans  &trans           &trans           &trans           &trans                            &kp F24  &hm LEFT_SHIFT LS(F24)  &kp LG(F24)      &kp LC(F24)  &trans  &kp LA(F24)                     &trans             &trans             &trans             &trans                &trans
+&trans  &trans           &trans           &trans           &trans                            &kp F24  &kp LS(F24)             &kp LG(F24)      &kp LC(F24)  &trans  &kp LA(F24)                     &trans             &trans             &trans             &trans                &trans
             >;
         };
 
@@ -285,6 +293,11 @@
          *   - OBS scene switching (number row)
          *   - BetterTouchTool triggers (F1-F4)
          *   - System utilities
+         *
+         * Reserved WM chord space:
+         *   WM layer already emits Ctrl+Alt+Cmd+H/J/K/L/; on the host.
+         *   Keep those APP host bindings unused unless you intentionally
+         *   repurpose the WM layer, otherwise APP and WM would collide.
          *
          * This layer intentionally maps EVERY physical key position
          * so you can assign any app/action to any key on either OS.
