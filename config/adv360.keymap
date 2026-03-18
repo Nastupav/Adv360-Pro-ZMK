@@ -1,10 +1,10 @@
 /*
- * ZMK keymap for Kinesis Advantage360 Pro
+ * Optimized ZMK keymap for Kinesis Advantage360 Pro
  *
  * Layers:
  *   0 BASE   QWERTY + home-row mods (GACS order, i.e. GUI/Alt/Ctrl/Shift)
  *   1 SYM    Symbols & F-keys (hold BSPC)
- *   2 NAV    Vim-style navigation + editing (hold SPACE)
+ *   2 NAV    Vim-style navigation + editing + IDE workflow (hold SPACE)
  *   3 MOD    Bluetooth / RGB / bootloader
  *   4 WM     Window manager (hold ENTER)
  *              Row → ZMK sends        → GlazeWM binding  → Amethyst/skhd binding
@@ -26,8 +26,16 @@
  *     On Windows, LG = Win,  LA = Alt,    LC = Ctrl.
  *   - NAV layer clipboard uses K_COPY/K_PASTE/K_CUT/K_UNDO/K_REDO
  *     (HID consumer codes) so they are OS-agnostic.
- *   - NAV word-navigation uses LA(LEFT/RIGHT) = Option+Arrow (macOS word-skip).
- *     On Windows use home-row Ctrl mod + arrows for the same effect.
+ *   - This optimized variant assumes a Windows dev workflow centered on
+ *     GlazeWM + terminal + VS Code / JetBrains-style shortcuts.
+ *   - NAV keeps thumb modifiers transparent on the center columns, so:
+ *       Ctrl+HJKL       = word/section motion where the host supports it
+ *       Alt+HJKL        = app-native chunk / line motion
+ *       Shift+HJKL      = visual selection
+ *       Ctrl+Shift+HJKL = word/section selection
+ *   - Windows-first text editing:
+ *       Ctrl+Arrow      = word/section motion
+ *       Ctrl+Shift+Arrow= word/section selection
  *   - APP layer sends Ctrl+Alt+Cmd+<key> (macOS) / Ctrl+Alt+Win+<key> (Windows).
  */
 
@@ -80,7 +88,7 @@
          * ├──────┼──────┼──────┼──────┼──────┼──────┼──────┤         ├──────┼──────┼──────┼──────┼──────┼──────┼──────┤
          * │ ESC  │GUI/A │ALT/S │CTL/D │SFT/F │  G   │K_CPY │ L  C  R│K_PST │  H   │SFT/J │CTL/K │ALT/L │GUI/; │  '   │
          * ├──────┼──────┼──────┼──────┼──────┼──────┤      │ Ctrl Alt│      ├──────┼──────┼──────┼──────┼──────┼──────┤
-         * │SHIFT │  Z   │  X   │  C   │  V   │  B   │      │APP ESC  │PgUp  │      │  N   │  M   │  ,   │  .   │  /   │SHIFT │
+         * │SHIFT │  Z   │  X   │  C   │  V   │  B   │      │APP ESC  │UNDO  │      │  N   │  M   │  ,   │  .   │  /   │SHIFT │
          * ├──────┼──────┼──────┼──────┼──────┤      │      │        │      │      ├──────┼──────┼──────┼──────┼──────┤
          * │  `   │  (   │  )   │ LEFT │RIGHT │      │      │        │      │      │  UP  │DOWN  │  [   │  ]   │ NAV  │
          * └──────┴──────┴──────┴──────┴──────┘      │      │        │      │      └──────┴──────┴──────┴──────┴──────┘
@@ -89,8 +97,10 @@
          *                        └─────────┴────────┴──────┘        └──────┴────────┴─────────┘
          *
          * Middle thumb column (6 keys):
-         *   K_COPY / K_PASTE (OS-agnostic HID consumer codes — Cmd+C/V on macOS,
-         *   Ctrl+C/V on Windows — no firmware conditionals needed).
+         *   Copy / Undo / Paste stay in the thumb field so repetitive editing
+         *   does not steal the home row from typing or navigation.
+         *   Ctrl / Alt / Shift / Cmd live on the thumbs for modifier-heavy IDE use
+         *   and for Vim-style chorded navigation on the NAV layer.
          *   Left  inner-bottom: NAV-layer hold / TAB tap  (second NAV activator;
          *     useful when right hand is on mouse.  TAB on thumb = fast terminal
          *     autocomplete and IDE indentation without reaching the top row.)
@@ -101,8 +111,8 @@
             bindings = <
 &kp EQUAL  &kp N1                &kp N2                 &kp N3       &kp N4       &kp N5  &mo 5                                                                         &mo 3               &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
 &kp TAB    &kp Q                 &kp W                  &kp E        &kp R        &kp T   &kp PRINTSCREEN                                                               &kp K_CONTEXT_MENU  &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
-&kp ESC    &hm LGUI A            &hm LALT S             &hm LCTRL D  &hm LSHFT F  &kp G   &kp K_COPY       &kp LCTRL  &kp LEFT_ALT        &kp RCTRL  &kp RIGHT_COMMAND  &kp K_PASTE         &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
-&kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                               &td_caps 6 ESC      &kp PG_UP                                         &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
+&kp ESC    &hm LGUI A            &hm LALT S             &hm LCTRL D  &hm LSHFT F  &kp G   &kp K_COPY       &kp LCTRL  &kp LEFT_ALT        &kp RSHIFT  &kp RIGHT_COMMAND  &kp K_PASTE         &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
+&kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                               &td_caps 6 ESC      &kp K_UNDO                                        &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
 &kp GRAVE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp LEFT     &kp RIGHT            &lt 1 BSPC       &lt 5 DEL  &lt 2 TAB           &mo 6      &lt 4 ENTER        &lt 2 SPACE                 &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
             >;
         };
@@ -110,17 +120,11 @@
         /* =========================================================
          * LAYER 1: SYM  (hold BSPC)
          *
-         * Left home row  = [ ] { } ` — strongest fingers get {}
-         *   A=[ B=] C={ D=} E=`  (pinky→index order)
-         *   Rationale: {} are the most frequent bracket pair in
-         *   JS/TS/Rust/Go; index+middle fingers (D/E→D/F physical)
-         *   should carry them.
-         *
-         * Right home row = : ; < > | \
-         *   H=:  J=;  K=<  L=>  ;=|  outer=\
-         *   Rationale: < > moved to middle/ring (K/L) — used heavily
-         *   in TypeScript generics and JSX.  | moved to pinky-home
-         *   for pipeline operators.
+         * Home row becomes a mirrored coding band:
+         *   Left  = [ { ( < `     → opening delimiters on the stronger fingers
+         *   Right = | > ) } ] \   → closing / structural symbols on the right
+         *   This keeps paired characters on the ASDF / JKL; columns and reduces
+         *   reaches while writing code, templates, and shell commands.
          *
          * Top row = F1-F12 (left F1-F5, right F6-F12)
          *   F12 promoted to right inner-top cluster (dev tools).
@@ -140,7 +144,7 @@
             bindings = <
 &trans    &kp F1     &kp F2     &kp F3    &kp F4    &kp F5     &kp C_AL_KEYBOARD_LAYOUT                                                    &kp INS    &kp F6     &kp F7    &kp F8    &kp F9    &kp F10   &kp F11
 &trans    &kp EXCL   &kp AT     &kp HASH  &kp DLLR  &kp PRCNT  &kp K_PLAY_PAUSE                                                            &kp DQT    &kp CARET  &kp AMPS  &kp STAR  &kp LPAR  &kp RPAR  &kp F12
-&trans    &kp LBKT   &kp RBKT   &kp LBRC  &kp RBRC  &kp GRAVE  &kp LC(GRAVE)             &kp KP_NUM  &kp UNDER      &kp MINUS    &kp PLUS  &kp EQUAL  &kp COLON  &kp SEMI  &kp LT    &kp GT    &kp PIPE  &kp BSLH
+&trans    &kp LBKT   &kp LBRC   &kp LPAR  &kp LT    &kp GRAVE  &kp LC(GRAVE)             &kp KP_NUM  &kp UNDER      &kp MINUS    &kp PLUS  &kp EQUAL  &kp PIPE   &kp GT    &kp RPAR  &kp RBRC  &kp RBKT  &kp BSLH
 &kp BSLH  &kp TILDE  &kp GRAVE  &kp LPAR  &kp RPAR  &kp PRCNT                                        &kp QMARK      &kp SQT                           &kp COMMA  &kp DOT   &kp FSLH  &kp STAR  &kp PLUS  &trans
 &trans    &trans     &trans     &trans    &trans               &trans                    &trans      &kp TAB        &kp LS(TAB)  &trans    &trans                &trans    &trans    &trans    &trans    &trans
             >;
@@ -156,41 +160,41 @@
          *
          * Right hand ladder:
          *   Num row    = page/doc nav    (PgUp | Home | End | PgDn)
-         *   QWERTY row = word nav        (word-left | Home | End | word-right)
-         *   Home row   = char nav        (H/J/K/L = left/down/up/right)
-         *                + inner delete previous word / outer line-start,line-end
-         *   Shift row  = selection       (sel-w-left | sel-to-home | sel-to-end | sel-w-right)
+         *   QWERTY row = chunk nav       (Del | word-left | section-up | section-down | word-right | PgDn)
+         *   Home row   = vim nav         (H/J/K/L = left/down/up/right, ;=Home, '=End)
+         *   Shift row  = visual select   (sel-word-L | sel-left | sel-down | sel-up | sel-right | sel-word-R)
          *
-         *   word-left    = LA(LEFT)        = Option+Left     (macOS word-skip)
-         *   word-right   = LA(RIGHT)       = Option+Right
-         *   line-start   = LG(LEFT)        = Cmd+Left        (macOS line-start)
-         *   line-end     = LG(RIGHT)       = Cmd+Right       (macOS line-end)
-         *   delete-word  = LA(BSPC)        = Option+Backspace
-         *   sel-word-L   = LA(LS(LEFT))    = Opt+Shift+Left
-         *   sel-word-R   = LA(LS(RIGHT))   = Opt+Shift+Right
-         *   sel-to-home  = LG(LS(LEFT))    = Cmd+Shift+Left
-         *   sel-to-end   = LG(LS(RIGHT))   = Cmd+Shift+Right
+         *   word-left      = LC(LEFT)
+         *   word-right     = LC(RIGHT)
+         *   section-up     = LC(UP)
+         *   section-down   = LC(DOWN)
+         *   delete-word-L  = LC(BSPC)
+         *   delete-word-R  = LC(DEL)
+         *   sel-word-L     = LC(LS(LEFT))
+         *   sel-word-R     = LC(LS(RIGHT))
          *
          * Left hand:
-         *   Home row  = plain modifiers (GUI / Alt / Ctrl / Shift).
-         *   QWERTY row = clipboard cluster: Find | Cut | Copy | Paste | SelectAll
-         *   Shift row = Undo | Cut | Copy | Paste | Redo (duplicate path for roll-access)
-         *   Inner col = top: K_UNDO / qwerty: K_REDO — undo+redo stay on the left
+         *   Home row   = text surgery      (Undo | Cut | Copy | Paste | Redo)
+         *   QWERTY row = file nav cluster  (Find | prev-tab | next-tab | quick-open | symbol)
+         *   Shift row  = IDE ops cluster   (palette | explorer | project-search | git | build/tasks)
+         *   Center thumb edge = word-delete left/right plus undo on the right thumb
          *
          * Thumb cluster:
-         *   Left DEL     → forward-delete
-         *   Left BSPC    → backward-delete
-         *   Left inner   → held to activate this layer / tap=TAB
-         *   Right ENTER  → K_UNDO (undo without releasing NAV)
-         *   Right SPACE  → held to activate this layer
+         *   Center modifiers remain transparent, so Ctrl/Alt/Shift on the thumbs
+         *   combine with HJKL for native editor shortcuts.
+         *   Center thumb edge → delete next/previous word
+         *   Lower left thumb  → char delete / backspace
+         *   Left inner    → held to activate this layer / tap=TAB
+         *   Right ENTER   → K_UNDO (undo without releasing NAV)
+         *   Right SPACE   → held to activate this layer
          * ========================================================= */
 
         layer_nav {
             bindings = <
 &trans  &trans      &trans     &trans      &trans       &trans      &kp K_UNDO                                            &kp K_REDO       &trans            &kp PG_UP         &kp HOME           &kp END            &kp PG_DN      &trans
-&trans  &kp K_FIND  &kp K_CUT  &kp K_COPY  &kp K_PASTE  &kp LG(A)   &kp K_REDO                                            &kp LC(LS(TAB))  &kp LC(TAB)       &kp LA(LEFT)      &kp HOME           &kp END            &kp LA(RIGHT)  &kp LC(TAB)
-&trans  &kp LGUI    &kp LALT   &kp LCTRL   &kp LSHFT    &kp TAB     &kp K_COPY  &trans    &trans      &trans  &trans      &kp LA(BSPC)     &kp LEFT          &kp DOWN          &kp UP             &kp RIGHT         &kp LG(LEFT)  &kp LG(RIGHT)
-&trans  &kp K_UNDO  &kp K_CUT  &kp K_COPY  &kp K_PASTE  &kp K_REDO                        &trans      &trans                               &kp LA(LS(LEFT))  &kp LG(LS(LEFT))  &kp LG(LS(RIGHT))  &kp LA(LS(RIGHT))  &kp DEL        &trans
+&trans  &kp LC(F)   &kp LC(LS(TAB))  &kp LC(TAB)  &kp LC(P)    &kp LC(LS(O))  &kp LC(GRAVE)                                       &kp LC(LS(TAB))  &kp DEL           &kp LC(LEFT)      &kp LC(UP)         &kp LC(DOWN)       &kp LC(RIGHT)  &kp PG_DN
+&trans  &kp K_UNDO  &kp K_CUT        &kp K_COPY   &kp K_PASTE  &kp K_REDO  &kp LC(BSPC) &trans      &trans            &trans       &trans     &kp LC(DEL)       &kp LEFT          &kp DOWN          &kp UP             &kp RIGHT         &kp HOME      &kp END
+&trans  &kp LC(LS(P))  &kp LC(LS(E))  &kp LC(LS(F))  &kp LC(LS(G))  &kp LC(LS(B))                  &trans      &trans                               &kp LC(LS(LEFT))  &kp LS(LEFT)      &kp LS(DOWN)       &kp LS(UP)         &kp LS(RIGHT)  &kp LC(LS(RIGHT))
 &trans  &trans      &trans     &trans      &trans                   &kp DEL     &kp BSPC  &trans      &trans  &kp K_UNDO  &trans                             &trans            &trans             &trans             &trans         &trans
             >;
         };
