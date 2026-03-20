@@ -3,12 +3,12 @@
  *
  * Layer model:
  *   0 BASE     typing + home-row mods
- *   1 NAV      movement, selection, edit actions
+ *   1 NAV      movement, selection, deletion, text management
  *   2 SYM      coding symbols and delimiters
  *   3 NUM      numpad + function keys
  *   4 WM       GlazeWM focus/manage layer
  *   5 SYS      keyboard system controls
- *   6 WMSEND   GlazeWM send/move layer
+ *   6 WMSEND   GlazeWM workspace-send overlay
  *
  * Thumb model:
  *   BSPC hold -> SYM
@@ -17,9 +17,9 @@
  *   ENTER hold -> WM
  *   SPACE hold -> NAV
  *
- * WM model:
- *   Hold ENTER for focus/manage.
- *   While in WM, hold the left thumb send key to access WMSEND.
+ * WM protocol:
+ *   Only F13-F24 and Ctrl/Alt/Shift combinations.
+ *   No LGUI/LWIN on the WM path.
  */
 
 #include <behaviors.dtsi>
@@ -60,7 +60,7 @@
             bindings = <
 &kp EQUAL  &kp N1       &kp N2       &kp N3       &kp N4       &kp N5    &kp F11                                                        &kp F12      &kp N6       &kp N7       &kp N8       &kp N9       &kp N0       &kp MINUS
 &kp ESC    &kp Q        &kp W        &kp E        &kp R        &kp T     &kp PRINTSCREEN                                                &kp K_CONTEXT_MENU  &kp Y        &kp U        &kp I        &kp O        &kp P        &kp BSLH
-&kp TAB    &hm LGUI A   &hm LALT S   &hm LCTRL D  &hm LSHFT F  &kp G     &kp K_UNDO   &kp K_CUT    &kp K_COPY    &kp K_PASTE  &kp K_REDO   &kp INSERT   &kp H        &hm RSHFT J  &hm RCTRL K  &hm RALT L   &hm RGUI SEMI  &kp SQT
+&kp TAB    &hm LGUI A   &hm LALT S   &hm LCTRL D  &hm LSHFT F  &kp G     &kp LCTRL    &kp LALT     &kp ESC       &kp ENTER    &kp RALT     &kp RCTRL    &kp H        &hm RSHFT J  &hm RCTRL K  &hm RALT L   &hm RGUI SEMI  &kp SQT
 &kp LSHFT  &kp Z        &kp X        &kp C        &kp V        &kp B                               &th 5 ESC      &kp PG_UP                               &kp N        &kp M        &kp COMMA    &kp DOT      &kp FSLH     &kp RSHFT
 &kp GRAVE  &kp LBKT     &kp RBKT     &kp LEFT     &kp RIGHT              &th 2 BSPC    &th 3 DEL    &kp TAB      &kp PG_DN    &th 4 ENTER   &th 1 SPACE              &kp UP       &kp DOWN     &kp LBRC     &kp RBRC     &kp PIPE
             >;
@@ -70,8 +70,8 @@
             bindings = <
 &trans  &trans           &trans              &trans             &trans              &trans             &trans                                                     &trans             &trans         &trans         &trans         &trans         &trans         &trans
 &trans  &kp K_FIND       &kp LC(LS(TAB))     &kp LC(TAB)        &kp K_UNDO          &kp K_REDO         &trans                                                     &trans             &kp LA(LEFT)   &kp LC(PG_UP)  &kp LC(PG_DN)  &kp LA(RIGHT)  &kp DEL        &trans
-&trans  &kp HOME         &kp LC(LEFT)        &kp LC(RIGHT)      &kp END             &kp LC(HOME)       &kp K_UNDO   &kp K_CUT    &kp K_COPY    &kp K_PASTE  &kp K_REDO   &kp LC(A)    &kp LC(END)   &kp LEFT       &kp DOWN       &kp UP         &kp RIGHT      &trans
-&trans  &kp LS(HOME)     &kp LC(LS(LEFT))    &kp LC(LS(RIGHT))  &kp LS(END)         &kp LC(BSPC)                            &trans       &trans                                &kp LC(DEL)     &kp LS(LEFT)  &kp LS(DOWN)  &kp LS(UP)     &kp LS(RIGHT)  &trans
+&trans  &kp HOME         &kp LC(LEFT)        &kp LC(RIGHT)      &kp END             &kp LC(BSPC)       &kp LCTRL    &kp LSHFT    &kp LALT      &kp RALT     &kp RSHFT    &kp RCTRL    &kp LC(DEL)   &kp LEFT       &kp DOWN       &kp UP         &kp RIGHT      &trans
+&trans  &kp LS(HOME)     &kp LC(LS(LEFT))    &kp LC(LS(RIGHT))  &kp LS(END)         &kp BSPC                               &trans       &trans                                &kp DEL         &kp LS(LEFT)  &kp LS(DOWN)  &kp LS(UP)     &kp LS(RIGHT)  &trans
 &trans  &trans           &trans              &trans             &trans                        &kp DEL         &kp BSPC     &kp TAB      &kp ENTER    &trans        &trans                    &kp PG_UP     &kp PG_DN     &trans        &trans        &trans
             >;
         };
@@ -98,11 +98,11 @@
 
         layer_wm {
             bindings = <
-&kp LG(LA(F17))  &kp F13       &kp F14       &kp F15       &kp F16       &kp F17       &kp LG(LA(F17))                                           &kp LG(LA(F18))  &kp F18       &kp F19       &kp F20       &kp F21       &kp F22       &kp LG(LA(F19))
-&none            &kp LC(F13)   &kp LC(F14)   &kp LC(F15)   &kp LC(F16)   &kp LC(F17)   &kp LG(LA(F13))                                           &kp LG(LA(F14))  &kp LA(F13)   &kp LA(F14)   &kp LA(F15)   &kp LA(F16)   &kp LA(F17)   &kp LG(LA(F15))
-&none            &kp LG(F17)   &kp LG(F18)   &kp LG(F19)   &kp LG(F20)   &none         &kp LG(LC(F13)) &kp LG(LC(F14)) &kp LG(LC(F15)) &kp LG(LC(F16)) &none       &none         &none         &kp LG(F13)   &kp LG(F14)   &kp LG(F15)   &kp LG(F16)   &none
-&none            &kp LG(LS(F17)) &kp LG(LS(F18)) &kp LG(LS(F19)) &kp LG(LS(F20)) &kp LG(LA(F19))                 &mo 6          &kp F24                               &kp LG(LS(F13)) &kp LG(LS(F14)) &kp LG(LS(F15)) &kp LG(LS(F16)) &kp LS(F24)   &none
-&none            &none         &none         &none         &none                    &mo 6         &kp F24      &kp LS(F24)   &kp LC(F24)  &trans         &kp LA(F24)               &none         &none         &none         &none         &none
+&kp LC(LA(F21))  &kp F13        &kp F14        &kp F15        &kp F16        &kp F17        &kp LC(LS(F24))                                           &kp LA(LS(F24))  &kp F18        &kp F19        &kp F20        &kp F21        &kp F22        &kp LC(LA(F22))
+&none            &kp LC(F13)    &kp LC(F14)    &kp LC(F15)    &kp LC(F16)    &kp LC(F17)    &kp LC(LA(F24))                                           &none            &kp LA(F13)    &kp LA(F14)    &kp LA(F15)    &kp LA(F16)    &kp LA(F17)    &kp LC(LA(LS(F21)))
+&none            &kp F23        &kp LC(F23)    &kp LA(F23)    &kp LC(LA(F23)) &none         &kp LC(LA(F17)) &kp LC(LA(F18)) &kp LC(LA(F19)) &kp LC(LA(F20)) &none       &none         &none         &kp LC(LA(F13)) &kp LC(LA(F14)) &kp LC(LA(F15)) &kp LC(LA(F16)) &none
+&none            &kp LS(F23)    &kp LC(LS(F23)) &kp LA(LS(F23)) &kp LC(LA(LS(F23))) &mo 6                     &trans         &kp F24                                &kp LC(LA(LS(F13))) &kp LC(LA(LS(F14))) &kp LC(LA(LS(F15))) &kp LC(LA(LS(F16))) &kp LS(F24)   &none
+&none            &none          &none          &none          &none                     &mo 6         &kp F24      &kp LS(F24)   &kp LC(F24)   &trans         &kp LA(F24)                &none          &none          &none          &none          &none
             >;
         };
 
@@ -118,11 +118,11 @@
 
         layer_wm_send {
             bindings = <
-&none  &kp LS(F13)      &kp LS(F14)      &kp LS(F15)      &kp LS(F16)      &kp LS(F17)      &none                                                    &none            &kp LS(F18)      &kp LS(F19)      &kp LS(F20)      &kp LS(F21)      &kp LS(F22)      &none
-&none  &kp LC(LS(F13))  &kp LC(LS(F14))  &kp LC(LS(F15))  &kp LC(LS(F16))  &kp LC(LS(F17))  &none                                                    &none            &kp LA(LS(F13))  &kp LA(LS(F14))  &kp LA(LS(F15))  &kp LA(LS(F16))  &kp LA(LS(F17))  &none
-&none  &kp LG(LS(F17))  &kp LG(LS(F18))  &kp LG(LS(F19))  &kp LG(LS(F20))  &none            &kp LG(LC(F13)) &kp LG(LC(F14)) &kp LG(LC(F15)) &kp LG(LC(F16)) &none       &none         &none         &kp LG(LS(F13))  &kp LG(LS(F14))  &kp LG(LS(F15))  &kp LG(LS(F16))  &none
-&none  &kp LG(LS(F17))  &kp LG(LS(F18))  &kp LG(LS(F19))  &kp LG(LS(F20))  &kp LG(LA(F19))                   &trans         &kp F24                                &kp LG(LS(F13))  &kp LG(LS(F14))  &kp LG(LS(F15))  &kp LG(LS(F16))  &kp LS(F24)      &none
-&none  &none            &none            &none            &none                       &trans         &kp F24      &kp LS(F24)   &kp LC(F24)   &trans         &kp LA(F24)                 &none            &none            &none            &none            &none
+&trans  &kp LS(F13)      &kp LS(F14)      &kp LS(F15)      &kp LS(F16)      &kp LS(F17)      &trans                                                   &trans           &kp LS(F18)      &kp LS(F19)      &kp LS(F20)      &kp LS(F21)      &kp LS(F22)      &trans
+&trans  &kp LC(LS(F13))  &kp LC(LS(F14))  &kp LC(LS(F15))  &kp LC(LS(F16))  &kp LC(LS(F17))  &trans                                                   &trans           &kp LA(LS(F13))  &kp LA(LS(F14))  &kp LA(LS(F15))  &kp LA(LS(F16))  &kp LA(LS(F17))  &trans
+&trans  &kp LS(F23)      &kp LC(LS(F23))  &kp LA(LS(F23))  &trans            &trans           &trans        &trans       &trans        &trans         &trans         &trans         &trans          &trans           &trans           &trans           &trans           &trans
+&trans  &trans           &trans           &trans           &trans            &trans                              &trans          &trans                                 &trans          &trans          &trans          &trans          &trans         &trans
+&trans  &trans           &trans           &trans           &trans                      &trans         &trans       &trans        &trans         &trans          &trans                     &trans         &trans         &trans         &trans         &trans
             >;
         };
     };
