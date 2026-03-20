@@ -29,9 +29,9 @@
             compatible = "zmk,behavior-hold-tap";
             label = "HOME_ROW_MODS";
             #binding-cells = <2>;
-            tapping-term-ms = <195>;
-            quick-tap-ms = <145>;
-            require-prior-idle-ms = <125>;
+            tapping-term-ms = <160>;
+            quick-tap-ms = <110>;
+            require-prior-idle-ms = <150>;
             flavor = "balanced";
             bindings = <&kp>, <&kp>;
         };
@@ -40,9 +40,10 @@
             compatible = "zmk,behavior-hold-tap";
             label = "THUMB_LAYER_TAP";
             #binding-cells = <2>;
-            tapping-term-ms = <220>;
-            quick-tap-ms = <150>;
-            flavor = "hold-preferred";
+            tapping-term-ms = <170>;
+            quick-tap-ms = <110>;
+            require-prior-idle-ms = <120>;
+            flavor = "tap-preferred";
             bindings = <&mo>, <&kp>;
         };
     };
