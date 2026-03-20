@@ -2,26 +2,33 @@
  * ZMK keymap for Kinesis Advantage360 Pro
  *
  * Layers:
- *   0 BASE   QWERTY + home-row mods (GACS order)
+ *   0 BASE   QWERTY + home-row mods (GACS order, i.e. GUI/Alt/Ctrl/Shift)
  *   1 SYM    Symbols & F-keys (hold BSPC)
  *   2 NAV    Vim-style navigation + editing (hold SPACE)
  *   3 MOD    Bluetooth / RGB / bootloader
  *   4 WM     Window manager (hold ENTER)
- *              F13-F20 only; L/; use Alt+F13/Alt+F14
- *              Home row  = bare               → window management
- *              2nd row   = Ctrl               → workspace focus
- *              Num row   = Cmd                → resize & utilities
- *              Bottom row= Cmd+Shift          → monitor focus
- *              +Shift variants                → move window + follow
+ *              Row → ZMK sends        → GlazeWM binding  → Amethyst/skhd binding
+ *              ─────────────────────────────────────────────────────────────────
+ *              Home row (bare)         fXX                fXX
+ *              +Shift (corner Shift)   shift+fXX          shift+fXX
+ *              2nd row (Ctrl)          ctrl+fXX           ctrl+fXX
+ *              +Shift                  ctrl+shift+fXX     ctrl+shift+fXX
+ *              Num row (Win/Cmd)       lwin+fXX           cmd+fXX   (resize/utils)
+ *              +Shift                  lwin+shift+fXX     cmd+shift+fXX (monitor-send)
+ *              Thumb cluster           dedicated WM actions (see layer below)
  *   5 NUM    Right-hand numpad (hold top-left key)
  *   6 APP    Quick-launch / system (hold CAPS, tap=ESC) → Ctrl+Alt+Cmd/Win+<key>
  *
- * Cross-platform:
- *   - WM layer outputs are pure F-key combos — consumed by skhd (macOS)
- *     and GlazeWM (Windows) identically.
+ * Cross-platform notes:
+ *   - WM layer F-key combos are consumed by skhd+Amethyst (macOS) and
+ *     GlazeWM (Windows).  Physical key positions are identical on both OSes.
+ *   - On macOS, LG = Cmd, LA = Option, LC = Ctrl.
+ *     On Windows, LG = Win,  LA = Alt,    LC = Ctrl.
+ *   - NAV layer clipboard uses K_COPY/K_PASTE/K_CUT/K_UNDO/K_REDO
+ *     (HID consumer codes) so they are OS-agnostic.
+ *   - NAV word-navigation uses LA(LEFT/RIGHT) = Option+Arrow (macOS word-skip).
+ *     On Windows use home-row Ctrl mod + arrows for the same effect.
  *   - APP layer sends Ctrl+Alt+Cmd+<key> (macOS) / Ctrl+Alt+Win+<key> (Windows).
- *   - Base layer uses LC/LA/LG which map to Ctrl/Alt/Cmd on macOS
- *     and Ctrl/Alt/Win on Windows.  Swap LGUI↔LALT in OS settings if needed.
  */
 
 #include <behaviors.dtsi>
@@ -42,6 +49,22 @@
             flavor = "balanced";
             bindings = <&kp>, <&kp>;
         };
+
+        /*
+         * td_caps: tap = ESC, hold = APP layer
+         * Replaces the old lt 6 ESC so CAPS key never accidentally
+         * fires caps-lock on macOS.
+         */
+
+        td_caps: tap_dance_caps {
+            compatible = "zmk,behavior-hold-tap";
+            label = "TD_CAPS";
+            #binding-cells = <2>;
+            tapping-term-ms = <200>;
+            quick-tap-ms = <0>;
+            flavor = "hold-preferred";
+            bindings = <&mo>, <&kp>;
+        };
     };
 
     keymap {
@@ -55,59 +78,112 @@
          * ├──────┼──────┼──────┼──────┼──────┼──────┼──────┤         ├──────┼──────┼──────┼──────┼──────┼──────┼──────┤
          * │ TAB  │  Q   │  W   │  E   │  R   │  T   │PrtSc │         │ Menu │  Y   │  U   │  I   │  O   │  P   │  \   │
          * ├──────┼──────┼──────┼──────┼──────┼──────┼──────┤         ├──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-         * │ ESC  │GUI/A │ALT/S │CTL/D │SFT/F │  G   │Cp/Ps │ L  C  R│Cp/Ps │  H   │SFT/J │CTL/K │ALT/L │GUI/; │  '   │
+         * │ ESC  │GUI/A │ALT/S │CTL/D │SFT/F │  G   │K_CPY │ L  C  R│K_PST │  H   │SFT/J │CTL/K │ALT/L │GUI/; │  '   │
          * ├──────┼──────┼──────┼──────┼──────┼──────┤      │ Ctrl Alt│      ├──────┼──────┼──────┼──────┼──────┼──────┤
-         * │SHIFT │  Z   │  X   │  C   │  V   │  B   │      │APP PgUp│      │  N   │  M   │  ,   │  .   │  /   │SHIFT │
+         * │SHIFT │  Z   │  X   │  C   │  V   │  B   │      │APP ESC  │PgUp  │      │  N   │  M   │  ,   │  .   │  /   │SHIFT │
          * ├──────┼──────┼──────┼──────┼──────┤      │      │        │      │      ├──────┼──────┼──────┼──────┼──────┤
          * │  `   │  (   │  )   │ LEFT │RIGHT │      │      │        │      │      │  UP  │DOWN  │  [   │  ]   │ NAV  │
          * └──────┴──────┴──────┴──────┴──────┘      │      │        │      │      └──────┴──────┴──────┴──────┴──────┘
          *                        ┌─────────┬────────┤      │        │      ├────────┬─────────┐
-         *                        │SYM/BSPC │NUM/DEL │SH/End│KApp    │WM/Ent│NAV/SPC │
+         *                        │SYM/BSPC │NUM/DEL │NV/TAB│K_APP   │WM/Ent│NAV/SPC │
          *                        └─────────┴────────┴──────┘        └──────┴────────┴─────────┘
+         *
+         * Middle thumb column (6 keys):
+         *   K_COPY / K_PASTE (OS-agnostic HID consumer codes — Cmd+C/V on macOS,
+         *   Ctrl+C/V on Windows — no firmware conditionals needed).
+         *   Left  inner-bottom: NAV-layer hold / TAB tap  (second NAV activator;
+         *     useful when right hand is on mouse.  TAB on thumb = fast terminal
+         *     autocomplete and IDE indentation without reaching the top row.)
+         *   Right inner-top: APP layer momentary (faster launcher/hyper access)
          * ========================================================= */
 
         default_layer {
             bindings = <
-&kp EQUAL  &kp N1                &kp N2                 &kp N3       &kp N4       &kp N5  &mo 5                                                                            &mo 3               &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
-&kp TAB    &kp Q                 &kp W                  &kp E        &kp R        &kp T   &kp PRINTSCREEN                                                                  &kp K_CONTEXT_MENU  &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
-&kp ESC    &hm LGUI A            &hm LALT S             &hm LCTRL D  &hm LSHFT F  &kp G   &mt LC(V) LC(C)  &kp LCTRL  &kp LEFT_ALT       &kp RCTRL  &kp RIGHT_COMMAND  &mt LC(V) LC(C)     &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
-&kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                                &lt 6 ESC          &kp PG_UP                                           &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
-&kp GRAVE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp LEFT     &kp RIGHT            &lt 1 BSPC       &lt 5 DEL  &mt LSHFT END      &kp K_APP  &lt 4 ENTER        &lt 2 SPACE                 &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
+&kp EQUAL  &kp N1                &kp N2                 &kp N3       &kp N4       &kp N5  &mo 5                                                                         &mo 3               &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
+&kp TAB    &kp Q                 &kp W                  &kp E        &kp R        &kp T   &kp PRINTSCREEN                                                               &kp K_CONTEXT_MENU  &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
+&kp ESC    &hm LGUI A            &hm LALT S             &hm LCTRL D  &hm LSHFT F  &kp G   &kp K_COPY       &kp LCTRL  &kp LEFT_ALT        &kp RCTRL  &kp RIGHT_COMMAND  &kp K_PASTE         &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
+&kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                               &td_caps 6 ESC      &kp PG_UP                                         &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
+&kp GRAVE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp LEFT     &kp RIGHT            &lt 1 BSPC       &lt 5 DEL  &lt 2 TAB           &mo 6      &lt 4 ENTER        &lt 2 SPACE                 &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
             >;
         };
 
         /* =========================================================
          * LAYER 1: SYM  (hold BSPC)
          *
-         * Left hand  = F-keys (F1-F5) + shifted symbols
-         * Right hand = F-keys (F6-F12) + paired brackets
-         * Home row   = brackets & braces for programming
+         * Left home row  = [ ] { } ` — strongest fingers get {}
+         *   A=[ B=] C={ D=} E=`  (pinky→index order)
+         *   Rationale: {} are the most frequent bracket pair in
+         *   JS/TS/Rust/Go; index+middle fingers (D/E→D/F physical)
+         *   should carry them.
+         *
+         * Right home row = : ; < > | \
+         *   H=:  J=;  K=<  L=>  ;=|  outer=\
+         *   Rationale: < > moved to middle/ring (K/L) — used heavily
+         *   in TypeScript generics and JSX.  | moved to pinky-home
+         *   for pipeline operators.
+         *
+         * Top row = F1-F12 (left F1-F5, right F6-F12)
+         *   F12 promoted to right inner-top cluster (dev tools).
+         *
+         * Shift row (left) = ~ ` ( ) — parens reachable without SYM
+         *   hold; also reaches % for modulus and regex patterns.
+         *
+         * Thumb cluster:
+         *   Left  secondary (trans→DEL)   passes through to BASE
+         *   Right secondary (trans→SPACE) passes through to BASE
+         *   Left  inner-bottom: TAB  (forward indent without releasing SYM)
+         *   Right inner-top:    S+TAB (dedent)
          * ========================================================= */
 
         layer_sym {
             bindings = <
-&trans    &kp F1     &kp F2     &kp F3    &kp F4    &kp F5     &kp C_AL_KEYBOARD_LAYOUT                                                  &kp INS    &kp F6     &kp F7    &kp F8    &kp F9    &kp F10   &kp F11
-&trans    &kp EXCL   &kp AT     &kp HASH  &kp DLLR  &kp PRCNT  &kp K_PLAY_PAUSE                                                          &kp CAPS   &kp CARET  &kp AMPS  &kp STAR  &kp LPAR  &kp RPAR  &kp F12
-&trans    &kp LBRC   &kp RBRC   &kp LBKT  &kp RBKT  &kp GRAVE  &kp PAUSE_BREAK           &kp KP_NUM  &kp UNDER      &kp MINUS  &kp PLUS  &kp EQUAL  &kp COLON  &kp SEMI  &kp BSLH  &kp PIPE  &kp LT    &kp GT
-&kp BSLH  &kp TILDE  &kp GRAVE  &kp LPAR  &kp RPAR  &kp PRCNT                                        &kp QMARK      &kp SQT                        &kp COMMA  &kp DOT   &kp FSLH  &kp STAR  &kp PLUS  &trans
-&trans    &trans     &trans     &trans    &trans                &trans                     &trans       &trans         &trans     &trans    &trans                &trans    &trans    &trans    &trans    &trans
+&trans    &kp F1     &kp F2     &kp F3    &kp F4    &kp F5     &kp C_AL_KEYBOARD_LAYOUT                                                    &kp INS    &kp F6     &kp F7    &kp F8    &kp F9    &kp F10   &kp F11
+&trans    &kp EXCL   &kp AT     &kp HASH  &kp DLLR  &kp PRCNT  &kp K_PLAY_PAUSE                                                            &kp INS    &kp CARET  &kp AMPS  &kp STAR  &kp LPAR  &kp RPAR  &kp F12
+&trans    &kp LBKT   &kp RBKT   &kp LBRC  &kp RBRC  &kp GRAVE  &kp LC(GRAVE)             &kp KP_NUM  &kp UNDER      &kp MINUS    &kp PLUS  &kp EQUAL  &kp COLON  &kp SEMI  &kp LT    &kp GT    &kp PIPE  &kp BSLH
+&kp BSLH  &kp TILDE  &kp GRAVE  &kp LPAR  &kp RPAR  &kp PRCNT                                        &kp QMARK      &kp SQT                           &kp COMMA  &kp DOT   &kp FSLH  &kp STAR  &kp PLUS  &trans
+&trans    &trans     &trans     &trans    &trans               &trans                    &trans      &kp TAB        &kp LS(TAB)  &trans    &trans                &trans    &trans    &trans    &trans    &trans
             >;
         };
 
         /* =========================================================
-         * LAYER 2: NAV  (hold SPACE)
+         * LAYER 2: NAV  (hold SPACE or left inner-thumb TAB key)
          *
-         * Right hand = Vim-style HJKL arrows + Home/End/PgUp/PgDn
-         * Left hand  = Word-level ops (Ctrl+arrows, Ctrl+Bspc/Del)
+         * Spatial hierarchy on the right hand — bigger movement unit = higher row:
+         *
+         *   Top row:   word-left  | HOME        | END         | word-right  (word-level)
+         *   Home row:  ← char     | ↓ char      | ↑ char      | → char      (char-level)
+         *   Shift row: sel-w-left | sel-to-home | sel-to-end  | sel-w-right (selection)
+         *
+         *   word-left    = LA(LEFT)        = Option+Left     (macOS word-skip)
+         *   word-right   = LA(RIGHT)       = Option+Right
+         *   line-start   = LG(LEFT)        = Cmd+Left        (macOS line-start)
+         *   line-end     = LG(RIGHT)       = Cmd+Right       (macOS line-end)
+         *   sel-word-L   = LA(LS(LEFT))    = Opt+Shift+Left  (extend selection left by word)
+         *   sel-word-R   = LA(LS(RIGHT))   = Opt+Shift+Right
+         *   sel-to-home  = LG(LS(LEFT))    = Cmd+Shift+Left  (extend selection to line start)
+         *   sel-to-end   = LG(LS(RIGHT))   = Cmd+Shift+Right (extend selection to line end)
+         *
+         * Left hand:
+         *   Home row  = one-shot modifiers (GUI / Alt / Ctrl / Shift).
+         *   2nd row   = clipboard cluster: Find | Cut | Copy | Paste | SelectAll
+         *   Shift row = Undo | Cut | Copy | Paste | Redo (duplicate path for roll-access)
+         *   Inner col = top: K_UNDO / home: K_REDO — undo+redo always on left hand
+         *
+         * Thumb cluster:
+         *   Left DEL     → forward-delete
+         *   Left BSPC    → backward-delete
+         *   Left inner   → held to activate this layer / tap=TAB
+         *   Right ENTER  → K_UNDO (undo without releasing NAV)
+         *   Right SPACE  → held to activate this layer
          * ========================================================= */
 
         layer_nav {
             bindings = <
-&trans  &trans        &trans         &trans        &trans       &trans  &kp LC(Z)                                      &kp LC(Y)  &trans       &trans    &trans          &trans        &trans     &trans
-&trans  &none         &kp LC(LEFT)   &kp LC(C)     &kp LC(V)    &kp LC(X)  &kp LC(A)                                  &none      &kp LC(TAB)  &kp HOME  &kp PAGE_DOWN   &kp PG_UP     &kp END    &none
-&trans  &kp LGUI      &kp LALT       &kp LCTRL     &kp LSHFT    &none      &kp LC(C)  &trans  &trans      &trans  &trans  &none   &kp LEFT     &kp DOWN  &kp UP_ARROW    &kp RIGHT     &none      &trans
-&trans  &kp LC(Z)     &kp LC(X)      &kp LC(C)     &kp LC(V)    &kp LC(Y)                     &trans      &trans                  &kp HOME     &kp PG_DN &kp PG_UP       &kp END       &none      &trans
-&trans  &trans        &trans         &trans        &trans               &kp DEL    &kp BSPC &trans      &trans  &trans  &trans                  &trans    &trans          &trans        &trans     &trans
+&trans  &trans      &trans     &trans      &trans       &trans      &kp K_UNDO                                            &kp K_REDO       &trans            &kp LA(LEFT)      &kp HOME           &kp END            &kp LA(RIGHT)  &trans
+&trans  &kp K_FIND  &kp K_CUT  &kp K_COPY  &kp K_PASTE  &kp LG(A)   &kp K_REDO                                            &kp LC(LS(TAB))  &kp LC(TAB)       &kp LEFT          &kp DOWN           &kp UP             &kp RIGHT      &kp LC(TAB)
+&trans  &kp LGUI    &kp LALT   &kp LCTRL   &kp LSHFT    &kp TAB     &kp K_COPY  &trans    &trans      &trans  &trans      &kp INSERT       &kp LG(LEFT)      &kp PG_DN         &kp PG_UP          &kp LG(RIGHT)      &kp INSERT     &trans
+&trans  &kp K_UNDO  &kp K_CUT  &kp K_COPY  &kp K_PASTE  &kp K_REDO                        &trans      &trans                               &kp LA(LS(LEFT))  &kp LG(LS(LEFT))  &kp LG(LS(RIGHT))  &kp LA(LS(RIGHT))  &kp DEL        &trans
+&trans  &trans      &trans     &trans      &trans                   &kp DEL     &kp BSPC  &trans      &trans  &kp K_UNDO  &trans                             &trans            &trans             &trans             &trans         &trans
             >;
         };
 
@@ -117,73 +193,90 @@
 
         layer_mod {
             bindings = <
-&none  &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &bt BT_CLR                                        &trans           &none            &none            &none            &none            &none            &none
-&none  &none         &none         &none         &none         &none         &bootloader                                       &bootloader      &none            &none            &none            &none            &none            &none
-&none  &none         &none         &none         &none         &none         &none        &none  &none      &bt BT_CLR  &none  &rgb_ug RGB_TOG  &rgb_ug RGB_BRI  &rgb_ug RGB_BRD  &rgb_ug RGB_EFF  &rgb_ug RGB_EFR  &rgb_ug RGB_SPI  &rgb_ug RGB_SPD
-&none  &none         &none         &none         &none         &none                             &none      &none                               &none            &bl BL_ON        &bl BL_OFF       &bl BL_CYCLE     &none            &none
-&none  &none         &none         &none         &none                       &none        &none  &none      &none       &none  &none                             &bl BL_INC       &bl BL_DEC       &none            &none            &none
+&trans  &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4  &bt BT_CLR                                           &trans           &trans           &trans           &trans           &trans           &trans           &trans
+&trans  &trans        &trans        &trans        &trans        &trans        &bootloader                                          &bootloader      &trans           &trans           &trans           &trans           &trans           &trans
+&trans  &trans        &trans        &trans        &trans        &trans        &trans       &trans  &trans      &bt BT_CLR  &trans  &rgb_ug RGB_TOG  &rgb_ug RGB_BRI  &rgb_ug RGB_BRD  &rgb_ug RGB_EFF  &rgb_ug RGB_EFR  &rgb_ug RGB_SPI  &rgb_ug RGB_SPD
+&trans  &trans        &trans        &trans        &trans        &trans                             &trans      &trans                               &trans           &bl BL_ON        &bl BL_OFF       &bl BL_CYCLE     &trans           &trans
+&trans  &trans        &trans        &trans        &trans                      &trans       &trans  &trans      &trans      &trans  &trans                            &bl BL_INC       &bl BL_DEC       &trans           &trans           &trans
             >;
         };
 
         /* =========================================================
          * LAYER 4: WM  (hold ENTER)
          *
-         * Uses F13-F20 only (macOS natively supports these).
-         * Columns L and ; use Alt as a column marker.
-         *
-         * Column map:
+         * F-key column map (same physical positions on both halves):
          *   A=F13  S=F14  D=F15  F=F16  G=F17
-         *   H=F18  J=F19  K=F20  L=Alt+F13  ;=Alt+F14
+         *   H=Ctrl+Alt+Cmd+H  J=Ctrl+Alt+Cmd+J  K=Ctrl+Alt+Cmd+K
+         *   L=Ctrl+Alt+Cmd+L  ;=Ctrl+Alt+Cmd+;
          *
-         * Row modifiers (consumed by skhd / GlazeWM):
-         *   HOME ROW   (bare)       → window management
-         *   +SHIFT                  → move / swap
-         *     ⚠ Use physical corner LSHFT/RSHFT keys.
-         *       hm LSHFT F is a BASE-layer mod only — in WM layer F sends
-         *       bare F16, not Shift.  Home-row Shift is inactive here.
-         *   2ND ROW    (Ctrl)       → focus workspace 1-10
-         *   +SHIFT     (Ctrl+Shift) → move to workspace 1-10
-         *     ⚠ Same corner-Shift rule applies.
-         *   NUM ROW    (Cmd)        → resize & utilities
-         *   BOTTOM ROW (Cmd+Shift)  → left half: monitor focus 1-5
-         *                             right half: space create/destroy,
-         *                             native-fullscreen, send-to-display-3,
-         *                             focus-recent  (see skhd for details)
+         * Row → ZMK output → consumed by:
+         * ─────────────────────────────────────────────────────────
+         * HOME ROW   bare             Right hand WM nav via Ctrl+Alt+Cmd+H/J/K/L/;
+         *                             Left hand remains F13-F17 utilities
+         * HOME ROW   + corner Shift   GlazeWM: shift+fXX
+         *   (physical LSHFT/RSHFT)    skhd: shift+fXX   → move/swap window
+         * 2ND ROW    LC(FXX)          GlazeWM: ctrl+fXX → focus workspace
+         * 2ND ROW    + corner Shift   GlazeWM: ctrl+shift+fXX → move to workspace
+         * NUM ROW    LG(FXX)          GlazeWM: lwin+fXX  → resize & utilities
+         * NUM ROW    + corner Shift   GlazeWM: lwin+shift+fXX → send to monitor
+         * BOTTOM ROW no bindings (navigation done via thumb cluster below)
+         *
+         * THUMB CLUSTER — dedicated WM actions (no modifier combos needed):
+         *   Left  BSPC thumb  → F24                (skhd: close window / GlazeWM: close)
+         *   Left  DEL thumb   → Shift+F24          (skhd: quit app)
+         *   Left  End thumb   → LG(F24)            (skhd: toggle float)
+         *   Right K_APP       → LC(F24)            (skhd/GlazeWM: toggle tiling direction)
+         *   Right ENTER       → held (WM layer activation key — passthrough)
+         *   Right SPACE       → LA(F24)            (skhd: balance sizes / Amethyst: equalize)
+         *
+         * ⚠ Home-row mods on BASE (hm LSHFT F etc.) are inactive here.
+         *   WM layer right home row sends explicit Ctrl+Alt+Cmd chords for AeroSpace.
+         *
+         * AeroSpace direction mapping (JKL; navigation):
+         *   J=left  K=down  L=up  ;=right  H=back-and-forth
+         *   → Ctrl+Alt+Cmd+J/K/L/; consumed directly by AeroSpace
          * ========================================================= */
 
         layer_wm {
             bindings = <
-&trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &none                                                  &none            &kp LG(F18)      &kp LG(F19)      &kp LG(F20)      &kp LG(LA(F13))  &kp LG(LA(F14))  &none
-&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &none                                                  &none            &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(LA(F13))  &kp LC(LA(F14))  &trans
-&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &none            &trans  &trans      &trans  &trans  &none            &kp F18          &kp F19          &kp F20          &kp LA(F13)      &kp LA(F14)      &none
-&trans  &kp LG(LS(F13))  &kp LG(LS(F14))  &kp LG(LS(F15))  &kp LG(LS(F16))  &kp LG(LS(F17))                          &none       &none                            &kp LG(LS(F18))  &kp LG(LS(F19))  &kp LG(LS(F20))  &kp LG(LS(LA(F13)))  &kp LG(LS(LA(F14)))  &trans
-&trans  &trans           &trans           &trans           &trans                            &trans           &trans  &trans      &trans  &trans  &trans                            &trans           &trans           &trans           &trans           &none
+&trans  &kp LG(F13)      &kp LG(F14)      &kp LG(F15)      &kp LG(F16)      &kp LG(F17)      &trans                                                                 &trans       &kp LG(F18)        &kp LG(F19)        &kp LG(F20)        &kp LG(F10)        &kp LG(F12)           &trans
+&trans  &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &trans                                                                 &trans       &kp LC(F18)        &kp LC(F19)        &kp LC(F20)        &kp LC(F10)        &kp LC(F12)           &trans
+&trans  &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &trans   &trans                  &trans           &trans       &trans  &trans       &kp LC(LA(LG(H)))  &kp LC(LA(LG(J)))  &kp LC(LA(LG(K)))  &kp LC(LA(LG(L)))  &kp LC(LA(LG(SEMI)))  &trans
+&trans  &kp LG(LA(F13))  &kp LG(LA(F14))  &kp LG(LA(F15))  &kp LG(LA(F16))  &kp LG(LA(F17))                                   &trans           &trans                            &kp LG(LA(F18))    &kp LG(LA(F19))    &kp LG(LA(F20))    &kp LG(LA(F10))    &kp LG(LA(F12))       &trans
+&trans  &trans           &trans           &trans           &trans                            &kp F24  &hm LEFT_SHIFT LS(F24)  &kp LG(F24)      &kp LC(F24)  &trans  &kp LA(F24)                     &trans             &trans             &trans             &trans                &trans
             >;
         };
 
         /* =========================================================
-         * LAYER 5: NUMPAD  (hold top-left key)
+         * LAYER 5: NUMPAD  (hold top-left key or DEL secondary thumb)
          *
-         * Right hand = numpad 0-9 with operators
-         * Left hand  = common symbols (!@#$%) for quick data entry
+         * Right hand = numpad 0-9 with operators (standard numpad layout).
+         *
+         * Left top row   = Cmd+6..0  (LG(N6..N0))  — tab 6-10 via Cmd+number
+         * Left home row  = Cmd+1..5  (LG(N1..N5))  — tab 1-5 via Cmd+number
+         *   Together: full Cmd+1..0 = switch to any of 10 browser/editor/terminal
+         *   tabs without leaving the numpad layer or releasing the activator.
+         *
+         * Thumb cluster: BSPC on left; ENTER / SPACE on right
+         *   for numeric input confirmation without leaving the layer.
          * ========================================================= */
 
         layer_numpad {
             bindings = <
-&trans  &trans    &trans  &trans     &trans    &trans       &trans                                                                 &trans  &trans           &kp MINUS     &kp PLUS      &kp EQUAL     &kp PIPE       &trans
-&trans  &trans    &trans  &trans     &trans    &trans       &kp KP_SLASH                                                           &trans  &trans           &kp N7        &kp N8        &kp N9        &kp BACKSLASH  &trans
-&trans  &kp EXCL  &kp AT  &kp POUND  &kp DLLR  &kp PERCENT  &kp KP_MULTIPLY  &trans  &trans            &trans       &trans         &trans  &kp LOCKING_NUM  &kp NUMBER_4  &kp N5        &kp NUMBER_6  &kp DOT        &trans
-&trans  &trans    &trans  &trans     &trans    &trans                                 &kp KP_MINUS      &kp KP_PLUS                         &kp N0           &kp NUMBER_1  &kp NUMBER_2  &kp NUMBER_3  &kp SLASH      &trans
-&trans  &trans    &trans  &trans     &trans                 &trans           &trans   &trans            &trans       &kp BACKSPACE  &trans                   &kp N0        &trans        &trans        &trans         &trans
+&trans  &trans      &trans      &trans      &trans      &trans      &trans                                                             &trans     &trans        &kp MINUS  &kp KP_SLASH  &kp KP_MULTIPLY  &kp KP_PLUS  &trans
+&trans  &kp LG(N6)  &kp LG(N7)  &kp LG(N8)  &kp LG(N9)  &kp LG(N0)  &kp KP_SLASH                                                       &trans     &trans        &kp N7     &kp N8        &kp N9           &kp BSLH     &trans
+&trans  &kp LG(N1)  &kp LG(N2)  &kp LG(N3)  &kp LG(N4)  &kp LG(N5)  &kp KP_MULTIPLY  &trans  &trans            &trans       &trans     &trans     &kp KP_MINUS  &kp N4     &kp N5        &kp N6           &kp DOT      &trans
+&trans  &trans      &trans      &trans      &trans      &trans                               &kp KP_MINUS      &kp KP_PLUS                        &kp N0        &kp N1     &kp N2        &kp N3           &kp FSLH     &trans
+&trans  &trans      &trans      &trans      &trans                  &kp BSPC         &trans  &trans            &trans       &kp ENTER  &kp SPACE                &kp N0     &trans        &trans           &trans       &trans
             >;
         };
 
         /* =========================================================
-         * LAYER 6: APP  (hold CAPS, tap=ESC)
+         * LAYER 6: APP  (hold CAPS via td_caps, tap=ESC)
          *
-         * CAPS was changed from tap=CAPS_LOCK to tap=ESC to prevent
-         * accidental macOS CAPS lock toggling when quickly activating
-         * this layer.  If you need CAPS lock, hold Shift and tap Shift.
+         * CAPS key uses td_caps hold-tap: tap = ESC, hold = APP layer.
+         * This completely prevents accidental caps-lock on macOS.
+         * If you need caps-lock, use Shift+Shift or a dedicated binding.
          *
          * Every key sends Ctrl+Alt+Cmd+<key> (macOS) / Ctrl+Alt+Win+<key> (Windows).
          * Consumed by skhd on macOS and GlazeWM on Windows for:
@@ -199,11 +292,11 @@
 
         layer_app {
             bindings = <
-&kp LC(LA(LG(EQUAL)))  &kp LC(LA(LG(N1)))     &kp LC(LA(LG(N2)))  &kp LC(LA(LG(N3)))    &kp LC(LA(LG(N4)))     &kp LC(LA(LG(N5)))  &kp LC(LA(LG(F1)))                                                                                                 &kp LC(LA(LG(F2)))     &kp LC(LA(LG(N6)))  &kp LC(LA(LG(N7)))  &kp LC(LA(LG(N8)))     &kp LC(LA(LG(N9)))    &kp LC(LA(LG(N0)))    &kp LC(LA(LG(MINUS)))
-&kp LC(LA(LG(TAB)))    &kp LC(LA(LG(Q)))      &kp LC(LA(LG(W)))   &kp LC(LA(LG(E)))     &kp LC(LA(LG(R)))      &kp LC(LA(LG(T)))   &kp LC(LA(LG(F3)))                                                                                                 &kp LC(LA(LG(F4)))     &kp LC(LA(LG(Y)))   &kp LC(LA(LG(U)))   &kp LC(LA(LG(I)))      &kp LC(LA(LG(O)))     &kp LC(LA(LG(P)))     &kp LC(LA(LG(BSLH)))
-&kp LC(LA(LG(ESC)))    &kp LC(LA(LG(A)))      &kp LC(LA(LG(S)))   &kp LC(LA(LG(D)))     &kp LC(LA(LG(F)))      &kp LC(LA(LG(G)))   &kp LC(LA(LG(F5)))    &kp LC(LA(LG(F6)))   &kp LC(LA(LG(F7)))        &kp LC(LA(LG(F8)))     &kp LC(LA(LG(F9)))     &kp LC(LA(LG(F10)))    &kp LC(LA(LG(H)))   &kp LC(LA(LG(J)))   &kp LC(LA(LG(K)))      &kp LC(LA(LG(L)))     &kp LC(LA(LG(SEMI)))  &kp LC(LA(LG(SQT)))
-&kp LC(LA(LG(LSHFT)))  &kp LC(LA(LG(Z)))      &kp LC(LA(LG(X)))   &kp LC(LA(LG(C)))     &kp LC(LA(LG(V)))      &kp LC(LA(LG(B)))                                              &kp LC(LA(LG(HOME)))      &kp LC(LA(LG(PG_UP)))                                                &kp LC(LA(LG(N)))   &kp LC(LA(LG(M)))   &kp LC(LA(LG(COMMA)))  &kp LC(LA(LG(DOT)))   &kp LC(LA(LG(FSLH)))  &kp LC(LA(LG(RSHFT)))
-&kp LC(LA(LG(GRAVE)))  &kp LC(LA(LG(GRAVE)))  &trans              &kp LC(LA(LG(LEFT)))  &kp LC(LA(LG(RIGHT)))                      &kp LC(LA(LG(BSPC)))  &kp LC(LA(LG(DEL)))  &kp LC(LA(LG(END)))       &kp LC(LA(LG(PG_DN)))  &kp LC(LA(LG(ENTER)))  &kp LC(LA(LG(SPACE)))                      &kp LC(LA(LG(UP)))  &kp LC(LA(LG(DOWN)))   &kp LC(LA(LG(LBKT)))  &kp LC(LA(LG(RBKT)))  &kp LC(LA(LG(F11)))
+&kp LC(LA(LG(EQUAL)))  &kp LC(LA(LG(N1)))   &kp LC(LA(LG(N2)))       &kp LC(LA(LG(N3)))    &kp LC(LA(LG(N4)))     &kp LC(LA(LG(N5)))  &kp LC(LA(LG(F1)))                                                                                                 &kp LC(LA(LG(F2)))     &kp LC(LA(LG(N6)))  &kp LC(LA(LG(N7)))  &kp LC(LA(LG(N8)))     &kp LC(LA(LG(N9)))    &kp LC(LA(LG(N0)))    &kp LC(LA(LG(MINUS)))
+&kp LC(LA(LG(TAB)))    &kp LC(LA(LG(Q)))    &kp LC(LA(LG(W)))        &kp LC(LA(LG(E)))     &kp LC(LA(LG(R)))      &kp LC(LA(LG(T)))   &kp LC(LA(LG(F3)))                                                                                                 &kp LC(LA(LG(F4)))     &kp LC(LA(LG(Y)))   &kp LC(LA(LG(U)))   &kp LC(LA(LG(I)))      &kp LC(LA(LG(O)))     &kp LC(LA(LG(P)))     &kp LC(LA(LG(BSLH)))
+&kp LC(LA(LG(ESC)))    &kp LC(LA(LG(A)))    &kp LC(LA(LG(S)))        &kp LC(LA(LG(D)))     &kp LC(LA(LG(F)))      &kp LC(LA(LG(G)))   &kp LC(LA(LG(F5)))    &kp LC(LA(LG(F6)))   &kp LC(LA(LG(F7)))        &kp LC(LA(LG(F8)))     &kp LC(LA(LG(F9)))     &kp LC(LA(LG(F10)))    &kp LC(LA(LG(H)))   &kp LC(LA(LG(J)))   &kp LC(LA(LG(K)))      &kp LC(LA(LG(L)))     &kp LC(LA(LG(SEMI)))  &kp LC(LA(LG(SQT)))
+&kp LC(LA(LG(F11)))    &kp LC(LA(LG(Z)))    &kp LC(LA(LG(X)))        &kp LC(LA(LG(C)))     &kp LC(LA(LG(V)))      &kp LC(LA(LG(B)))                                              &kp LC(LA(LG(HOME)))      &kp LC(LA(LG(PG_UP)))                                                &kp LC(LA(LG(N)))   &kp LC(LA(LG(M)))   &kp LC(LA(LG(COMMA)))  &kp LC(LA(LG(DOT)))   &kp LC(LA(LG(FSLH)))  &kp LC(LA(LG(F12)))
+&kp LC(LA(LG(GRAVE)))  &kp LC(LA(LG(TAB)))  &kp LC(LA(LG(LS(TAB))))  &kp LC(LA(LG(LEFT)))  &kp LC(LA(LG(RIGHT)))                      &kp LC(LA(LG(BSPC)))  &kp LC(LA(LG(DEL)))  &kp LC(LA(LG(END)))       &kp LC(LA(LG(PG_DN)))  &kp LC(LA(LG(ENTER)))  &kp LC(LA(LG(SPACE)))                      &kp LC(LA(LG(UP)))  &kp LC(LA(LG(DOWN)))   &kp LC(LA(LG(LBKT)))  &kp LC(LA(LG(RBKT)))  &kp LC(LA(LG(PRINTSCREEN)))
             >;
         };
     };
