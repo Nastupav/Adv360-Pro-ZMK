@@ -1,109 +1,76 @@
+# Unified ADV360 + GlazeWM workflow system.
+# Core grammar:
+# - A/S/D = left / center / right monitor
+# - F/G   = previous / next workspace on the current monitor
+# - J/K/L/; = left / down / up / right
+# - Ctrl row = direct workspace targeting
+# - Win row = WM utility + resize
+
 general:
-  focus_follows_cursor: true
+  focus_follows_cursor: false
   toggle_workspace_on_refocus: false
   cursor_jump:
     enabled: true
     trigger: "monitor_focus"
 
 gaps:
-  inner_gap: "5px"
+  inner_gap: "6px"
   outer_gap:
-    top: "0px"
-    right: "0px"
-    bottom: "0px"
-    left: "0px"
+    top: "4px"
+    right: "6px"
+    bottom: "6px"
+    left: "6px"
 
 window_effects:
   focused_window:
     border:
       enabled: true
-      color: "#FE8019"
+      color: "#4F8FBA"
 
 workspaces:
-  # Monitor 0 (primary): workspaces 1-10
+  # Left monitor: infra / files / overflow.
   - name: "1"
-    display_name: "1"
+    display_name: "L1"
     bind_to_monitor: 0
     keep_alive: true
   - name: "2"
-    display_name: "2"
+    display_name: "L2"
     bind_to_monitor: 0
     keep_alive: true
   - name: "3"
-    display_name: "3"
+    display_name: "L3"
     bind_to_monitor: 0
     keep_alive: true
+  # Center monitor: code / terminal / debug.
   - name: "4"
-    display_name: "4"
-    bind_to_monitor: 0
+    display_name: "C1"
+    bind_to_monitor: 1
     keep_alive: true
   - name: "5"
-    display_name: "5"
-    bind_to_monitor: 0
+    display_name: "C2"
+    bind_to_monitor: 1
     keep_alive: true
   - name: "6"
-    display_name: "6"
-    bind_to_monitor: 0
+    display_name: "C3"
+    bind_to_monitor: 1
     keep_alive: true
+  # Right monitor: browser / docs / communication.
   - name: "7"
-    display_name: "7"
-    bind_to_monitor: 0
+    display_name: "R1"
+    bind_to_monitor: 2
     keep_alive: true
   - name: "8"
-    display_name: "8"
-    bind_to_monitor: 0
+    display_name: "R2"
+    bind_to_monitor: 2
     keep_alive: true
   - name: "9"
-    display_name: "9"
-    bind_to_monitor: 0
+    display_name: "R3"
+    bind_to_monitor: 2
     keep_alive: true
+  # Scratch workspace for temporary tasks.
   - name: "10"
-    display_name: "10"
-    bind_to_monitor: 0
-    keep_alive: true
-
-  # Monitor 1 (secondary): workspaces 11-15
-  - name: "11"
-    display_name: "1"
+    display_name: "X"
     bind_to_monitor: 1
-    keep_alive: true
-  - name: "12"
-    display_name: "2"
-    bind_to_monitor: 1
-    keep_alive: true
-  - name: "13"
-    display_name: "3"
-    bind_to_monitor: 1
-    keep_alive: true
-  - name: "14"
-    display_name: "4"
-    bind_to_monitor: 1
-    keep_alive: true
-  - name: "15"
-    display_name: "5"
-    bind_to_monitor: 1
-    keep_alive: true
-
-  # Monitor 2 (tertiary): workspaces 16-20
-  - name: "16"
-    display_name: "1"
-    bind_to_monitor: 2
-    keep_alive: true
-  - name: "17"
-    display_name: "2"
-    bind_to_monitor: 2
-    keep_alive: true
-  - name: "18"
-    display_name: "3"
-    bind_to_monitor: 2
-    keep_alive: true
-  - name: "19"
-    display_name: "4"
-    bind_to_monitor: 2
-    keep_alive: true
-  - name: "20"
-    display_name: "5"
-    bind_to_monitor: 2
     keep_alive: true
 
 window_behavior:
@@ -117,133 +84,110 @@ window_behavior:
       shown_on_top: true
 
 window_rules:
+  # Ignore system or overlay windows that should stay out of the tiling model.
   - commands: ["ignore"]
     match:
-      # User Specified
-      - window_process: { equals: "explorer" } # File Explorer
-
-      # System Administration
-      - window_process: { equals: "Taskmgr" } # Task Manager
-      - window_process: { equals: "SystemSettings" } # Windows Settings
-      - window_process: { equals: "mmc" } # Device Manager / Disk Management
-
-      # Tools & Utilities
-      - window_process: { equals: "SnippingTool" }
-      - window_process: { equals: "ScreenClippingHost" }
-      - window_process: { equals: "CalculatorApp" } # Modern Calc
-      - window_process: { equals: "calc" } # Legacy Calc
-      - window_process: { equals: "mspaint" }
-
-      # Overlays & Launchers
-      - window_process: { regex: "(?i).*powertoys.*" }
-      - window_process: { equals: "SearchHost" } # Windows Search Overlay
-      - window_process: { equals: "StartMenuExperienceHost" } # Start Menu
+      - window_process: { equals: "Taskmgr" }
+      - window_process: { equals: "SystemSettings" }
+      - window_process: { equals: "mmc" }
+      - window_process: { equals: "SearchHost" }
+      - window_process: { equals: "StartMenuExperienceHost" }
       - window_process: { equals: "LockApp" }
-
-      # Status Bar
+      - window_process: { regex: "(?i).*powertoys.*" }
       - window_process: { regex: "(?i)yasb.*" }
       - window_class: { regex: "(?i)yasb.*" }
-
-      # Password Managers
       - window_process: { equals: "1Password" }
       - window_process: { equals: "Bitwarden" }
       - window_process: { equals: "KeePass" }
-
-      # Launchers
       - window_process: { equals: "Flow.Launcher" }
       - window_process: { regex: "(?i)keypirinha" }
 
-  # Float dialog-style windows from dev tools
+  # Float transient dialogs instead of forcing them into the tile tree.
   - commands: ["set-floating"]
     match:
-      - window_title: { regex: "(?i)(open file|save as|find and replace)" }
+      - window_title: { regex: "(?i)(open file|save as|find and replace|choose a file|select folder)" }
+      - window_class: { regex: "(?i)#32770" }
+
+  # Stable homes for the core dev loop.
+  - commands: ["move --workspace 4"]
+    match:
+      - window_process: { equals: "Code" }
+      - window_process: { equals: "devenv" }
+      - window_process: { regex: "(?i)webstorm|rider|idea64|pycharm64|clion64" }
+
+  - commands: ["move --workspace 5"]
+    match:
+      - window_process: { equals: "WindowsTerminal" }
+      - window_process: { equals: "wezterm-gui" }
+      - window_process: { equals: "Alacritty" }
+
+  - commands: ["move --workspace 7"]
+    match:
+      - window_process: { equals: "chrome" }
+      - window_process: { equals: "msedge" }
+      - window_process: { equals: "brave" }
+
+  - commands: ["move --workspace 8"]
+    match:
+      - window_process: { equals: "Obsidian" }
+      - window_process: { equals: "Notion" }
+      - window_process: { equals: "Postman" }
+      - window_process: { equals: "azuredatastudio" }
+      - window_process: { equals: "explorer" }
+
+  - commands: ["move --workspace 9"]
+    match:
+      - window_process: { equals: "slack" }
+      - window_process: { regex: "(?i)teams" }
+      - window_process: { equals: "OUTLOOK" }
+      - window_process: { equals: "Zoom" }
 
 keybindings:
-  # ==========================================================
-  # WM THUMB CLUSTER
-  # ZMK layer 4 (hold ENTER) thumb keys send dedicated F24 combos.
-  # These intentionally avoid modifier collisions with the main rows.
-  # ==========================================================
-
-  # Left BSPC thumb → F24: close focused window
-  - commands: ["close"]
-    bindings: ["f24"]
-
-  # Left End thumb → Win+F24: toggle floating (Win key = LG in ZMK)
-  - commands: ["toggle-floating"]
-    bindings: ["lwin+f24"]
-
-  # Right K_APP thumb → Ctrl+F24: toggle tiling direction
-  - commands: ["toggle-tiling-direction"]
-    bindings: ["ctrl+f24"]
-
-  # Right SPACE thumb → Alt+F24: toggle fullscreen (matches Amethyst "fullscreen" concept)
-  - commands: ["toggle-fullscreen"]
-    bindings: ["alt+f24"]
-
-  # ==========================================================
-  # WM HOME ROW
-  # Bare right home row now uses APP-layer hyper chords:
-  # H/J/K/L/; -> Ctrl+Alt+Win+H/J/K/L/;
-  #
-  # Other rows still use direct F-key outputs from ZMK:
-  # A=F13  S=F14  D=F15  F=F16  G=F17
-  # H=F18  J=F19  K=F20  L=F10  ;=F12
-  # ==========================================================
-
-  # ---- Window focus (ZMK WM layer bare right home row = Ctrl+Alt+Win+J/K/L/;) ----
-  - commands: ["focus --direction left"]
-    bindings: ["ctrl+alt+lwin+j"]
-  - commands: ["focus --direction down"]
-    bindings: ["ctrl+alt+lwin+k"]
-  - commands: ["focus --direction up"]
-    bindings: ["ctrl+alt+lwin+l"]
-  - commands: ["focus --direction right"]
-    bindings: ["ctrl+alt+lwin+semicolon"]
-
-  # ---- Window move ONLY with Shift (ZMK WM layer + corner Shift) ----
-  - commands: ["move --direction left"]
-    bindings: ["ctrl+alt+shift+lwin+j"]
-  - commands: ["move --direction down"]
-    bindings: ["ctrl+alt+shift+lwin+k"]
-  - commands: ["move --direction up"]
-    bindings: ["ctrl+alt+shift+lwin+l"]
-  - commands: ["move --direction right"]
-    bindings: ["ctrl+alt+shift+lwin+semicolon"]
-
-  # ---- Monitor navigation (F=F16 next, A=F13 prev on current monitor) ----
-  - commands: ["focus --next-active-workspace-on-monitor"]
-    bindings: ["f16"]
-  - commands: ["focus --prev-active-workspace-on-monitor"]
+  # Bare WM home row from the ADV360 WM layer.
+  - commands: ["focus --monitor 0"]
     bindings: ["f13"]
-  - commands: ["move --next-active-workspace-on-monitor", "focus --next-active-workspace-on-monitor"]
-    bindings: ["shift+f16"]
-  - commands: ["move --prev-active-workspace-on-monitor", "focus --prev-active-workspace-on-monitor"]
-    bindings: ["shift+f13"]
-
-  # ---- Toggle fullscreen (S=F14), toggle floating (D=F15) ----
-  # Duplicated here as bare-FXX aliases; thumb-cluster bindings above
-  # are the primary ergonomic path. These exist for muscle-memory fallback.
-  - commands: ["toggle-fullscreen"]
+  - commands: ["focus --monitor 1"]
     bindings: ["f14"]
-  - commands: ["toggle-floating"]
+  - commands: ["focus --monitor 2"]
     bindings: ["f15"]
 
-  # ---- Tiling direction (G=F17), minimize (;=F12) ----
-  - commands: ["toggle-tiling-direction"]
+  - commands: ["focus --prev-active-workspace-on-monitor"]
+    bindings: ["f16"]
+  - commands: ["focus --next-active-workspace-on-monitor"]
     bindings: ["f17"]
-  - commands: ["set-minimized"]
-    bindings: ["f12"]
 
-  # ==========================================================
-  # WORKSPACE FOCUS — Ctrl+FXX (ZMK 2nd row: LC(FXX))
-  # Left hand  A..G = F13..F17 → workspaces 1..5  (monitor 0)
-  # Left hand  A..G = F13..F17 → workspaces 6..10 via Ctrl already used
-  # Right hand H..;  = F18..F12
-  #
-  # Layout: Ctrl+A(F13)=WS1 … Ctrl+G(F17)=WS5, Ctrl+H(F18)=WS6 … Ctrl+;(F12)=WS10
-  # ==========================================================
+  - commands: ["focus --direction left"]
+    bindings: ["f19"]
+  - commands: ["focus --direction down"]
+    bindings: ["f20"]
+  - commands: ["focus --direction up"]
+    bindings: ["alt+f13"]
+  - commands: ["focus --direction right"]
+    bindings: ["alt+f14"]
 
+  # Shift + monitor anchors send the window to each monitor's primary lane.
+  - commands: ["move --workspace 1", "focus --workspace 1"]
+    bindings: ["shift+f13"]
+  - commands: ["move --workspace 4", "focus --workspace 4"]
+    bindings: ["shift+f14"]
+  - commands: ["move --workspace 7", "focus --workspace 7"]
+    bindings: ["shift+f15"]
+
+  - commands: ["move --prev-active-workspace-on-monitor", "focus --prev-active-workspace-on-monitor"]
+    bindings: ["shift+f16"]
+  - commands: ["move --next-active-workspace-on-monitor", "focus --next-active-workspace-on-monitor"]
+    bindings: ["shift+f17"]
+
+  - commands: ["move --direction left"]
+    bindings: ["shift+f19"]
+  - commands: ["move --direction down"]
+    bindings: ["shift+f20"]
+  - commands: ["move --direction up"]
+    bindings: ["shift+alt+f13"]
+  - commands: ["move --direction right"]
+    bindings: ["shift+alt+f14"]
+
+  # Ctrl row = direct workspace targeting.
   - commands: ["focus --workspace 1"]
     bindings: ["ctrl+f13"]
   - commands: ["focus --workspace 2"]
@@ -261,11 +205,10 @@ keybindings:
   - commands: ["focus --workspace 8"]
     bindings: ["ctrl+f20"]
   - commands: ["focus --workspace 9"]
-    bindings: ["ctrl+f10"]
+    bindings: ["ctrl+alt+f13"]
   - commands: ["focus --workspace 10"]
-    bindings: ["ctrl+f12"]
+    bindings: ["ctrl+alt+f14"]
 
-  # ---- Move window to workspace + follow (Ctrl+Shift+FXX) ----
   - commands: ["move --workspace 1", "focus --workspace 1"]
     bindings: ["ctrl+shift+f13"]
   - commands: ["move --workspace 2", "focus --workspace 2"]
@@ -283,207 +226,104 @@ keybindings:
   - commands: ["move --workspace 8", "focus --workspace 8"]
     bindings: ["ctrl+shift+f20"]
   - commands: ["move --workspace 9", "focus --workspace 9"]
-    bindings: ["ctrl+shift+f10"]
-  - commands: ["move --workspace 10", "focus --workspace 10"]
-    bindings: ["ctrl+shift+f12"]
-
-  # ==========================================================
-  # MONITOR 1 WORKSPACES — Ctrl+Alt+FXX
-  # Note: The original used ctrl+alt+f13..f17 for WS 11..15.
-  # ZMK doesn't currently have a dedicated row for these; they can
-  # either be added on a free row or triggered via
-  # Ctrl+Alt+Win+FXX (APP layer).  These bindings are preserved
-  # for completeness and can be wired to a ZMK macro or sidelayer.
-  # ==========================================================
-
-  - commands: ["focus --workspace 11"]
-    bindings: ["ctrl+alt+f13"]
-  - commands: ["focus --workspace 12"]
-    bindings: ["ctrl+alt+f14"]
-  - commands: ["focus --workspace 13"]
-    bindings: ["ctrl+alt+f15"]
-  - commands: ["focus --workspace 14"]
-    bindings: ["ctrl+alt+f16"]
-  - commands: ["focus --workspace 15"]
-    bindings: ["ctrl+alt+f17"]
-
-  - commands: ["focus --workspace 16"]
-    bindings: ["ctrl+alt+f18"]
-  - commands: ["focus --workspace 17"]
-    bindings: ["ctrl+alt+f19"]
-  - commands: ["focus --workspace 18"]
-    bindings: ["ctrl+alt+f20"]
-  - commands: ["focus --workspace 19"]
-    bindings: ["ctrl+alt+f10"]
-  - commands: ["focus --workspace 20"]
-    bindings: ["ctrl+alt+f12"]
-
-  # ---- Move window to monitor workspaces + follow ----
-  - commands: ["move --workspace 11", "focus --workspace 11"]
     bindings: ["ctrl+alt+shift+f13"]
-  - commands: ["move --workspace 12", "focus --workspace 12"]
+  - commands: ["move --workspace 10", "focus --workspace 10"]
     bindings: ["ctrl+alt+shift+f14"]
-  - commands: ["move --workspace 13", "focus --workspace 13"]
-    bindings: ["ctrl+alt+shift+f15"]
-  - commands: ["move --workspace 14", "focus --workspace 14"]
-    bindings: ["ctrl+alt+shift+f16"]
-  - commands: ["move --workspace 15", "focus --workspace 15"]
-    bindings: ["ctrl+alt+shift+f17"]
 
-  - commands: ["move --workspace 16", "focus --workspace 16"]
-    bindings: ["ctrl+alt+shift+f18"]
-  - commands: ["move --workspace 17", "focus --workspace 17"]
-    bindings: ["ctrl+alt+shift+f19"]
-  - commands: ["move --workspace 18", "focus --workspace 18"]
-    bindings: ["ctrl+alt+shift+f20"]
-  - commands: ["move --workspace 19", "focus --workspace 19"]
-    bindings: ["ctrl+alt+shift+f10"]
-  - commands: ["move --workspace 20", "focus --workspace 20"]
-    bindings: ["ctrl+alt+shift+f12"]
-
-  # ==========================================================
-  # NUM ROW — Win+FXX (ZMK num row: LG(FXX))
-  # FIXED: was ctrl+lwin+fXX but ZMK sends lwin+fXX (bare Win key).
-  #
-  # A=F13  S=F14  D=F15  F=F16  G=F17
-  # H=F18  J=F19  K=F20  L=F10  ;=F12
-  # ==========================================================
-
-  # ---- WM Utilities (left num row A..G = Win+F13..Win+F17) ----
+  # Win row = WM utilities on the left, resize on the right.
   - commands: ["wm-redraw"]
     bindings: ["lwin+f13"]
   - commands: ["wm-reload-config"]
-    bindings: ["lwin+f17"]
-  # wm-exit: not bound by default — trigger manually if needed via GlazeWM tray.
-  # To re-enable, wire ZMK to send a unique combo and add it here.
-
-  # ---- Resize (Win+FXX, right num row) ----
-  # H=F18 → shrink width, J=F19 → grow height, K=F20 → shrink height, L=F10 → grow width
-  - commands: ["resize --width -4%"]
-    bindings: ["lwin+f18"]   # H (left = shrink width)
-  - commands: ["resize --height +4%"]
-    bindings: ["lwin+f19"]   # J (down = grow height)
-  - commands: ["resize --height -4%"]
-    bindings: ["lwin+f20"]   # K (up = shrink height)
-  - commands: ["resize --width +4%"]
-    bindings: ["lwin+f10"]   # L (right = grow width)
-
-  # ---- WM set-minimized (D=F15, num row) ----
+    bindings: ["lwin+f14"]
   - commands: ["set-minimized"]
     bindings: ["lwin+f15"]
+  - commands: ["toggle-floating"]
+    bindings: ["lwin+f16"]
+  - commands: ["toggle-fullscreen"]
+    bindings: ["lwin+f17"]
 
-  # ---- Focus monitor directly (Win+Shift+FXX — ZMK WM layer bottom row) ----
-  # A=F13 → monitor 0, S=F14 → monitor 1, D=F15 → monitor 2
-  - commands: ["focus --monitor 0"]
-    bindings: ["lwin+shift+f13"]   # WM layer bottom row A (ZMK: LG(LS(F13)))
-  - commands: ["focus --monitor 1"]
-    bindings: ["lwin+shift+f14"]   # WM layer bottom row S (ZMK: LG(LS(F14)))
-  - commands: ["focus --monitor 2"]
-    bindings: ["lwin+shift+f15"]   # WM layer bottom row D (ZMK: LG(LS(F15)))
+  - commands: ["resize --width -5%"]
+    bindings: ["lwin+f18"]
+  - commands: ["resize --height +5%"]
+    bindings: ["lwin+f19"]
+  - commands: ["resize --height -5%"]
+    bindings: ["lwin+f20"]
+  - commands: ["resize --width +5%"]
+    bindings: ["lwin+alt+f13"]
+  - commands: ["toggle-tiling-direction"]
+    bindings: ["lwin+alt+f14"]
 
-  # ---- Move window to monitor (Win+Shift+FXX — ZMK num row + corner Shift) ----
-  # F=F16 → monitor 1, H=F18 → monitor 2
-  - commands: ["move --workspace 1", "focus --workspace 1"]
-    bindings: ["lwin+shift+f16"]   # send current window to monitor 1 first WS
-  - commands: ["move --workspace 16", "focus --workspace 16"]
-    bindings: ["lwin+shift+f18"]   # send current window to monitor 2 first WS
-
-  # ==========================================================
-  # APP / QUICKLAUNCH (Ctrl+Alt+Win + key)
-  # ZMK Layer 6 (hold CAPS). Customize paths for your apps.
-  # ==========================================================
-
-  # ---- Browsers ----
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --profile-directory="Profile 2"']
-    bindings: ["ctrl+alt+lwin+q"]       # Chrome (Personal)
-
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --profile-directory="Profile 3"']
-    bindings: ["ctrl+alt+lwin+w"]       # Chrome (Work)
-
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --profile-path="C:\Users\PavelNastulczyk\AppData\Local\Microsoft\Edge\User Data\Default" --flag-switches-begin --flag-switches-end --do-not-de-elevate --flag-switches-begin --flag-switches-end --site-per-process']
-    bindings: ["ctrl+alt+lwin+e"]       # Edge
-
-  - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\BraveSoftware\Brave-Browser\Application\brave.exe"']
-    bindings: ["ctrl+alt+lwin+r"]       # Brave
-
-  # ---- Communication ----
-  - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\slack\slack.exe"']
-    bindings: ["ctrl+alt+lwin+a"]       # Slack
-
-  # ---- Dev Tools ----
-  - commands: ['shell-exec gsudo wt']
-    bindings: ["ctrl+alt+lwin+s"]       # Terminal (elevated)
-
+  # Hyper app layer: left home row is the daily engineering loop.
+  - commands: ['shell-exec cmd /c start "" wt.exe']
+    bindings: ["ctrl+alt+lwin+a"]
   - commands: ['shell-exec cmd /c code']
-    bindings: ["ctrl+alt+lwin+d"]       # VS Code
+    bindings: ["ctrl+alt+lwin+s"]
+  - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --profile-directory="Profile 3"']
+    bindings: ["ctrl+alt+lwin+d"]
+  - commands: ['shell-exec cmd /c start "" explorer.exe']
+    bindings: ["ctrl+alt+lwin+f"]
+  - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\gitkraken\\gitkraken.exe"']
+    bindings: ["ctrl+alt+lwin+g"]
 
-  - commands: ['shell-exec cmd /c explorer']
-    bindings: ["ctrl+alt+lwin+f"]       # File Explorer
+  # Hyper app layer: right home row is communication and context.
+  - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\slack\\slack.exe"']
+    bindings: ["ctrl+alt+lwin+h"]
+  - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Microsoft\\Teams\\Update.exe" --processStart "Teams.exe"']
+    bindings: ["ctrl+alt+lwin+j"]
+  - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Microsoft Office\\root\\Office16\\OUTLOOK.EXE"']
+    bindings: ["ctrl+alt+lwin+k"]
+  - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Notion\\Notion.exe"']
+    bindings: ["ctrl+alt+lwin+l"]
+  - commands: ['shell-exec cmd /c start "" "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\KeePass 2.lnk"']
+    bindings: ["ctrl+alt+lwin+semicolon"]
 
-  # ---- Utilities ----
-  - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\Programs\zoom\Zoom.exe"']
-    bindings: ["ctrl+alt+lwin+z"]       # Zoom
+  # Hyper app layer: top row holds alternate browsers and secondary dev tools.
+  - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --profile-directory="Profile 2"']
+    bindings: ["ctrl+alt+lwin+q"]
+  - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --profile-directory="Profile 3"']
+    bindings: ["ctrl+alt+lwin+w"]
+  - commands: ['shell-exec cmd /c start "" "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"']
+    bindings: ["ctrl+alt+lwin+e"]
+  - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"']
+    bindings: ["ctrl+alt+lwin+r"]
+  - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Programs\\Obsidian\\Obsidian.exe"']
+    bindings: ["ctrl+alt+lwin+t"]
 
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\Notepad++\notepad++.exe"']
-    bindings: ["ctrl+alt+lwin+x"]       # Notepad++
-
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --profile-directory="Default"']
-    bindings: ["ctrl+alt+lwin+c"]       # Chrome (Default)
-
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\Google\Chrome\Application\chrome.exe" --profile-directory="Profile 1"']
-    bindings: ["ctrl+alt+lwin+v"]       # Chrome (Profile 1)
-
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"']
-    bindings: ["ctrl+alt+lwin+b"]       # Docker Desktop
-
-  - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\Notion\Notion.exe"']
-    bindings: ["ctrl+alt+lwin+n"]       # Notion
-
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE"']
-    bindings: ["ctrl+alt+lwin+m"]       # Outlook
-
-  - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\Microsoft\Teams\Update.exe" --processStart "Teams.exe"']
-    bindings: ["ctrl+alt+lwin+t"]       # Microsoft Teams
-
-  - commands: ['shell-exec gsudo wt.exe']
-    bindings: ["ctrl+alt+lwin+p"]       # PowerShell 7 (elevated)
-
-  - commands: ['shell-exec cmd /c start "" python "C:\my\import pyautogui.py"']
-    bindings: ["ctrl+alt+lwin+y"]       # PyAutoGUI script
-
-  - commands: ['shell-exec cmd /c start "" "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\KeePass 2.lnk"']
-    bindings: ["ctrl+alt+lwin+slash"]       # KeePass
-
-  # ---- Additional dev tools (moved off H/J/K/L/; because ZMK WM layer now uses those) ----
-  - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\Postman\Postman.exe"']
-    bindings: ["ctrl+alt+lwin+comma"]       # Postman / HTTP client
-
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\Azure Data Studio\azuredatastudio.exe"']
-    bindings: ["ctrl+alt+lwin+period"]       # Azure Data Studio / DB
-
-  - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\Programs\Obsidian\Obsidian.exe" "C:\Users\PavelNastulczyk\AppData\Local\Programs\Obsidian"']
-    bindings: ["ctrl+alt+lwin+o"]       # Obsidian notes
-
-  - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\gitkraken\gitkraken.exe"']
-    bindings: ["ctrl+alt+lwin+g"]       # GitKraken / Git GUI
-
+  - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Postman\\Postman.exe"']
+    bindings: ["ctrl+alt+lwin+y"]
+  - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Azure Data Studio\\azuredatastudio.exe"']
+    bindings: ["ctrl+alt+lwin+u"]
+  - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\JetBrains\\Toolbox\\bin\\jetbrains-toolbox.exe"']
+    bindings: ["ctrl+alt+lwin+i"]
+  - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Everything\\Everything.exe"']
+    bindings: ["ctrl+alt+lwin+o"]
   - commands: ['shell-exec cmd /c start spotify:']
-    bindings: ["ctrl+alt+lwin+u"]       # Spotify
+    bindings: ["ctrl+alt+lwin+p"]
 
-  # ---- Direct Monitor Focus (APP layer arrows = Ctrl+Alt+Win+arrow) ----
+  # Hyper app layer: bottom row is overflow utility.
+  - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Programs\\zoom\\Zoom.exe"']
+    bindings: ["ctrl+alt+lwin+z"]
+  - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Notepad++\\notepad++.exe"']
+    bindings: ["ctrl+alt+lwin+x"]
+  - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --profile-directory="Default"']
+    bindings: ["ctrl+alt+lwin+c"]
+  - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"']
+    bindings: ["ctrl+alt+lwin+v"]
+  - commands: ['shell-exec gsudo wt.exe']
+    bindings: ["ctrl+alt+lwin+b"]
+
+  - commands: ['shell-exec wt -p "PowerShell 7" new-tab --startingDirectory "%USERPROFILE%\\Documents\\GitHub"']
+    bindings: ["ctrl+alt+lwin+n"]
+  - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Programs\\Microsoft VS Code\\Code.exe" "%USERPROFILE%\\Documents\\GitHub"']
+    bindings: ["ctrl+alt+lwin+m"]
+  - commands: ['shell-exec cmd /c start "" python "%USERPROFILE%\\import pyautogui.py"']
+    bindings: ["ctrl+alt+lwin+comma"]
+  - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --profile-directory="Profile 1"']
+    bindings: ["ctrl+alt+lwin+period"]
+
   - commands: ["focus --monitor 0"]
     bindings: ["ctrl+alt+lwin+left"]
   - commands: ["focus --monitor 1"]
-    bindings: ["ctrl+alt+lwin+right"]
-  - commands: ["focus --monitor 2"]
     bindings: ["ctrl+alt+lwin+up"]
-
-  # ---- Extra Dev Quicklaunch (unused APP layer keys) ----
-  - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\JetBrains\Toolbox\bin\jetbrains-toolbox.exe"']
-    bindings: ["ctrl+alt+lwin+i"]       # JetBrains Toolbox
-
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\Everything\Everything.exe"']
-    bindings: ["ctrl+alt+lwin+backslash"]       # Everything (file search)
-
-  - commands: ['shell-exec wt -p "PowerShell 7" new-tab --startingDirectory "C:\my"']
-    bindings: ["ctrl+alt+lwin+minus"]  # Terminal in project dir
+  - commands: ["focus --monitor 2"]
+    bindings: ["ctrl+alt+lwin+right"]
