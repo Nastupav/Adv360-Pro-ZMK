@@ -395,7 +395,7 @@ keybindings:
     bindings: ["ctrl+alt+lwin+z"]
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Notepad++\\notepad++.exe"']
     bindings: ["ctrl+alt+lwin+x"]
-  - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --profile-directory="Default"']
+  - commands: ['shell-exec cmd /c start "" cmd.exe']
     bindings: ["ctrl+alt+lwin+c"]
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"']
     bindings: ["ctrl+alt+lwin+v"]
