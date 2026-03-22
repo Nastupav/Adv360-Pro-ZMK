@@ -37,6 +37,7 @@
             flavor = "hold-preferred";
             bindings = <&mo>, <&kp>;
         };
+#include "macros.dtsi"
     };
 
     keymap {
@@ -62,11 +63,11 @@
 
         layer_sym {
             bindings = <
-&trans    &kp F1     &kp F2     &kp F3                &kp F4                 &kp F5           &kp C_AL_KEYBOARD_LAYOUT                                                  &kp INS    &kp F6     &kp F7    &kp F8         &kp F9    &kp F10   &kp F11
-&trans    &kp EXCL   &kp AT     &kp HASH              &kp DLLR               &kp PRCNT        &kp K_PLAY_PAUSE                                                          &kp CAPS   &kp CARET  &kp AMPS  &kp STAR       &kp LPAR  &kp RPAR  &kp F12
-&trans    &kp LBRC   &kp RBRC   &kp LBKT              &kp RBKT               &kp PRINTSCREEN  &kp PAUSE_BREAK           &kp KP_NUM  &kp UNDER      &kp MINUS  &kp PLUS  &kp EQUAL  &kp COLON  &kp SEMI  &kp BACKSLASH  &kp PIPE  &kp LT    &kp GT
-&kp BSLH  &kp GRAVE  &kp TILDE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &trans                                                 &kp QMARK      &kp SQT                         &kp COMMA  &kp DOT   &kp FSLH       &trans    &trans    &trans
-&trans    &trans     &trans     &trans                &trans                                  &trans                    &trans      &trans         &trans     &trans    &trans                &trans    &trans         &kp F1    &kp F2    &kp F3
+&kp GRAVE  &kp TILDE   &kp EXCL   &kp AT      &kp HASH    &kp DLLR   &kp PRCNT                                                             &kp CARET  &kp AMPS   &kp STAR    &kp PIPE   &kp BSLH   &kp FSLH  &kp QMARK
+&kp TAB    &kp EQUAL   &kp PLUS   &kp MINUS   &kp UNDER   &kp COLON  &kp SEMI                                                              &kp COMMA  &kp DOT    &kp BSLH    &kp FSLH   &kp QMARK  &kp LT    &kp GT
+&kp ESC    &macro_parens  &macro_brackets  &macro_braces  &kp LT    &macro_quotes  &kp GRAVE  &kp TILDE  &kp BSLH  &kp PIPE  &kp FSLH  &kp QMARK  &macro_dquotes  &kp GT  &kp RBRC  &kp RBKT  &kp RPAR  &kp SEMI
+&kp BSLH   &kp GRAVE   &kp TILDE  &kp UNDER   &kp MINUS   &kp PLUS                                            &kp EQUAL  &kp AMPS                                               &kp STAR   &kp COMMA  &kp DOT    &kp FSLH  &kp PIPE  &kp QMARK
+&macro_quotes  &macro_dquotes  &macro_parens  &macro_brackets  &macro_braces                  &kp BSLH   &kp FSLH  &kp UNDER  &kp MINUS  &kp EQUAL  &kp PLUS                       &kp COLON  &kp SEMI   &kp LT     &kp GT    &kp PIPE
             >;
         };
 
