@@ -109,7 +109,7 @@
 &kp F16          &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &kp LC(LG(F16))                                                                          &kp LC(LG(F17))  &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F21)      &kp LC(F22)      &kp F17
 &kp ESC          &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &kp LC(LG(F13))  &kp LG(LA(LC(F23)))  &kp LG(F23)      &kp LC(LG(F16))  &kp LC(LG(F17))  &kp LC(LG(F22))  &kp LA(F4)       &kp F19          &kp F20          &kp F21          &kp F22          &kp LC(LG(F16))
 &kp LC(LG(F18))  &kp LS(F13)      &kp LS(F14)      &kp LS(F15)      &kp LS(F16)      &kp LS(F17)                                            &kp LC(F23)      &kp LC(LG(F20))                                    &kp LS(F19)      &kp LS(F20)      &kp LS(F21)      &kp LS(F22)      &kp LC(LG(F22))  &kp LC(LG(F21))
-&kp ESC          &kp LC(LG(F13))  &kp LC(LG(F14))  &kp LC(LG(F15))  &kp LC(LG(F16))                   &kp F24          &kp F23              &kp LA(F23)      &kp F17          &kp LS(F16)      &kp LS(F17)                       &kp LC(LG(F18))  &kp LC(LG(F20))  &kp LC(LG(F19))  &kp LC(LG(F21))  &kp LC(LG(F22))
+&kp ESC          &kp LC(LG(F13))  &kp LC(LG(F14))  &kp LC(LG(F15))  &kp LC(LG(F16))                   &kp F24          &hm LEFT_SHIFT F23   &kp LA(F23)      &kp F17          &kp LS(F16)      &kp LS(F17)                       &kp LC(LG(F18))  &kp LC(LG(F20))  &kp LC(LG(F19))  &kp LC(LG(F21))  &kp LC(LG(F22))
             >;
         };
 
