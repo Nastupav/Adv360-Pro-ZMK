@@ -2,7 +2,8 @@
 # Core grammar:
 # - A/S/D = top / center / right monitor anchors.
 # - F/G   = previous / next workspace on the current monitor.
-# - J/K/L/; = left / down / up / right.
+# - H/J/K/L = left / down / up / right.
+# - ;       = spare / reserve WM slot.
 # - Ctrl row = primary workspace bank 1..10 via F13..F22.
 # - Ctrl+Win row = WM utility + resize.
 # - Ctrl+Alt row = secondary workspace bank 11..20 via F13..F22.
@@ -344,7 +345,7 @@ keybindings:
     bindings: ["ctrl+lwin+f22"]
 
   # Hyper app layer: left home row is the daily engineering loop.
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\PowerShell\7\pwsh.exe"']
+  - commands: ['shell-exec cmd /c start "" wt.exe']
     bindings: ["ctrl+alt+lwin+a"]
   - commands: ['shell-exec cmd /c code']
     bindings: ["ctrl+alt+lwin+s"]
@@ -402,7 +403,7 @@ keybindings:
   - commands: ['shell-exec gsudo wt.exe']
     bindings: ["ctrl+alt+lwin+b"]
 
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\PowerShell\7\pwsh.exe" -WorkingDirectory "%USERPROFILE%\Documents\GitHub"']
+  - commands: ['shell-exec wt -p "PowerShell 7" new-tab --startingDirectory "%USERPROFILE%\\Documents\\GitHub"']
     bindings: ["ctrl+alt+lwin+n"]
   - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Programs\\Microsoft VS Code\\Code.exe" "%USERPROFILE%\\Documents\\GitHub"']
     bindings: ["ctrl+alt+lwin+m"]
