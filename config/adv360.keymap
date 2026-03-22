@@ -76,10 +76,10 @@
 
         layer_nav {
             bindings = <
-&trans  &trans        &trans         &trans        &trans       &trans  &none                                          &none      &trans       &trans    &trans          &trans        &trans     &trans
-&trans  &kp LC(Z)     &kp LC(Y)      &kp LC(X)     &kp LC(C)    &kp LC(V)  &kp PG_UP                                    &kp PAGE_DOWN  &kp LC(A)  &kp LC(F)  &kp LC(LS(TAB))  &kp LC(TAB)  &kp HOME  &kp END
-&trans  &kp LC(LEFT)  &kp LC(RIGHT)  &kp LC(BSPC)  &kp LC(DEL)  &trans  &none      &trans  &trans      &trans  &trans  &none      &none        &kp LEFT  &kp DOWN_ARROW  &kp UP_ARROW  &kp RIGHT  &trans
-&trans  &trans        &trans         &trans        &trans       &trans                     &trans      &trans                     &trans       &trans    &trans          &trans        &trans     &trans
+&kp LA(LEFT)  &kp LA(RIGHT)  &kp LS(F3)         &kp F3              &kp LC(PG_UP)  &kp LC(PAGE_DOWN)  &kp LC(HOME)                           &kp LC(END)  &kp LC(LS(HOME))  &kp LC(LS(END))  &kp LS(HOME)  &kp LS(END)  &kp PG_UP  &kp PAGE_DOWN
+&kp TAB       &kp LC(Z)      &kp LC(Y)          &kp LC(X)           &kp LC(C)      &kp LC(V)          &kp PG_UP                             &kp PAGE_DOWN  &kp LC(A)         &kp LC(F)        &kp LC(LS(TAB))  &kp LC(TAB)  &kp HOME   &kp END
+&kp ESC       &kp LC(LEFT)   &kp LC(RIGHT)      &kp LC(BSPC)        &kp LC(DEL)    &kp BSPC           &none       &trans  &trans      &trans  &trans  &trans     &kp DEL      &kp LEFT  &kp DOWN_ARROW  &kp UP_ARROW  &kp RIGHT  &kp ENTER
+&trans        &kp LC(LS(LEFT))  &kp LC(LS(DOWN_ARROW))  &kp LC(LS(UP_ARROW))  &kp LC(LS(RIGHT))  &kp LC(LS(HOME))  &kp LS(PG_UP)      &kp LS(PAGE_DOWN)               &kp LC(LS(END))  &kp LS(LEFT)  &kp LS(DOWN_ARROW)  &kp LS(UP_ARROW)  &kp LS(RIGHT)  &trans
 &trans  &trans        &trans         &trans        &trans               &trans     &trans  &trans      &trans  &trans  &trans                  &trans    &trans          &trans        &trans     &trans
             >;
         };
