@@ -28,6 +28,7 @@
             flavor = "tap-preferred";
             bindings = <&kp>, <&kp>;
         };
+
         app: app_layer_tap {
             compatible = "zmk,behavior-hold-tap";
             label = "APP_LAYER_TAP";
@@ -51,7 +52,7 @@
 &kp EQUAL  &kp N1                &kp N2                 &kp N3       &kp N4       &kp N5  &mo 5                                                                            &mo 3               &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
 &kp TAB    &kp Q                 &kp W                  &kp E        &kp R        &kp T   &kp PRINTSCREEN                                                                  &kp K_CONTEXT_MENU  &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
 &kp ESC    &hm LGUI A            &hm LALT S             &hm LCTRL D  &hm LSHFT F  &kp G   &kp LC(PRINTSCREEN)  &kp LCTRL  &kp LEFT_ALT       &kp RCTRL  &kp RIGHT_COMMAND  &mt LC(V) LC(C)     &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
-&kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                                   &app 6 ESC        &kp PG_UP                                         &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
+&kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                                   &app 6 ESC         &kp PG_UP                                         &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
 &kp GRAVE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp LEFT     &kp RIGHT            &lt 1 BSPC           &lt 5 DEL  &mt LSHFT END      &kp K_APP  &lt 4 ENTER        &lt 2 SPACE                 &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
             >;
         };
@@ -62,11 +63,11 @@
 
         layer_sym {
             bindings = <
-&kp GRAVE  &kp TILDE  &kp EXCL   &kp AT     &kp HASH   &kp DLLR   &kp PRCNT                                                             &kp CARET  &kp AMPS  &kp STAR   &kp PIPE   &kp BSLH   &kp FSLH  &kp QMARK
-&kp TAB    &kp EQUAL  &kp PLUS   &kp MINUS  &kp UNDER  &kp COLON  &kp SEMI                                                              &kp COMMA  &kp DOT   &kp BSLH   &kp FSLH   &kp QMARK  &kp LT    &kp GT
-&kp ESC    &kp LPAR   &kp LBKT   &kp LBRC   &kp LT     &kp SQT    &kp GRAVE  &kp TILDE  &kp DQT   &kp GT    &kp RBRC   &kp RBKT   &kp RPAR   &kp PIPE  &kp BSLH  &kp FSLH  &kp QMARK  &kp SEMI
-&kp BSLH   &kp GRAVE  &kp TILDE  &kp UNDER  &kp MINUS  &kp PLUS                                           &kp EQUAL  &kp AMPS                                              &kp STAR   &kp COMMA  &kp DOT    &kp FSLH  &kp PIPE  &kp QMARK
-&kp SQT    &kp DQT    &kp LPAR   &kp RPAR   &kp LBKT   &kp RBKT                 &kp LBRC   &kp RBRC   &kp BSLH   &kp FSLH  &kp UNDER  &kp MINUS                     &kp EQUAL  &kp COLON  &kp SEMI   &kp PIPE
+&kp GRAVE  &kp TILDE  &kp EXCL   &kp AT     &kp HASH   &kp DLLR   &kp PRCNT                                                &kp CARET  &kp AMPS  &kp STAR   &kp PIPE   &kp BSLH   &kp FSLH   &kp QMARK
+&kp TAB    &kp EQUAL  &kp PLUS   &kp MINUS  &kp UNDER  &kp COLON  &kp SEMI                                                 &kp COMMA  &kp DOT   &kp BSLH   &kp FSLH   &kp QMARK  &kp LT     &kp GT
+&kp ESC    &kp LPAR   &kp LBKT   &kp LBRC   &kp LT     &kp SQT    &kp GRAVE  &kp TILDE  &kp DQT        &kp GT    &kp RBRC  &kp RBKT   &kp RPAR  &kp PIPE   &kp BSLH   &kp FSLH   &kp QMARK  &kp SEMI
+&kp BSLH   &kp GRAVE  &kp TILDE  &kp UNDER  &kp MINUS  &kp PLUS                         &kp EQUAL      &kp AMPS                       &kp STAR  &kp COMMA  &kp DOT    &kp FSLH   &kp PIPE   &kp QMARK
+&kp SQT    &kp DQT    &kp LPAR   &kp RPAR   &kp LBKT              &kp RBKT   &kp LBRC   &kp RBRC       &kp BSLH  &kp FSLH  &kp UNDER            &kp MINUS  &kp EQUAL  &kp COLON  &kp SEMI   &kp PIPE
             >;
         };
 
@@ -76,11 +77,11 @@
 
         layer_nav {
             bindings = <
-&kp LA(LEFT)  &kp LA(RIGHT)  &kp LS(F3)         &kp F3              &kp LC(PG_UP)  &kp LC(PAGE_DOWN)  &kp LC(HOME)                           &kp LC(END)  &kp LC(LS(HOME))  &kp LC(LS(END))  &kp LS(HOME)  &kp LS(END)  &kp PG_UP  &kp PAGE_DOWN
-&kp TAB       &kp LC(Z)      &kp LC(Y)          &kp LC(X)           &kp LC(C)      &kp LC(V)          &kp PG_UP                             &kp PAGE_DOWN  &kp LC(A)         &kp LC(F)        &kp LC(LS(TAB))  &kp LC(TAB)  &kp HOME   &kp END
-&kp ESC       &kp LC(LEFT)   &kp LC(RIGHT)      &kp LC(BSPC)        &kp LC(DEL)    &kp BSPC           &kp LCTRL   &trans  &trans      &trans  &trans  &kp TAB    &kp DEL      &kp LEFT  &kp DOWN_ARROW  &kp UP_ARROW  &kp RIGHT  &kp ENTER
-&kp LSHFT     &kp LC(LS(LEFT))  &kp LC(LS(DOWN_ARROW))  &kp LC(LS(UP_ARROW))  &kp LC(LS(RIGHT))  &kp LC(LS(HOME))  &kp LS(PG_UP)      &kp LS(PAGE_DOWN)               &kp LC(LS(END))  &kp LS(LEFT)  &kp LS(DOWN_ARROW)  &kp LS(UP_ARROW)  &kp LS(RIGHT)  &kp RSHFT
-&kp ESC  &kp TAB        &kp LC(Z)      &kp LC(Y)     &kp LC(F)             &kp BSPC   &kp DEL  &kp LSHFT   &kp LC(A)  &kp ENTER  &kp SPACE                 &kp HOME  &kp END        &kp PG_UP      &kp PAGE_DOWN  &kp LA(LEFT)
+&kp LA(LEFT)  &kp LA(RIGHT)     &kp LS(F3)              &kp F3                &kp LC(PG_UP)      &kp LC(PAGE_DOWN)  &kp LC(HOME)                                                            &kp LC(END)    &kp LC(LS(HOME))  &kp LC(LS(END))  &kp LS(HOME)        &kp LS(END)       &kp PG_UP      &kp PAGE_DOWN
+&kp TAB       &kp LC(Z)         &kp LC(Y)               &kp LC(X)             &kp LC(C)          &kp LC(V)          &kp PG_UP                                                               &kp PAGE_DOWN  &kp LC(A)         &kp LC(F)        &kp LC(LS(TAB))     &kp LC(TAB)       &kp HOME       &kp END
+&kp ESC       &kp LC(LEFT)      &kp LC(RIGHT)           &kp LC(BSPC)          &kp LC(DEL)        &kp BSPC           &kp LCTRL     &trans   &trans             &trans             &trans     &kp TAB        &kp DEL           &kp LEFT         &kp DOWN_ARROW      &kp UP_ARROW      &kp RIGHT      &kp ENTER
+&kp LSHFT     &kp LC(LS(LEFT))  &kp LC(LS(DOWN_ARROW))  &kp LC(LS(UP_ARROW))  &kp LC(LS(RIGHT))  &kp LC(LS(HOME))                          &kp LS(PG_UP)      &kp LS(PAGE_DOWN)                            &kp LC(LS(END))   &kp LS(LEFT)     &kp LS(DOWN_ARROW)  &kp LS(UP_ARROW)  &kp LS(RIGHT)  &kp RSHFT
+&kp ESC       &kp TAB           &kp LC(Z)               &kp LC(Y)             &kp LC(F)                             &kp BSPC      &kp DEL  &kp LSHFT          &kp LC(A)          &kp ENTER  &kp SPACE                        &kp HOME         &kp END             &kp PG_UP         &kp PAGE_DOWN  &kp LA(LEFT)
             >;
         };
 
@@ -104,11 +105,11 @@
 
         layer_wm {
             bindings = <
-&kp LC(LG(F13))  &kp LC(LA(F13))  &kp LC(LA(F14))  &kp LC(LA(F15))  &kp LC(LA(F16))  &kp LC(LA(F17))  &kp LC(LG(F14))                                            &kp LC(LG(F15))  &kp LC(LA(F18))  &kp LC(LA(F19))  &kp LC(LA(F20))  &kp LC(LA(F21))  &kp LC(LA(F22))  &kp LC(LG(F22))
-&kp F16          &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &kp LC(LG(F16))                                            &kp LC(LG(F17))  &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F21)      &kp LC(F22)      &kp F17
-&kp ESC          &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &kp LC(LG(F13))  &kp LC(LG(F14))  &kp LC(LG(F15))  &kp LC(LG(F16))  &kp LC(LG(F17))  &kp LC(LG(F22))  &kp LA(F4)       &kp F19          &kp F20          &kp F21          &kp F22          &kp LC(LG(F16))
-&kp LC(LG(F18))  &kp LS(F13)      &kp LS(F14)      &kp LS(F15)      &kp LS(F16)      &kp LS(F17)                                         &kp LC(LG(F19))  &kp LC(LG(F20))                    &kp LS(F19)      &kp LS(F20)      &kp LS(F21)      &kp LS(F22)      &kp LC(LG(F22))  &kp LC(LG(F21))
-&kp ESC          &kp LC(LG(F13))  &kp LC(LG(F14))  &kp LC(LG(F15))  &kp LC(LG(F16))                &kp LA(F4)         &kp LC(LG(F17))  &kp F16       &kp F17       &kp LS(F16)  &kp LS(F17)                     &kp LC(LG(F18))  &kp LC(LG(F20))  &kp LC(LG(F19))  &kp LC(LG(F21))  &kp LC(LG(F22))
+&kp LC(LG(F13))  &kp LC(LA(F13))  &kp LC(LA(F14))  &kp LC(LA(F15))  &kp LC(LA(F16))  &kp LC(LA(F17))  &kp LC(LG(F14))                                                                          &kp LC(LG(F15))  &kp LC(LA(F18))  &kp LC(LA(F19))  &kp LC(LA(F20))  &kp LC(LA(F21))  &kp LC(LA(F22))  &kp LC(LG(F22))
+&kp F16          &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &kp LC(LG(F16))                                                                          &kp LC(LG(F17))  &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F21)      &kp LC(F22)      &kp F17
+&kp ESC          &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &kp LC(LG(F13))  &kp LG(LA(LC(F23)))  &kp LG(F23)      &kp LC(LG(F16))  &kp LC(LG(F17))  &kp LC(LG(F22))  &kp LA(F4)       &kp F19          &kp F20          &kp F21          &kp F22          &kp LC(LG(F16))
+&kp LC(LG(F18))  &kp LS(F13)      &kp LS(F14)      &kp LS(F15)      &kp LS(F16)      &kp LS(F17)                                            &kp LC(F23)      &kp LC(LG(F20))                                    &kp LS(F19)      &kp LS(F20)      &kp LS(F21)      &kp LS(F22)      &kp LC(LG(F22))  &kp LC(LG(F21))
+&kp ESC          &kp LC(LG(F13))  &kp LC(LG(F14))  &kp LC(LG(F15))  &kp LC(LG(F16))                   &kp F24          &kp F23              &kp LA(F23)      &kp F17          &kp LS(F16)      &kp LS(F17)                       &kp LC(LG(F18))  &kp LC(LG(F20))  &kp LC(LG(F19))  &kp LC(LG(F21))  &kp LC(LG(F22))
             >;
         };
 
@@ -118,11 +119,11 @@
 
         layer_numpad {
             bindings = <
-&kp ESC   &kp TAB   &kp BSPC  &kp DEL       &kp LPAR   &kp RPAR   &kp LBKT                                                                &kp RBKT   &kp KP_SLASH     &kp KP_MULTIPLY  &kp KP_MINUS  &kp KP_PLUS   &kp KP_EQUAL  &kp KP_ENTER
-&kp HOME  &kp END   &kp PG_UP &kp PAGE_DOWN &kp COMMA  &kp DOT    &kp TAB                                                                 &kp BSPC   &kp KP_EQUAL     &kp KP_N7        &kp KP_N8     &kp KP_N9     &kp KP_MINUS  &kp KP_PLUS
-&kp ESC   &kp PLUS  &kp MINUS &kp EQUAL     &kp UNDER  &kp PRCNT  &kp TAB        &kp BSPC  &kp DEL      &kp HOME      &kp END      &kp ENTER  &kp KP_SLASH  &kp KP_N4     &kp KP_N5     &kp KP_N6     &kp KP_MULTIPLY  &kp KP_ENTER
-&kp LBRC  &kp RBRC  &kp LT    &kp GT        &kp HASH   &kp DLLR                             &kp AMPS       &kp STAR                         &kp KP_N0       &kp KP_N1     &kp KP_N2     &kp KP_N3     &kp KP_DOT    &kp BSPC
-&kp ESC   &kp TAB   &kp BSPC  &kp DEL       &kp EQUAL                &kp LPAR        &kp RPAR  &kp ENTER    &kp HOME     &kp KP_N0  &kp KP_DOT                         &kp END      &kp PG_UP     &kp PAGE_DOWN  &kp KP_PLUS   &kp KP_ENTER
+&kp ESC   &kp TAB   &kp BSPC   &kp DEL        &kp LPAR   &kp RPAR   &kp LBKT                                                &kp RBKT    &kp KP_SLASH  &kp KP_MULTIPLY  &kp KP_MINUS  &kp KP_PLUS    &kp KP_EQUAL     &kp KP_ENTER
+&kp HOME  &kp END   &kp PG_UP  &kp PAGE_DOWN  &kp COMMA  &kp DOT    &kp TAB                                                 &kp BSPC    &kp KP_EQUAL  &kp KP_N7        &kp KP_N8     &kp KP_N9      &kp KP_MINUS     &kp KP_PLUS
+&kp ESC   &kp PLUS  &kp MINUS  &kp EQUAL      &kp UNDER  &kp PRCNT  &kp TAB   &kp BSPC  &kp DEL        &kp HOME  &kp END    &kp ENTER   &kp KP_SLASH  &kp KP_N4        &kp KP_N5     &kp KP_N6      &kp KP_MULTIPLY  &kp KP_ENTER
+&kp LBRC  &kp RBRC  &kp LT     &kp GT         &kp HASH   &kp DLLR                       &kp AMPS       &kp STAR                         &kp KP_N0     &kp KP_N1        &kp KP_N2     &kp KP_N3      &kp KP_DOT       &kp BSPC
+&kp ESC   &kp TAB   &kp BSPC   &kp DEL        &kp EQUAL             &kp LPAR  &kp RPAR  &kp ENTER      &kp HOME  &kp KP_N0  &kp KP_DOT                &kp END          &kp PG_UP     &kp PAGE_DOWN  &kp KP_PLUS      &kp KP_ENTER
             >;
         };
 
