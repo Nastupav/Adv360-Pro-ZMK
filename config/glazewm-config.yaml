@@ -149,59 +149,15 @@ window_rules:
       - window_process: { equals: "Flow.Launcher" }
       - window_process: { regex: "(?i)keypirinha" }
 
-  # Float transient dialogs instead of forcing them into the tile tree.
-  - commands: ["set-floating"]
-    match:
-      - window_title: { regex: "(?i)(open file|save as|find and replace|choose a file|select folder)" }
-      - window_class: { regex: "(?i)#32770" }
 
-  # Stable homes for the center-bank dev loop.
-  - commands: ["move --workspace 4"]
-    match:
-      - window_process: { equals: "Code" }
-      - window_process: { equals: "devenv" }
-      - window_process: { regex: "(?i)webstorm|rider|idea64|pycharm64|clion64" }
-
-  - commands: ["move --workspace 5"]
-    match:
-      - window_process: { equals: "WindowsTerminal" }
-      - window_process: { equals: "wezterm-gui" }
-      - window_process: { equals: "Alacritty" }
-
-  - commands: ["move --workspace 7"]
-    match:
-      - window_process: { equals: "chrome" }
-      - window_process: { equals: "msedge" }
-      - window_process: { equals: "brave" }
-
-  - commands: ["move --workspace 8"]
-    match:
-      - window_process: { equals: "Obsidian" }
-      - window_process: { equals: "Notion" }
-      - window_process: { equals: "Postman" }
-      - window_process: { equals: "azuredatastudio" }
-      - window_process: { equals: "explorer" }
-
-  - commands: ["move --workspace 9"]
-    match:
-      - window_process: { equals: "slack" }
-      - window_process: { regex: "(?i)teams" }
-      - window_process: { equals: "OUTLOOK" }
-      - window_process: { equals: "Zoom" }
 
 keybindings:
   # Bare WM home row from the ADV360 WM layer.
-  - commands: ["focus --monitor 1"]
-    bindings: ["f13"]
-  - commands: ["focus --monitor 0"]
-    bindings: ["f14"]
-  - commands: ["focus --monitor 2"]
-    bindings: ["f15"]
 
   - commands: ["focus --prev-active-workspace-on-monitor"]
-    bindings: ["f16"]
+    bindings: ["f13"]
   - commands: ["focus --next-active-workspace-on-monitor"]
-    bindings: ["f17"]
+    bindings: ["f16"]
 
   - commands: ["focus --direction left"]
     bindings: ["f19"]
@@ -213,17 +169,10 @@ keybindings:
     bindings: ["f22"]
 
   # Shift + monitor anchors send the window to each monitor's primary lane.
-  - commands: ["move --workspace 11", "focus --workspace 11"]
-    bindings: ["shift+f13"]
-  - commands: ["move --workspace 1", "focus --workspace 1"]
-    bindings: ["shift+f14"]
-  - commands: ["move --workspace 16", "focus --workspace 16"]
-    bindings: ["shift+f15"]
-
   - commands: ["move --prev-active-workspace-on-monitor", "focus --prev-active-workspace-on-monitor"]
-    bindings: ["shift+f16"]
+    bindings: ["shift+f13"]
   - commands: ["move --next-active-workspace-on-monitor", "focus --next-active-workspace-on-monitor"]
-    bindings: ["shift+f17"]
+    bindings: ["shift+f16"]
 
   - commands: ["move --direction left"]
     bindings: ["shift+f19"]
@@ -233,6 +182,8 @@ keybindings:
     bindings: ["shift+f21"]
   - commands: ["move --direction right"]
     bindings: ["shift+f22"]
+  - commands: ["close"]
+    bindings: ["f23"]
 
   # Ctrl row = primary workspace bank on the center monitor.
   - commands: ["focus --workspace 1"]
