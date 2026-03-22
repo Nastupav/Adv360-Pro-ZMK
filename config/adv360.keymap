@@ -76,9 +76,9 @@
 
         layer_nav {
             bindings = <
-&trans  &trans        &trans         &trans        &trans       &trans  &kp LC(Z)                                      &kp LC(Y)  &trans       &trans    &trans          &trans        &trans     &trans
-&trans  &none         &none          &kp LC(C)     &kp LC(V)    &trans  &kp LC(X)                                      &kp LC(A)  &kp LC(TAB)  &kp HOME  &kp PAGE_DOWN   &kp PG_UP     &kp END    &none
-&trans  &kp LC(LEFT)  &kp LC(RIGHT)  &kp LC(BSPC)  &kp LC(DEL)  &trans  &kp LC(C)  &trans  &trans      &trans  &trans  &none      &none        &kp LEFT  &kp DOWN_ARROW  &kp UP_ARROW  &kp RIGHT  &trans
+&trans  &trans        &trans         &trans        &trans       &trans  &none                                          &none      &trans       &trans    &trans          &trans        &trans     &trans
+&trans  &kp LC(Z)     &kp LC(Y)      &kp LC(X)     &kp LC(C)    &kp LC(V)  &kp PG_UP                                    &kp PAGE_DOWN  &kp LC(A)  &kp LC(F)  &kp LC(LS(TAB))  &kp LC(TAB)  &kp HOME  &kp END
+&trans  &kp LC(LEFT)  &kp LC(RIGHT)  &kp LC(BSPC)  &kp LC(DEL)  &trans  &none      &trans  &trans      &trans  &trans  &none      &none        &kp LEFT  &kp DOWN_ARROW  &kp UP_ARROW  &kp RIGHT  &trans
 &trans  &trans        &trans         &trans        &trans       &trans                     &trans      &trans                     &trans       &trans    &trans          &trans        &trans     &trans
 &trans  &trans        &trans         &trans        &trans               &trans     &trans  &trans      &trans  &trans  &trans                  &trans    &trans          &trans        &trans     &trans
             >;
