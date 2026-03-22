@@ -1,10 +1,11 @@
 # Unified ADV360 + GlazeWM workflow system.
 # Core grammar:
-# - A/S/D = left / center / right monitor
-# - F/G   = previous / next workspace on the current monitor
-# - J/K/L/; = left / down / up / right
-# - Ctrl row = direct workspace targeting
-# - Win row = WM utility + resize
+# - A/S/D = top / center / right monitor anchors.
+# - F/G   = previous / next workspace on the current monitor.
+# - J/K/L/; = left / down / up / right.
+# - Ctrl row = primary workspace bank 1..10 via F13..F22.
+# - Ctrl+Win row = WM utility + resize.
+# - Ctrl+Alt row = secondary workspace bank 11..20 via F13..F22.
 
 general:
   focus_follows_cursor: false
@@ -16,61 +17,102 @@ general:
 gaps:
   inner_gap: "6px"
   outer_gap:
-    top: "4px"
-    right: "6px"
-    bottom: "6px"
-    left: "6px"
+    top: "32px"
+    right: "0px"
+    bottom: "0px"
+    left: "0px"
 
 window_effects:
   focused_window:
     border:
       enabled: true
-      color: "#4F8FBA"
+      color: "#89b4fa"
 
 workspaces:
-  # Left monitor: infra / files / overflow.
+  # Center monitor: primary bank for the core dev loop.
   - name: "1"
-    display_name: "L1"
+    display_name: "1"
     bind_to_monitor: 0
     keep_alive: true
   - name: "2"
-    display_name: "L2"
+    display_name: "2"
     bind_to_monitor: 0
     keep_alive: true
   - name: "3"
-    display_name: "L3"
+    display_name: "3"
     bind_to_monitor: 0
     keep_alive: true
-  # Center monitor: code / terminal / debug.
   - name: "4"
-    display_name: "C1"
-    bind_to_monitor: 1
+    display_name: "4"
+    bind_to_monitor: 0
     keep_alive: true
   - name: "5"
-    display_name: "C2"
-    bind_to_monitor: 1
+    display_name: "5"
+    bind_to_monitor: 0
     keep_alive: true
   - name: "6"
-    display_name: "C3"
-    bind_to_monitor: 1
+    display_name: "6"
+    bind_to_monitor: 0
     keep_alive: true
-  # Right monitor: browser / docs / communication.
   - name: "7"
-    display_name: "R1"
-    bind_to_monitor: 2
+    display_name: "7"
+    bind_to_monitor: 0
     keep_alive: true
   - name: "8"
-    display_name: "R2"
-    bind_to_monitor: 2
+    display_name: "8"
+    bind_to_monitor: 0
     keep_alive: true
   - name: "9"
-    display_name: "R3"
+    display_name: "9"
+    bind_to_monitor: 0
+    keep_alive: true
+  - name: "10"
+    display_name: "10"
+    bind_to_monitor: 0
+    keep_alive: true
+
+  # Top monitor: secondary bank A.
+  - name: "11"
+    display_name: "1"
+    bind_to_monitor: 1
+    keep_alive: true
+  - name: "12"
+    display_name: "2"
+    bind_to_monitor: 1
+    keep_alive: true
+  - name: "13"
+    display_name: "3"
+    bind_to_monitor: 1
+    keep_alive: true
+  - name: "14"
+    display_name: "4"
+    bind_to_monitor: 1
+    keep_alive: true
+  - name: "15"
+    display_name: "5"
+    bind_to_monitor: 1
+    keep_alive: true
+
+  # Right monitor: secondary bank B.
+  - name: "16"
+    display_name: "1"
     bind_to_monitor: 2
     keep_alive: true
-  # Scratch workspace for temporary tasks.
-  - name: "10"
-    display_name: "X"
-    bind_to_monitor: 1
+  - name: "17"
+    display_name: "2"
+    bind_to_monitor: 2
+    keep_alive: true
+  - name: "18"
+    display_name: "3"
+    bind_to_monitor: 2
+    keep_alive: true
+  - name: "19"
+    display_name: "4"
+    bind_to_monitor: 2
+    keep_alive: true
+  - name: "20"
+    display_name: "5"
+    bind_to_monitor: 2
     keep_alive: true
 
 window_behavior:
@@ -93,6 +135,11 @@ window_rules:
       - window_process: { equals: "SearchHost" }
       - window_process: { equals: "StartMenuExperienceHost" }
       - window_process: { equals: "LockApp" }
+      - window_process: { equals: "SnippingTool" }
+      - window_process: { equals: "ScreenClippingHost" }
+      - window_process: { equals: "CalculatorApp" }
+      - window_process: { equals: "calc" }
+      - window_process: { equals: "mspaint" }
       - window_process: { regex: "(?i).*powertoys.*" }
       - window_process: { regex: "(?i)yasb.*" }
       - window_class: { regex: "(?i)yasb.*" }
@@ -108,7 +155,7 @@ window_rules:
       - window_title: { regex: "(?i)(open file|save as|find and replace|choose a file|select folder)" }
       - window_class: { regex: "(?i)#32770" }
 
-  # Stable homes for the core dev loop.
+  # Stable homes for the center-bank dev loop.
   - commands: ["move --workspace 4"]
     match:
       - window_process: { equals: "Code" }
@@ -144,9 +191,9 @@ window_rules:
 
 keybindings:
   # Bare WM home row from the ADV360 WM layer.
-  - commands: ["focus --monitor 0"]
-    bindings: ["f13"]
   - commands: ["focus --monitor 1"]
+    bindings: ["f13"]
+  - commands: ["focus --monitor 0"]
     bindings: ["f14"]
   - commands: ["focus --monitor 2"]
     bindings: ["f15"]
@@ -161,16 +208,16 @@ keybindings:
   - commands: ["focus --direction down"]
     bindings: ["f20"]
   - commands: ["focus --direction up"]
-    bindings: ["alt+f13"]
+    bindings: ["f21"]
   - commands: ["focus --direction right"]
-    bindings: ["alt+f14"]
+    bindings: ["f22"]
 
   # Shift + monitor anchors send the window to each monitor's primary lane.
-  - commands: ["move --workspace 1", "focus --workspace 1"]
+  - commands: ["move --workspace 11", "focus --workspace 11"]
     bindings: ["shift+f13"]
-  - commands: ["move --workspace 4", "focus --workspace 4"]
+  - commands: ["move --workspace 1", "focus --workspace 1"]
     bindings: ["shift+f14"]
-  - commands: ["move --workspace 7", "focus --workspace 7"]
+  - commands: ["move --workspace 16", "focus --workspace 16"]
     bindings: ["shift+f15"]
 
   - commands: ["move --prev-active-workspace-on-monitor", "focus --prev-active-workspace-on-monitor"]
@@ -183,11 +230,11 @@ keybindings:
   - commands: ["move --direction down"]
     bindings: ["shift+f20"]
   - commands: ["move --direction up"]
-    bindings: ["shift+alt+f13"]
+    bindings: ["shift+f21"]
   - commands: ["move --direction right"]
-    bindings: ["shift+alt+f14"]
+    bindings: ["shift+f22"]
 
-  # Ctrl row = direct workspace targeting.
+  # Ctrl row = primary workspace bank on the center monitor.
   - commands: ["focus --workspace 1"]
     bindings: ["ctrl+f13"]
   - commands: ["focus --workspace 2"]
@@ -205,9 +252,9 @@ keybindings:
   - commands: ["focus --workspace 8"]
     bindings: ["ctrl+f20"]
   - commands: ["focus --workspace 9"]
-    bindings: ["ctrl+alt+f13"]
+    bindings: ["ctrl+f21"]
   - commands: ["focus --workspace 10"]
-    bindings: ["ctrl+alt+f14"]
+    bindings: ["ctrl+f22"]
 
   - commands: ["move --workspace 1", "focus --workspace 1"]
     bindings: ["ctrl+shift+f13"]
@@ -226,32 +273,75 @@ keybindings:
   - commands: ["move --workspace 8", "focus --workspace 8"]
     bindings: ["ctrl+shift+f20"]
   - commands: ["move --workspace 9", "focus --workspace 9"]
-    bindings: ["ctrl+alt+shift+f13"]
+    bindings: ["ctrl+shift+f21"]
   - commands: ["move --workspace 10", "focus --workspace 10"]
-    bindings: ["ctrl+alt+shift+f14"]
+    bindings: ["ctrl+shift+f22"]
 
-  # Win row = WM utilities on the left, resize on the right.
+  # Ctrl+Alt row = secondary workspace bank on the top and right monitors.
+  - commands: ["focus --workspace 11"]
+    bindings: ["ctrl+alt+f13"]
+  - commands: ["focus --workspace 12"]
+    bindings: ["ctrl+alt+f14"]
+  - commands: ["focus --workspace 13"]
+    bindings: ["ctrl+alt+f15"]
+  - commands: ["focus --workspace 14"]
+    bindings: ["ctrl+alt+f16"]
+  - commands: ["focus --workspace 15"]
+    bindings: ["ctrl+alt+f17"]
+  - commands: ["focus --workspace 16"]
+    bindings: ["ctrl+alt+f18"]
+  - commands: ["focus --workspace 17"]
+    bindings: ["ctrl+alt+f19"]
+  - commands: ["focus --workspace 18"]
+    bindings: ["ctrl+alt+f20"]
+  - commands: ["focus --workspace 19"]
+    bindings: ["ctrl+alt+f21"]
+  - commands: ["focus --workspace 20"]
+    bindings: ["ctrl+alt+f22"]
+
+  - commands: ["move --workspace 11", "focus --workspace 11"]
+    bindings: ["ctrl+alt+shift+f13"]
+  - commands: ["move --workspace 12", "focus --workspace 12"]
+    bindings: ["ctrl+alt+shift+f14"]
+  - commands: ["move --workspace 13", "focus --workspace 13"]
+    bindings: ["ctrl+alt+shift+f15"]
+  - commands: ["move --workspace 14", "focus --workspace 14"]
+    bindings: ["ctrl+alt+shift+f16"]
+  - commands: ["move --workspace 15", "focus --workspace 15"]
+    bindings: ["ctrl+alt+shift+f17"]
+  - commands: ["move --workspace 16", "focus --workspace 16"]
+    bindings: ["ctrl+alt+shift+f18"]
+  - commands: ["move --workspace 17", "focus --workspace 17"]
+    bindings: ["ctrl+alt+shift+f19"]
+  - commands: ["move --workspace 18", "focus --workspace 18"]
+    bindings: ["ctrl+alt+shift+f20"]
+  - commands: ["move --workspace 19", "focus --workspace 19"]
+    bindings: ["ctrl+alt+shift+f21"]
+  - commands: ["move --workspace 20", "focus --workspace 20"]
+    bindings: ["ctrl+alt+shift+f22"]
+
+  # Ctrl+Win row = WM utilities on the left, resize on the right.
   - commands: ["wm-redraw"]
-    bindings: ["lwin+f13"]
+    bindings: ["ctrl+lwin+f13"]
   - commands: ["wm-reload-config"]
-    bindings: ["lwin+f14"]
+    bindings: ["ctrl+lwin+f14"]
   - commands: ["set-minimized"]
-    bindings: ["lwin+f15"]
+    bindings: ["ctrl+lwin+f15"]
   - commands: ["toggle-floating"]
-    bindings: ["lwin+f16"]
+    bindings: ["ctrl+lwin+f16"]
   - commands: ["toggle-fullscreen"]
-    bindings: ["lwin+f17"]
+    bindings: ["ctrl+lwin+f17"]
 
   - commands: ["resize --width -5%"]
-    bindings: ["lwin+f18"]
+    bindings: ["ctrl+lwin+f18"]
   - commands: ["resize --height +5%"]
-    bindings: ["lwin+f19"]
+    bindings: ["ctrl+lwin+f19"]
   - commands: ["resize --height -5%"]
-    bindings: ["lwin+f20"]
+    bindings: ["ctrl+lwin+f20"]
   - commands: ["resize --width +5%"]
-    bindings: ["lwin+alt+f13"]
+    bindings: ["ctrl+lwin+f21"]
   - commands: ["toggle-tiling-direction"]
-    bindings: ["lwin+alt+f14"]
+    bindings: ["ctrl+lwin+f22"]
 
   # Hyper app layer: left home row is the daily engineering loop.
   - commands: ['shell-exec cmd /c start "" wt.exe']
@@ -323,6 +413,8 @@ keybindings:
 
   - commands: ["focus --monitor 0"]
     bindings: ["ctrl+alt+lwin+left"]
+  - commands: ["focus --workspace 10"]
+    bindings: ["ctrl+alt+lwin+down"]
   - commands: ["focus --monitor 1"]
     bindings: ["ctrl+alt+lwin+up"]
   - commands: ["focus --monitor 2"]
