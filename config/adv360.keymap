@@ -105,11 +105,11 @@
 
         layer_wm {
             bindings = <
-&kp ESC          &kp LC(LG(F13))  &kp LC(LG(F14))  &kp LC(LG(F15))  &kp LC(LG(F16))  &kp LC(LG(F17))  &kp LA(F4)                                                   &kp LC(LG(F22))  &kp LC(LG(F18))  &kp LC(LG(F19))  &kp LC(LG(F20))  &kp LC(LG(F21))  &kp F13          &kp F15
-&kp TAB          &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &kp F16                                                     &kp F17          &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F21)      &kp LC(F22)      &kp LA(F4)
-&kp ESC          &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &kp LC(LG(F13))  &kp LC(LG(F14))  &kp LC(LG(F15))  &kp LC(LG(F16))  &kp LC(LG(F17))  &kp LA(F4)       &kp LC(LG(F18))  &kp F19          &kp F20          &kp F21          &kp F22          &kp LC(LG(F21))
-&kp LSHFT        &kp LC(LA(F13))  &kp LC(LA(F14))  &kp LC(LA(F15))  &kp LC(LA(F16))  &kp LC(LA(F17))                                       &kp LC(LG(F19))  &kp LC(LG(F20))                    &kp LC(LA(F18))  &kp LC(LA(F19))  &kp LC(LA(F20))  &kp LC(LA(F21))  &kp LC(LA(F22))  &kp RSHFT
-&kp ESC          &kp F13          &kp F14          &kp F15          &kp F16                         &kp LC(LG(F15))   &kp LC(LG(F13))  &kp LSHFT       &kp LC(LG(F14))  &kp LA(F4)       &kp F17                        &kp LC(LG(F18))  &kp LC(LG(F19))  &kp LC(LG(F20))  &kp LC(LG(F21))  &kp LC(LG(F22))
+&kp ESC    &kp LC(LG(F13))  &kp LC(LG(F14))  &kp LC(LG(F15))  &kp LC(LG(F16))  &kp LC(LG(F17))  &kp LA(F4)                                                                                  &kp LC(LG(F22))  &kp LC(LG(F18))  &kp LC(LG(F19))  &kp LC(LG(F20))  &kp LC(LG(F21))  &kp F13          &kp F15
+&kp TAB    &kp LC(F13)      &kp LC(F14)      &kp LC(F15)      &kp LC(F16)      &kp LC(F17)      &kp F16                                                                                     &kp F17          &kp LC(F18)      &kp LC(F19)      &kp LC(F20)      &kp LC(F21)      &kp LC(F22)      &kp LA(F4)
+&kp ESC    &kp F13          &kp F14          &kp F15          &kp F16          &kp F17          &kp LC(LG(F13))  &kp LC(LA(F24))     &kp LC(LG(F24))      &kp LC(LG(F16))  &kp LC(LG(F17))  &kp LA(F4)       &kp LC(LG(F18))  &kp F19          &kp F20          &kp F21          &kp F22          &kp LC(LG(F21))
+&kp LSHFT  &kp LC(LA(F13))  &kp LC(LA(F14))  &kp LC(LA(F15))  &kp LC(LA(F16))  &kp LC(LA(F17))                                       &kp LC(LG(F23))      &kp LC(LG(F20))                                    &kp LC(LA(F18))  &kp LC(LA(F19))  &kp LC(LA(F20))  &kp LC(LA(F21))  &kp LC(LA(F22))  &kp RSHFT
+&kp ESC    &kp F13          &kp F14          &kp F15          &kp F16                           &kp F24          &hm LEFT_SHIFT F23  &kp LC(F24)          &kp LC(LG(F14))  &kp LA(F4)       &kp F17                           &kp LC(LG(F18))  &kp LC(LG(F19))  &kp LC(LG(F20))  &kp LC(LG(F21))  &kp LC(LG(F22))
             >;
         };
 
