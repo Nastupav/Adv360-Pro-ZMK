@@ -343,14 +343,14 @@ keybindings:
   - commands: ["toggle-tiling-direction"]
     bindings: ["ctrl+lwin+f22"]
 
-  # Hyper app layer: left home row is the daily engineering loop.
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\PowerShell\7\pwsh.exe"']
+  # Hyper+A/F cycle workspaces without entering the WM layer.
+  - commands: ["focus --prev-active-workspace-on-monitor"]
     bindings: ["ctrl+alt+lwin+a"]
   - commands: ['shell-exec cmd /c code']
     bindings: ["ctrl+alt+lwin+s"]
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --profile-directory="Profile 3"']
     bindings: ["ctrl+alt+lwin+d"]
-  - commands: ['shell-exec cmd /c start "" explorer.exe']
+  - commands: ["focus --next-active-workspace-on-monitor"]
     bindings: ["ctrl+alt+lwin+f"]
   - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\gitkraken\\gitkraken.exe"']
     bindings: ["ctrl+alt+lwin+g"]
