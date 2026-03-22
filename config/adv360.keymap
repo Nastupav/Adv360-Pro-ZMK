@@ -2,6 +2,7 @@
  * ZMK keymap for Kinesis Advantage360 Pro
  *
  * Layers:
+<<<<<<< HEAD
  *   0 BASE   QWERTY + home-row mods (GACS order, i.e. GUI/Alt/Ctrl/Shift)
  *   1 SYM    Symbols & F-keys (hold BSPC)
  *   2 NAV    Vim-style navigation + editing (hold SPACE)
@@ -29,6 +30,15 @@
  *   - NAV word-navigation uses LA(LEFT/RIGHT) = Option+Arrow (macOS word-skip).
  *     On Windows use home-row Ctrl mod + arrows for the same effect.
  *   - APP layer sends Ctrl+Alt+Cmd+<key> (macOS) / Ctrl+Alt+Win+<key> (Windows).
+=======
+ * 0 BASE (QWERTY + HRM; thumb: tap End / hold Shift)
+ * 1 SYM  (hold BSPC/DEL)
+ * 2 NAV  (hold SPACE)
+ * 3 MOD  (BT/RGB/boot)
+ * 4 WM   (hold ENTER) -> focus with Enter+key; move requires Shift
+ * 5 NUMPAD (momentary from base top row)
+ * 6 APP  (hold CAPS) -> Ctrl+Alt+Win+<key> for quicklaunch/system binds
+>>>>>>> parent of a11df21 (EU)
  */
 
 #include <behaviors.dtsi>
@@ -49,6 +59,7 @@
             flavor = "balanced";
             bindings = <&kp>, <&kp>;
         };
+<<<<<<< HEAD
 
         /*
          * td_caps: tap = ESC, hold = APP layer
@@ -64,6 +75,8 @@
             flavor = "hold-preferred";
             bindings = <&mo>, <&kp>;
         };
+=======
+>>>>>>> parent of a11df21 (EU)
     };
 
     keymap {
@@ -98,11 +111,19 @@
 
         default_layer {
             bindings = <
+<<<<<<< HEAD
 &kp EQUAL  &kp N1                &kp N2                 &kp N3       &kp N4       &kp N5  &mo 5                                                                                  &mo 3               &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
 &kp TAB    &kp Q                 &kp W                  &kp E        &kp R        &kp T   &kp PRINTSCREEN                                                                        &kp K_CONTEXT_MENU  &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
 &kp ESC    &hm LGUI A            &hm LALT S             &hm LCTRL D  &hm LSHFT F  &kp G   &kp K_COPY       &kp LCTRL  &kp LEFT_ALT       &kp RCTRL  &kp RIGHT_COMMAND  &kp K_PASTE         &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
 &kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                                &td_caps 6 ESC     &kp PG_UP                                             &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
 &kp GRAVE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp LEFT     &kp RIGHT            &lt 1 BSPC       &lt 5 DEL  &lt 2 TAB          &kp K_APP  &lt 4 ENTER        &lt 2 SPACE                   &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
+=======
+&kp EQUAL  &kp N1                &kp N2                 &kp N3       &kp N4       &kp N5  &mo 5                                                                            &mo 3               &kp N6  &kp N7       &kp N8       &kp N9      &kp N0         &kp MINUS
+&kp TAB    &kp Q                 &kp W                  &kp E        &kp R        &kp T   &kp PRINTSCREEN                                                                  &kp K_CONTEXT_MENU  &kp Y   &kp U        &kp I        &kp O       &kp P          &kp BSLH
+&kp ESC    &hm LGUI A            &hm LALT S             &hm LCTRL D  &hm LSHFT F  &kp G   &kp LC(PRINTSCREEN)  &kp LCTRL  &kp LEFT_ALT       &kp RCTRL  &kp RIGHT_COMMAND  &mt LC(V) LC(C)     &kp H   &hm RSHFT J  &hm RCTRL K  &hm RALT L  &hm RGUI SEMI  &kp SQT
+&kp LSHFT  &kp Z                 &kp X                  &kp C        &kp V        &kp B                                   &lt 6 CAPS         &kp PG_UP                                         &kp N   &kp M        &kp COMMA    &kp DOT     &kp FSLH       &kp RSHFT
+&kp GRAVE  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &kp LEFT     &kp RIGHT            &lt 1 BSPC           &lt 5 DEL  &mt LSHFT END      &kp K_APP  &lt 4 ENTER        &lt 2 SPACE                 &kp UP       &kp DOWN     &kp LBKT    &kp RBKT       &mo 2
+>>>>>>> parent of a11df21 (EU)
             >;
         };
 
@@ -268,6 +289,7 @@
             >;
         };
 
+<<<<<<< HEAD
         /* =========================================================
          * LAYER 6: APP  (hold CAPS via td_caps, tap=ESC)
          *
@@ -286,6 +308,14 @@
          * This layer intentionally maps EVERY physical key position
          * so you can assign any app/action to any key on either OS.
          * ========================================================= */
+=======
+        // =========================================================
+        // LAYER 6: APP (USE ALL KEYS)
+        // Hold CAPS to access.
+        // Sends Ctrl+Alt+Win+<key> for every position (except CAPS itself which is held).
+        // Bind these in GlazeWM to launch apps / scripts.
+        // =========================================================
+>>>>>>> parent of a11df21 (EU)
 
         layer_app {
             bindings = <
