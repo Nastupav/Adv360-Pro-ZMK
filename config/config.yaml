@@ -8,7 +8,6 @@
 # - Ctrl+Alt row = secondary workspace bank 11..20 via F13..F22.
 
 general:
-  focus_follows_cursor: false
   toggle_workspace_on_refocus: false
   cursor_jump:
     enabled: true
@@ -135,20 +134,10 @@ window_rules:
       - window_process: { equals: "SearchHost" }
       - window_process: { equals: "StartMenuExperienceHost" }
       - window_process: { equals: "LockApp" }
-      - window_process: { equals: "SnippingTool" }
-      - window_process: { equals: "ScreenClippingHost" }
-      - window_process: { equals: "CalculatorApp" }
-      - window_process: { equals: "calc" }
-      - window_process: { equals: "mspaint" }
       - window_process: { regex: "(?i).*powertoys.*" }
       - window_process: { regex: "(?i)yasb.*" }
       - window_class: { regex: "(?i)yasb.*" }
-      - window_process: { equals: "1Password" }
-      - window_process: { equals: "Bitwarden" }
-      - window_process: { equals: "KeePass" }
-      - window_process: { equals: "Flow.Launcher" }
-      - window_process: { regex: "(?i)keypirinha" }
-
+  
 
 
 keybindings:
@@ -296,77 +285,68 @@ keybindings:
 
   # Hyper+A/F cycle workspaces without entering the WM layer.
   - commands: ["focus --prev-active-workspace-on-monitor"]
-    bindings: ["ctrl+alt+lwin+a"]
+    bindings: ["ctrl+shift+a"]
   - commands: ['shell-exec cmd /c code']
-    bindings: ["ctrl+alt+lwin+s"]
+    bindings: ["ctrl+shift+s"]
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --profile-directory="Profile 3"']
-    bindings: ["ctrl+alt+lwin+d"]
+    bindings: ["ctrl+shift+d"]
   - commands: ["focus --next-active-workspace-on-monitor"]
-    bindings: ["ctrl+alt+lwin+f"]
+    bindings: ["ctrl+shift+f"]
   - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\gitkraken\\gitkraken.exe"']
-    bindings: ["ctrl+alt+lwin+g"]
+    bindings: ["ctrl+shift+g"]
 
   # Hyper app layer: right home row is communication and context.
   - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\slack\\slack.exe"']
-    bindings: ["ctrl+alt+lwin+h"]
+    bindings: ["ctrl+shift+h"]
   - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Microsoft\\Teams\\Update.exe" --processStart "Teams.exe"']
-    bindings: ["ctrl+alt+lwin+j"]
+    bindings: ["ctrl+shift+j"]
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Microsoft Office\\root\\Office16\\OUTLOOK.EXE"']
-    bindings: ["ctrl+alt+lwin+k"]
+    bindings: ["ctrl+shift+k"]
   - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Notion\\Notion.exe"']
-    bindings: ["ctrl+alt+lwin+l"]
+    bindings: ["ctrl+shift+l"]
   - commands: ['shell-exec cmd /c start "" "C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\KeePass 2.lnk"']
-    bindings: ["ctrl+alt+lwin+semicolon"]
+    bindings: ["ctrl+shift+semicolon"]
 
   # Hyper app layer: top row holds alternate browsers and secondary dev tools.
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --profile-directory="Profile 2"']
-    bindings: ["ctrl+alt+lwin+q"]
+    bindings: ["ctrl+shift+q"]
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --profile-directory="Profile 3"']
-    bindings: ["ctrl+alt+lwin+w"]
+    bindings: ["ctrl+shift+w"]
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"']
-    bindings: ["ctrl+alt+lwin+e"]
+    bindings: ["ctrl+shift+e"]
   - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\BraveSoftware\\Brave-Browser\\Application\\brave.exe"']
-    bindings: ["ctrl+alt+lwin+r"]
-  - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Programs\\Obsidian\\Obsidian.exe"']
-    bindings: ["ctrl+alt+lwin+t"]
+    bindings: ["ctrl+shift+r"]
+  - commands: ['shell-exec cmd /c start "" "C:\Users\PavelNastulczyk\AppData\Local\Programs\Obsidian\Obsidian.exe"']
+    bindings: ["ctrl+shift+n"]
 
   - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Postman\\Postman.exe"']
-    bindings: ["ctrl+alt+lwin+y"]
+    bindings: ["ctrl+shift+y"]
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Azure Data Studio\\azuredatastudio.exe"']
-    bindings: ["ctrl+alt+lwin+u"]
+    bindings: ["ctrl+shift+u"]
   - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\JetBrains\\Toolbox\\bin\\jetbrains-toolbox.exe"']
-    bindings: ["ctrl+alt+lwin+i"]
+    bindings: ["ctrl+shift+i"]
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Everything\\Everything.exe"']
-    bindings: ["ctrl+alt+lwin+o"]
-  - commands: ['shell-exec cmd /c start spotify:']
-    bindings: ["ctrl+alt+lwin+p"]
+    bindings: ["ctrl+shift+o"]
+  - commands: ['shell-exec cmd /c start "" "pwsh"']
+    bindings: ["ctrl+shift+p"]
 
   # Hyper app layer: bottom row is overflow utility.
   - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Programs\\zoom\\Zoom.exe"']
-    bindings: ["ctrl+alt+lwin+z"]
+    bindings: ["ctrl+shift+z"]
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Notepad++\\notepad++.exe"']
-    bindings: ["ctrl+alt+lwin+x"]
+    bindings: ["ctrl+shift+x"]
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --profile-directory="Default"']
-    bindings: ["ctrl+alt+lwin+c"]
+    bindings: ["ctrl+shift+c"]
   - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"']
-    bindings: ["ctrl+alt+lwin+v"]
+    bindings: ["ctrl+shift+v"]
   - commands: ['shell-exec gsudo wt.exe']
-    bindings: ["ctrl+alt+lwin+b"]
-
-  - commands: ['shell-exec cmd /c start "" "C:\Program Files\PowerShell\7\pwsh.exe" -WorkingDirectory "%USERPROFILE%\Documents\GitHub"']
-    bindings: ["ctrl+alt+lwin+n"]
-  - commands: ['shell-exec cmd /c start "" "%LOCALAPPDATA%\\Programs\\Microsoft VS Code\\Code.exe" "%USERPROFILE%\\Documents\\GitHub"']
-    bindings: ["ctrl+alt+lwin+m"]
-  - commands: ['shell-exec cmd /c start "" python "%USERPROFILE%\\import pyautogui.py"']
-    bindings: ["ctrl+alt+lwin+comma"]
-  - commands: ['shell-exec cmd /c start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --profile-directory="Profile 1"']
-    bindings: ["ctrl+alt+lwin+period"]
+    bindings: ["ctrl+shift+b"]
 
   - commands: ["focus --monitor 0"]
-    bindings: ["ctrl+alt+lwin+left"]
+    bindings: ["ctrl+shift+left"]
   - commands: ["focus --workspace 10"]
-    bindings: ["ctrl+alt+lwin+down"]
+    bindings: ["ctrl+shift+down"]
   - commands: ["focus --monitor 1"]
-    bindings: ["ctrl+alt+lwin+up"]
+    bindings: ["ctrl+shift+up"]
   - commands: ["focus --monitor 2"]
-    bindings: ["ctrl+alt+lwin+right"]
+    bindings: ["ctrl+shift+right"]
