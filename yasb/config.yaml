@@ -398,7 +398,7 @@ widgets:
         - {icon: "\uf0a2", launch: "notification_center", name: "Notification Center"} # launch notification center
         - {icon: "\ueb51", launch: "quick_settings"} # launch quick settings
         - {icon: "\uf422", launch: "search"} # launch search
-        - {icon: "\uf489", launch: "wt", name: "Windows Terminal"} # launch terminal
+        - {icon: "\uf489", launch: "powershell -Command \"Start-Process pwsh -Verb RunAs\"", name: "Windows Terminal (Admin)"} # launch pwsh as admin
         # - {icon: "C:\\Users\\marko\\icons\\vscode.png", launch: "C:\\Users\\Username\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"} # open vscode
         # - {icon: "\udb81\udc4d",launch: "\"C:\\Program Files\\Mozilla Firefox\\firefox.exe\" -new-tab www.reddit.com"} # open reddit in new tab in firefox
         # - {icon: "\udb81\udc4d",launch: "\"C:\\Program Files\\Mozilla Firefox\\firefox.exe\" -new-window www.reddit.com"} # open reddit in new window in firefox
