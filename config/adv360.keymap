@@ -119,11 +119,11 @@
 
         layer_numpad {
             bindings = <
-&kp ESC   &kp TAB   &kp BSPC   &kp DEL        &kp LPAR   &kp RPAR   &kp LBKT                                                &kp RBKT    &kp SLASH  &kp ASTERISK  &kp MINUS     &kp PLUS       &kp EQUAL  &kp ENTER
-&kp HOME  &kp END   &kp PG_UP  &kp PAGE_DOWN  &kp COMMA  &kp DOT    &kp TAB                                                 &kp BSPC    &kp EQUAL  &kp N7        &kp N8        &kp N9         &kp MINUS  &kp KP_PLUS
-&kp ESC   &kp PLUS  &kp MINUS  &kp EQUAL      &kp UNDER  &kp PRCNT  &kp TAB   &kp BSPC  &kp DEL        &kp HOME  &kp END    &kp ENTER   &kp SLASH  &kp NUMBER_4  &kp N5        &kp NUMBER_6   &kp STAR   &kp KP_ENTER
-&kp LBRC  &kp RBRC  &kp LT     &kp GT         &kp HASH   &kp DLLR                       &kp AMPS       &kp STAR                         &kp N0     &kp NUMBER_1  &kp NUMBER_2  &kp NUMBER_3   &kp DOT    &kp BSPC
-&kp ESC   &kp TAB   &kp BSPC   &kp DEL        &kp EQUAL             &kp LPAR  &kp RPAR  &kp ENTER      &kp HOME  &kp KP_N0  &kp KP_DOT             &kp END       &kp PG_UP     &kp PAGE_DOWN  &kp PLUS   &kp KP_ENTER
+&kp ESC   &kp TAB   &kp BSPC   &kp DEL        &kp LPAR   &kp RPAR   &kp LBKT                                                        &kp RBKT    &kp SLASH  &kp ASTERISK  &kp MINUS     &kp PLUS       &kp EQUAL  &kp ENTER
+&kp HOME  &kp END   &kp PG_UP  &kp PAGE_DOWN  &kp COMMA  &kp DOT    &kp TAB                                                         &kp BSPC    &kp EQUAL  &kp N7        &kp N8        &kp N9         &kp MINUS  &kp KP_PLUS
+&kp ESC   &kp PLUS  &kp MINUS  &kp EQUAL      &kp UNDER  &kp PRCNT  &kp TAB   &kp BSPC  &kp DEL        &kp HOME  &kp END            &kp ENTER   &kp SLASH  &kp NUMBER_4  &kp N5        &kp NUMBER_6   &kp STAR   &kp KP_ENTER
+&kp LBRC  &kp RBRC  &kp LT     &kp GT         &kp HASH   &kp DLLR                       &kp AMPS       &kp STAR                                 &kp N0     &kp NUMBER_1  &kp NUMBER_2  &kp NUMBER_3   &kp DOT    &kp BSPC
+&kp ESC   &kp TAB   &kp BSPC   &kp DEL        &kp EQUAL             &kp LPAR  &kp RPAR  &kp ENTER      &kp HOME  &mt LEFT_SHIFT N0  &kp KP_DOT             &kp END       &kp PG_UP     &kp PAGE_DOWN  &kp PLUS   &kp KP_ENTER
             >;
         };
 
