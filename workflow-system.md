@@ -1,9 +1,3 @@
-> **Status: IMPLEMENTED** — `config/adv360.keymap` and `glazewm-config.yaml` have been rewritten.
-> Flash firmware, then deploy `glazewm-config.yaml` to `%USERPROFILE%\.config\glazewm\config.yaml`.
-> Run `glazewm query monitors` first to verify monitor indices match the comments at the top of `glazewm-config.yaml`.
-
----
-
 ## 1) Current config critique
 - The existing ADV360 keymap mixes home-row mods, Vim-style navigation, and an F-key window-manager matrix without one clean operating model.
 - The GlazeWM file does useful work, but several comments and assumptions no longer match what the keyboard actually emits.
@@ -546,22 +540,19 @@ keybindings:
 ```
 
 ## 6) Binding matrix
-
-Monitor layout: **center** (code/primary) — **above** (terminal/logs) — **right** (browser/comms)
-
 | Action | Keybinding | Layer/context | Rationale |
 | --- | --- | --- | --- |
-| Focus above / center / right monitor | `A / S / D` | WM | S = strongest finger = primary monitor |
-| Send window to above / center / right monitor | `Shift+A / Shift+S / Shift+D` | WM | Same anchors, Shift means move |
+| Focus monitor left / center / right | `A / S / D` | WM | Same physical story every time |
+| Send window to left / center / right monitor | `Shift+A / Shift+S / Shift+D` | WM | Same anchors, Shift means move |
 | Previous / next workspace on current monitor | `F / G` | WM | Compact lane next to monitor control |
 | Send window to previous / next workspace | `Shift+F / Shift+G` | WM | Move semantic mirrors focus semantic |
-| Focus window left / down / up / right | `H / J / K / L` | WM and NAV | Standard HJKL |
-| Move window left / down / up / right | `Shift+H / Shift+J / Shift+K / Shift+L` | WM | Same cluster, Shift means move |
+| Focus window left / down / up / right | `J / K / L / ;` | WM and NAV | One directional grammar |
+| Move window left / down / up / right | `Shift+J / Shift+K / Shift+L / Shift+;` | WM | Same cluster, Shift means move |
 | Resize left / down / up / right | Win row right cluster | WM | Resize sits adjacent to direction logic |
-| Focus workspaces `1-10` | Ctrl row (Q=WS1 … P=WS10) | WM | Direct jump without number-row reach |
+| Focus workspaces `1-10` | Ctrl row | WM | Direct jump without number-row reach |
 | Move to workspaces `1-10` | Ctrl+Shift row | WM | Same map with move semantic |
-| Terminal / VS Code / Chrome / Explorer / Git | `A / S / D / F / G` | APP | Core development loop |
-| Teams / Postman / Outlook / Obsidian / KeePass | `H / J / K / L / ;` | APP | Communication and context cluster |
+| Terminal / Code / Browser / Explorer / Git | `A / S / D / F / G` | APP | Core development loop |
+| Slack / Teams / Outlook / Notion / KeePass | `H / J / K / L / ;` | APP | Communication and context cluster |
 
 ## 7) Migration plan
 - What will feel different: window control becomes monitor-first, workspaces become fewer and more intentional, and OS navigation moves off HJKL habits.
@@ -577,44 +568,21 @@ Monitor layout: **center** (code/primary) — **above** (terminal/logs) — **ri
 - Old habits to drop: mouse-driven focus changes, flat workspace sprawl, and HJKL as a system-wide default.
 
 ## 8) Cheat sheet
-
-**Layer access (from BASE):**
-- `BSPC` hold = SYM
-- `DEL` hold = NUM
 - `ENTER` hold = WM
 - `SPACE` hold = NAV
-- `ESC` thumb hold = APP (Hyper layer)
+- `BSPC` hold = SYM
+- `DEL` hold = NUM
+- APP thumb hold = Hyper app layer
+- WM: `A/S/D` monitors, `F/G` workspace cycle, `J/K/L/;` direction
+- WM + Shift: move instead of focus
+- WM Ctrl row: direct workspaces `1-10`
+- APP left home row: terminal, code, browser, explorer, git
+- APP right home row: Slack, Teams, Outlook, Notion, KeePass
 
-**WM layer grammar:**
-- `A / S / D` = focus above / center / right monitor
-- `Shift+A/S/D` = send window to that monitor's anchor workspace
-- `F / G` = prev / next workspace on current monitor
-- `Shift+F/G` = move window to prev / next workspace
-- `H / J / K / L` = focus window left / down / up / right
-- `Shift+H/J/K/L` = move window directionally
-- Ctrl row (Q=WS1 … P=WS10) = direct workspace jump
-- Ctrl+Shift row = move window to that workspace
-- Win row left = WM utilities (redraw / reload / minimize / float / fullscreen)
-- Win row right = resize (←↓↑→ + toggle-tiling-dir)
-
-**APP home row (Hyper = Ctrl+Alt+Win):**
-- `A` = Windows Terminal  →  launches to WS 4 (above)
-- `S` = VS Code           →  launches to WS 1 (center)
-- `D` = Chrome            →  launches to WS 7 (right)
-- `F` = File Explorer
-- `G` = GitKraken
-- `H` = Teams             →  auto-moves to WS 9 (right)
-- `J` = Postman           →  auto-moves to WS 6 (above)
-- `K` = Outlook           →  auto-moves to WS 9 (right)
-- `L` = Obsidian          →  auto-moves to WS 8 (right)
-- `;` = KeePass
-
-## 9) Implementation notes
-
-- **Monitor indices**: `glazewm-config.yaml` assumes center=0, above=1, right=2. Run `glazewm query monitors` to verify and update the three `focus --monitor N` lines if they differ.
-- **Hyper key**: APP layer now uses `Ctrl+Alt+Win` (`LC+LA+LG`). If any app intercepts this chord, adjust the GlazeWM binding syntax — the keyboard side doesn't need to change.
-- **App launch paths**: Some paths in `glazewm-config.yaml` may need local correction if software is installed in a non-standard location.
-- **HRM tuning**: `tapping-term-ms=220`, `quick-tap-ms=175`, `balanced` flavor. If home-row mods misfire during fast typing, increase `require-prior-idle-ms` in 25ms increments. If they feel sluggish, reduce `tapping-term-ms`.
-- **version.dtsi**: Always blank in git. The build scripts populate it automatically; `make` runs `git checkout config/version.dtsi` to restore it after each build.
-- **No combos or one-shot mods**: intentional — value comes from hold-tap layers. More stateful behavior would raise adoption cost.
-- **Shift+monitor-anchor sends to WS 1/4/7**: Predictable fixed target rather than "current active workspace on that monitor". You always know where the window lands.
+## 9) Assumptions / syntax notes
+- `config/adv360.keymap` now includes `macros.dtsi`; if the local build environment resolves includes differently, that include path may need a minor tweak.
+- I kept to the hold-tap and keycode features already used in the repo to reduce ZMK syntax risk.
+- No extra one-shot modifiers, combos, or leader behavior were added beyond the existing hold-tap model. That was intentional to keep the system lean and maintainable.
+- Shifted monitor-send behavior currently routes to each monitor's anchor workspace (`1`, `4`, `7`) rather than each monitor's currently active workspace. That is a predictability tradeoff, not an accident.
+- The GlazeWM commands are based on the syntax already present in your file. If your installed GlazeWM version changed specific command names, only those bindings should need adjustment.
+- Some app launch paths may still need local correction if a program is installed in a nonstandard location.
