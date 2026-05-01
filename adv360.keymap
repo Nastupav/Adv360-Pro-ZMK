@@ -25,7 +25,7 @@
  *     terminal regardless of OS. Windows users should add a per-OS layer.
  *
  *   - Dangerous actions are protected:
- *       * &bootloader is on SYS row 2 only (requires SYS hold to reach).
+ *       * &bootloader is exposed only via a SYS-only inner-key combo.
  *       * &bt BT_CLR is exposed only via the SYS-only combo (BT_SEL 0 + BT_SEL 1).
  *
  * Matrix layout (per layer, 76 keys total):
@@ -132,6 +132,18 @@
             layers = <SYS>;
             bindings = <&bt BT_CLR>;
         };
+
+        /*
+         * Enter bootloader only from SYS, and only by pressing the two inner
+         * row-2 keys together. This keeps firmware mode reachable but prevents
+         * a single accidental key press from dropping the board into bootloader.
+         */
+        combo_bootloader {
+            timeout-ms = <200>;
+            key-positions = <20 21>;
+            layers = <SYS>;
+            bindings = <&bootloader>;
+        };
     };
 
     keymap {
@@ -161,7 +173,7 @@
         // matching Kinesis ergonomics where reaching to H is an inward stretch.
         //   J = LEFT   K = DOWN   L = UP   ; = RIGHT
         //   H = HOME   ' = ENTER
-        // Left hand: mac clipboard/undo (Cmd) + bash readline (Ctrl).
+        // Left hand: mac clipboard/undo (Cmd) + bash/readline controls (Ctrl).
         // =========================================================
 
         layer_nav {
@@ -170,8 +182,8 @@
 &kp ESC    &kp LA(LEFT)       &kp LA(RIGHT)       &kp LG(LBKT)       &kp LG(RBKT)        &kp PSCRN        &none                                                                         &none       &kp LC(LS(TAB)) &kp LC(TAB)    &kp LG(TAB)      &kp LG(LS(TAB)) &kp PG_UP      &kp PG_DN
 &kp TAB    &kp LG(Z)          &kp LG(LS(Z))       &kp LG(X)          &kp LG(C)           &kp LG(V)        &none                                                                         &none       &kp HOME        &kp PG_DN      &kp PG_UP        &kp END         &kp DEL        &kp BSPC
 &kp ESC    &kp LC(A)          &kp LC(E)           &kp LC(U)          &kp LC(K)           &kp LC(W)        &kp LGUI       &kp LCTRL      &kp LALT        &kp RALT     &kp RCTRL    &kp RGUI       &kp HOME  &kp LEFT      &kp DOWN     &kp UP        &kp RIGHT      &kp ENTER
-&kp LSHFT  &kp LG(S)          &kp LG(F)           &kp LG(R)          &kp LG(D)           &kp LG(L)                                        &trans           &trans                                              &kp LA(LEFT) &kp LA(RIGHT) &kp LA(LS(LEFT)) &kp LA(LS(RIGHT)) &kp LA(BSPC) &kp RSHFT
-&kp ESC    &kp TAB            &kp LG(Z)           &kp LG(LS(Z))      &kp LG(F)                           &kp BSPC       &kp DEL       &kp LSHFT       &kp LCTRL     &kp ENTER      &trans                            &kp HOME  &kp END       &kp PG_UP    &kp PG_DN     &trans
+&kp LSHFT  &kp LG(S)          &kp LG(F)           &kp LC(R)          &kp LC(C)           &kp LC(D)                                        &trans           &trans                                              &kp LA(LEFT) &kp LA(RIGHT) &kp LA(LS(LEFT)) &kp LA(LS(RIGHT)) &kp LA(BSPC) &kp RSHFT
+&kp ESC    &kp TAB            &kp LG(Z)           &kp LG(LS(Z))      &kp LC(L)                           &kp BSPC       &kp DEL       &kp LSHFT       &kp LCTRL     &kp ENTER      &trans                            &kp HOME  &kp END       &kp PG_UP    &kp PG_DN     &trans
             >;
         };
 
@@ -229,8 +241,8 @@
         // =========================================================
         // LAYER 5: SYS
         // Bluetooth profiles, RGB, backlight, media, firmware.
-        // BT_CLR is intentionally NOT bound directly; only via the
-        // combo_bt_clear (BT_SEL 0 + BT_SEL 1) gated to this layer.
+        // BT_CLR and bootloader are intentionally NOT bound directly; use the
+        // SYS-only combos above for destructive/system actions.
         // RGB controls realigned to the right main 6 keys (under Y/U/I/O/P/\).
         // =========================================================
 
@@ -238,7 +250,7 @@
             display-name = "SYS";
             bindings = <
 &none      &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4 &trans                                                                        &trans       &none           &none           &none           &none           &none           &none
-&none      &none        &none        &none        &none        &none        &bootloader                                                                   &bootloader  &none           &none           &none           &none           &none           &none
+&none      &none        &none        &none        &none        &none        &none                                                                         &none        &none           &none           &none           &none           &none           &none
 &none      &none        &none        &none        &none        &none        &none        &none        &none        &none       &none      &none           &rgb_ug RGB_TOG &rgb_ug RGB_BRI &rgb_ug RGB_BRD &rgb_ug RGB_EFF &rgb_ug RGB_EFR &rgb_ug RGB_SPI
 &none      &none        &none        &none        &none        &none                                      &kp C_BRI_DN     &kp C_BRI_UP                                     &kp C_PREV  &kp C_PP    &kp C_NEXT  &kp C_VOL_DN &kp C_VOL_UP &kp C_MUTE
 &none      &none        &none        &none        &none                              &none        &none        &none        &none       &none       &none                            &bl BL_INC  &bl BL_DEC   &bl BL_TOG   &kp LC(LG(Q)) &trans
@@ -258,7 +270,7 @@
 &kp LC(LA(LG(TAB)))   &kp LC(LA(LG(Q)))  &kp LC(LA(LG(W)))  &kp LC(LA(LG(E)))  &kp LC(LA(LG(R)))  &kp LC(LA(LG(T)))  &none                                                               &none                 &kp LC(LA(LG(Y)))  &kp LC(LA(LG(U)))  &kp LC(LA(LG(I)))  &kp LC(LA(LG(O)))  &kp LC(LA(LG(P)))  &kp LC(LA(LG(BSLH)))
 &kp LC(LA(LG(ESC)))   &kp LC(LA(LG(A)))  &kp LC(LA(LG(S)))  &kp LC(LA(LG(D)))  &kp LC(LA(LG(F)))  &kp LC(LA(LG(G)))  &kp F13       &kp F14       &kp F15       &kp F16     &kp F17   &kp F18       &kp LC(LA(LG(H))) &kp LC(LA(LG(J))) &kp LC(LA(LG(K))) &kp LC(LA(LG(L))) &kp LC(LA(LG(SEMI))) &kp LC(LA(LG(SQT)))
 &kp LSHFT             &kp LC(LA(LG(Z)))  &kp LC(LA(LG(X)))  &kp LC(LA(LG(C)))  &kp LC(LA(LG(V)))  &kp LC(LA(LG(B)))                               &trans       &kp F19                                                  &kp LC(LA(LG(N))) &kp LC(LA(LG(M))) &kp LC(LA(LG(COMMA))) &kp LC(LA(LG(DOT))) &kp LC(LA(LG(FSLH))) &kp RSHFT
-&kp LC(LA(LG(GRAVE))) &kp LC(LA(LG(LBKT))) &kp LC(LA(LG(RBKT))) &kp LC(LA(LG(LPAR))) &kp LC(LA(LG(RPAR)))              &kp F20       &kp F21       &kp F22       &kp F23     &kp F24       &kp SPACE                       &kp LC(LA(LG(LEFT))) &kp LC(LA(LG(DOWN))) &kp LC(LA(LG(UP))) &kp LC(LA(LG(RIGHT))) &trans
+&kp LC(LA(LG(GRAVE))) &kp LC(LA(LG(LBKT))) &kp LC(LA(LG(RBKT))) &kp LC(LA(LG(LPAR))) &kp LC(LA(LG(RPAR)))              &kp F20       &kp F21       &kp F22       &kp F23     &kp F24       &kp LC(LA(LG(SPACE)))           &kp LC(LA(LG(LEFT))) &kp LC(LA(LG(DOWN))) &kp LC(LA(LG(UP))) &kp LC(LA(LG(RIGHT))) &trans
             >;
         };
     };
