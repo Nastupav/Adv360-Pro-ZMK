@@ -1,1 +1,10 @@
-/firmware/*.uf2
+# macOS
+.DS_Store
+
+# Build artifacts
+firmware/*.uf2
+*.uf2
+
+# IDE
+.vscode/
+.idea/

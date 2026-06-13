@@ -390,7 +390,7 @@
         //   Row 2 (14): Tab  /   \   <   >   "   [->] [=>]   (   )   +   =   :   ;
         //   Row 3 (18): Esc  [   {   '   "   `    ⌦   ⌫   ↟    ↡   ⇱   ⇲    -   _   }   ]   .   ,
         //   Row 4 (14):  ⇧   &&  ||  !=  ==  =>       [⌫] [⌦]       *   /   %   $   #   ⇧
-        //   Row 5 (16):  `   ->  =>  |   ~   =        [#] [@] [!]   [?] [:] [␣]   +   -   _   \   =
+        //   Row 5 (16):  ·   ->  =>  |   ~   =        [#] [@] [!]   [?] [:] [␣]   +   -   _   \
         // ═══════════════════════════════════════════════════════════════
         layer_sym {
             display-name = "SYM";
@@ -399,7 +399,7 @@
 &kp TAB    &kp FSLH  &kp BSLH  &kp LT    &kp GT    &kp DQT    &fatarrow          &arrow   &kp LPAR  &kp RPAR  &kp PLUS &kp EQUAL &kp COLON &kp SEMI
 &kp ESC    &kp LBKT  &kp LBRC  &kp SQT   &kp DQT   &kp GRAVE  &kp DEL &kp BSPC  &kp PG_UP &kp PG_DN &kp HOME &kp END &kp MINUS &kp UNDER &kp RBRC  &kp RBKT &kp DOT   &kp COMMA
 &kp LSHFT  &andand    &oror     &neq      &eqeq     &fatarrow             &kp BSPC  &kp DEL                    &kp ASTRK &kp FSLH &kp PRCNT &kp DLLR  &kp HASH  &kp RSHFT
-&kp GRAVE  &arrow     &fatarrow &kp PIPE   &kp TILDE  &kp EQUAL       &kp HASH &kp AT &kp EXCL &kp QMARK &kp COLON &kp SPACE       &kp PLUS  &kp MINUS &kp UNDER &kp BSLH  &kp EQUAL
+&none       &arrow     &fatarrow &kp PIPE   &kp TILDE  &kp EQUAL       &kp HASH &kp AT &kp EXCL &kp QMARK &kp COLON &kp SPACE       &kp PLUS  &kp MINUS &kp UNDER &kp BSLH
             >;
         };
 
