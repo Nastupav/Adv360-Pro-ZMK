@@ -245,6 +245,20 @@
             bindings = <&macro_press &kp LCTRL>, <&macro_press &kp LGUI>, <&macro_tap &kp SPACE>, <&macro_release &kp LGUI>, <&macro_release &kp LCTRL>; };
         appwin: appwin { compatible = "zmk,behavior-macro"; #binding-cells = <0>;     // ⌘` cycle windows of app
             bindings = <&macro_press &kp LGUI>, <&macro_tap &kp GRAVE>, <&macro_release &kp LGUI>; };
+
+        // ── Compound operators (one tap → two-character programming operator) ──
+        arrow: arrow { compatible = "zmk,behavior-macro"; #binding-cells = <0>;        // ->
+            bindings = <&kp MINUS>, <&kp GT>; };
+        fatarrow: fatarrow { compatible = "zmk,behavior-macro"; #binding-cells = <0>;  // =>
+            bindings = <&kp EQUAL>, <&kp GT>; };
+        eqeq: eqeq { compatible = "zmk,behavior-macro"; #binding-cells = <0>;          // ==
+            bindings = <&kp EQUAL>, <&kp EQUAL>; };
+        neq: neq { compatible = "zmk,behavior-macro"; #binding-cells = <0>;            // !=
+            bindings = <&kp EXCL>, <&kp EQUAL>; };
+        andand: andand { compatible = "zmk,behavior-macro"; #binding-cells = <0>;      // &&
+            bindings = <&kp AMPS>, <&kp AMPS>; };
+        oror: oror { compatible = "zmk,behavior-macro"; #binding-cells = <0>;          // ||
+            bindings = <&kp PIPE>, <&kp PIPE>; };
     };
 
     combos {
@@ -320,7 +334,7 @@
         //   Row 2 (14): Tab Undo  Redo  Cut  Copy Paste [TClr][T⌃C]  GoLn Word← Word→ Home End  ⌫
         //   Row 3 (18): Esc ⌃A   ⌃E    ⌃U   ⌃K   ⌃W   ⌦ ⌫ ↟  ↡ ⇱ ⇲   Home ←   ↓    ↑    →    Enter
         //   Row 4 (14):  ⇧  Save  Find  GoSym Dupl SelNext   [⌫][⌦]      Sel←w Sel→w Sel↑¶ Sel↓¶ DelLn ⇧
-        //   Row 5 (16):  `  MvUp  MvDn  ⌫   ⌦         [⌫][⌦][CW] [Sel←][Sel→][␣]   Home End PgUp PgDn  SYS
+        //   Row 5 (16):  `  MvUp  MvDn Sel⇤ Sel⇥         [⌫][⌦][CW] [Sel←][Sel→][␣]   Home End PgUp PgDn  SYS
         // ═══════════════════════════════════════════════════════════════
         layer_nav {
             display-name = "NAV";
@@ -328,8 +342,8 @@
 &kp ESC    &kp LA(LEFT) &kp LA(RIGHT) &kp LC(LS(TAB)) &kp LC(TAB) &kp PSCRN  &gotofile                      &appwin &kp LG(LS(TAB)) &kp LG(TAB) &mctrl     &spotl     &kp PG_UP &kp PG_DN
 &kp TAB    &kp LG(Z)    &kp LG(LS(Z)) &kp LG(X)       &kp LG(C)   &kp LG(V)  &tclear                        &tintr  &gotoln         &kp LA(LEFT) &kp LA(RIGHT) &kp HOME &kp END   &kp BSPC
 &kp ESC    &kp LC(A)    &kp LC(E)     &kp LC(U)       &kp LC(K)   &kp LC(W)  &kp DEL  &kp BSPC  &kp PG_UP    &kp PG_DN &kp HOME &kp END  &kp HOME &kp LEFT  &kp DOWN  &kp UP    &kp RIGHT &kp ENTER
-&kp LSHFT  &kp LG(S)    &kp LG(F)     &gotosym        &dupl       &selnext                  &kp BSPC  &kp DEL                   &kp LA(LS(LEFT)) &kp LA(LS(RIGHT)) &kp LC(LS(UP)) &kp LC(LS(DOWN)) &delln &kp RSHFT
-&kp GRAVE  &mvup        &mvdn         &kp BSPC        &kp DEL                &kp BSPC &kp DEL &caps_word &kp LS(LEFT) &kp LS(RIGHT) &trans       &kp HOME  &kp END   &kp PG_UP &kp PG_DN &mo SYS
+&kp LSHFT  &kp LG(S)    &kp LG(F)     &gotosym        &dupl       &selnext                  &kp BSPC  &kp DEL                   &kp LA(LS(LEFT)) &kp LA(LS(RIGHT)) &kp LA(LS(UP)) &kp LA(LS(DOWN)) &delln &kp RSHFT
+&kp GRAVE  &mvup        &mvdn         &kp LG(LS(LEFT)) &kp LG(LS(RIGHT))      &kp BSPC &kp DEL &caps_word &kp LS(LEFT) &kp LS(RIGHT) &trans       &kp HOME  &kp END   &kp PG_UP &kp PG_DN &mo SYS
             >;
         };
 
@@ -340,20 +354,20 @@
         //   Bottom-row symbol duplication (v4.0) removed; replaced with the
         //   symbols that were otherwise unreachable without Shift.
         //
-        //   Row 1 (14):  `   !  @  #  $  %  [·][·]  [·][·]  ^  &  *  (  )  ~
+        //   Row 1 (14):  `   !  @  #  $  %  [·][·]  [·][·]  ^  &  *  && || ~
         //   Row 2 (14): Tab  `  ~  |  \  "  [·][·]  [·][·]  '  &  -  _  :  ;
         //   Row 3 (18): Esc  [  {  <  +  =  ⌦ ⌫ ↟   ↡ ⇱ ⇲   -  >  }  ]  =  "
         //   Row 4 (14):  ⇧   (  )  ,  .  ?     [⌫][⌦]       *  /  %  $  #  ⇧
-        //   Row 5 (16):  `   <  >  (  )   [_][-][=]  [:][;][␣]   +  *  /  \  =
+        //   Row 5 (16):  `   != == => ->   [_][-][=]  [:][;][␣]   +  *  /  \  =
         // ═══════════════════════════════════════════════════════════════
         layer_sym {
             display-name = "SYM";
             bindings = <
-&kp GRAVE  &kp EXCL  &kp AT    &kp HASH  &kp DLLR  &kp PRCNT  &none                       &none   &kp CARET &kp AMPS &kp ASTRK &kp LPAR  &kp RPAR  &kp TILDE
+&kp GRAVE  &kp EXCL  &kp AT    &kp HASH  &kp DLLR  &kp PRCNT  &none                       &none   &kp CARET &kp AMPS &kp ASTRK &andand   &oror     &kp TILDE
 &kp TAB    &kp GRAVE &kp TILDE &kp PIPE  &kp BSLH  &kp DQT    &none                       &none   &kp SQT   &kp AMPS &kp MINUS &kp UNDER &kp COLON &kp SEMI
 &kp ESC    &kp LBKT  &kp LBRC  &kp LT    &kp PLUS  &kp EQUAL  &kp DEL &kp BSPC &kp PG_UP   &kp PG_DN &kp HOME &kp END &kp MINUS &kp GT    &kp RBRC  &kp RBKT  &kp EQUAL &kp DQT
 &kp LSHFT  &kp LPAR  &kp RPAR  &kp COMMA &kp DOT   &kp QMARK            &kp BSPC  &kp DEL                     &kp ASTRK &kp FSLH &kp PRCNT &kp DLLR  &kp HASH  &kp RSHFT
-&kp GRAVE  &kp LT    &kp GT    &kp LPAR  &kp RPAR             &kp UNDER &kp MINUS &kp EQUAL &kp COLON &kp SEMI &kp SPACE         &kp PLUS  &kp ASTRK &kp FSLH  &kp BSLH  &kp EQUAL
+&kp GRAVE  &neq      &eqeq     &fatarrow &arrow              &kp UNDER &kp MINUS &kp EQUAL &kp COLON &kp SEMI &kp SPACE         &kp PLUS  &kp ASTRK &kp FSLH  &kp BSLH  &kp EQUAL
             >;
         };
 
