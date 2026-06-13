@@ -304,6 +304,7 @@
         combo_h { timeout-ms = <40>; key-positions = <40 41>; bindings = <&kp H>; layers = <BASE>; };       // H+J → H
 
         // ── System combos (SYS layer only) ──
+        // bt_clear 120ms: faster, non-destructive. bootloader 200ms: deliberate, destructive.
         combo_bt_clear   { timeout-ms = <120>; key-positions = <1 2>;   layers = <SYS>; bindings = <&bt BT_CLR>; };
         combo_bootloader { timeout-ms = <200>; key-positions = <20 21>; layers = <SYS>; bindings = <&bootloader>; };
 
@@ -390,7 +391,7 @@
         //   Row 2 (14): Tab  /   \   <   >   "   [->] [=>]   (   )   +   =   :   ;
         //   Row 3 (18): Esc  [   {   '   "   `    ⌦   ⌫   ↟    ↡   ⇱   ⇲    -   _   }   ]   .   ,
         //   Row 4 (14):  ⇧   &&  ||  !=  ==  =>       [⌫] [⌦]       *   /   %   $   #   ⇧
-        //   Row 5 (16):  ·   ->  =>  |   ~   =        [#] [@] [!]   [?] [:] [␣]   +   -   _   \
+        //   Row 5 (16):  `   ->  =>  |   ~   =        [#] [@] [!]   [?] [:] [␣]   +   -   _   \
         // ═══════════════════════════════════════════════════════════════
         layer_sym {
             display-name = "SYM";
@@ -399,7 +400,7 @@
 &kp TAB    &kp FSLH  &kp BSLH  &kp LT    &kp GT    &kp DQT    &fatarrow          &arrow   &kp LPAR  &kp RPAR  &kp PLUS &kp EQUAL &kp COLON &kp SEMI
 &kp ESC    &kp LBKT  &kp LBRC  &kp SQT   &kp DQT   &kp GRAVE  &kp DEL &kp BSPC  &kp PG_UP &kp PG_DN &kp HOME &kp END &kp MINUS &kp UNDER &kp RBRC  &kp RBKT &kp DOT   &kp COMMA
 &kp LSHFT  &andand    &oror     &neq      &eqeq     &fatarrow             &kp BSPC  &kp DEL                    &kp ASTRK &kp FSLH &kp PRCNT &kp DLLR  &kp HASH  &kp RSHFT
-&none       &arrow     &fatarrow &kp PIPE   &kp TILDE  &kp EQUAL       &kp HASH &kp AT &kp EXCL &kp QMARK &kp COLON &kp SPACE       &kp PLUS  &kp MINUS &kp UNDER &kp BSLH
+&kp GRAVE  &arrow     &fatarrow &kp PIPE   &kp TILDE  &kp EQUAL       &kp HASH &kp AT &kp EXCL &kp QMARK &kp COLON &kp SPACE       &kp PLUS  &kp MINUS &kp UNDER &kp BSLH
             >;
         };
 
