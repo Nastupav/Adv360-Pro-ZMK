@@ -1,8 +1,20 @@
 /*
- * Kinesis Advantage360 Pro / ZMK — Developer-Optimized Keymap v5.0
+ * Kinesis Advantage360 Pro / ZMK — Developer-Optimized Keymap v5.5
  * macOS-primary. 7 layers. POSITIONAL home-row mods. 76-key matrix.
  *
- * ── WHAT CHANGED FROM v4.0 ────────────────────────────────────────
+ * ── WHAT CHANGED FROM v5.4 ────────────────────────────────────────
+ *   • A+S chord → = (home-row combo, no Row 1 pinky stretch)
+ *   • S+F chord → | (home-row combo, no SYM layer switch)
+ *
+ * ── WHAT CHANGED FROM v5.3 ────────────────────────────────────────
+ *   • Bracket-pair combos (K+L/J+K/D+F) now route through macros instead
+ *     of inline bindings. Fixes missing closing bracket + cursor-left.
+ *
+ * ── WHAT CHANGED FROM v5.2 ────────────────────────────────────────
+ *   • BASE home row: G → @ (atsign macro), H → - (dash macro).
+ *     Letters G/H recoverable via F+G and H+J 40ms combos.
+ *
+ * ── WHAT CHANGED FROM v5.0 ────────────────────────────────────────
  *   • STRUCTURE: every layer is now exactly 76 keys (was 78–80). v4.0
  *     invented 4 inner columns on rows 1–2; the board only has 2 there
  *     (and 6 on the home row). Rows now follow [14,14,18,14,16].
@@ -259,17 +271,37 @@
             bindings = <&kp AMPS>, <&kp AMPS>; };
         oror: oror { compatible = "zmk,behavior-macro"; #binding-cells = <0>;          // ||
             bindings = <&kp PIPE>, <&kp PIPE>; };
+
+        // ── Home-row direct access (replaces G/H on BASE) ──────────
+        atsign: atsign { compatible = "zmk,behavior-macro"; #binding-cells = <0>;     // @
+            bindings = <&kp AT>; };
+        dash: dash { compatible = "zmk,behavior-macro"; #binding-cells = <0>;         // -
+            bindings = <&kp MINUS>; };
+
+        // ── Bracket pairs — type both brackets then cursor-left ────
+        pair_parens: pair_parens { compatible = "zmk,behavior-macro"; #binding-cells = <0>;   // ()
+            bindings = <&kp LPAR>, <&kp RPAR>, <&kp LEFT>; };
+        pair_brackets: pair_brackets { compatible = "zmk,behavior-macro"; #binding-cells = <0>; // []
+            bindings = <&kp LBKT>, <&kp RBKT>, <&kp LEFT>; };
+        pair_braces: pair_braces { compatible = "zmk,behavior-macro"; #binding-cells = <0>;   // {}
+            bindings = <&kp LBRC>, <&kp RBRC>, <&kp LEFT>; };
     };
 
     combos {
         compatible = "zmk,combos";
 
-        // ── Bracket pairs — chord two adjacent home-row keys → typed pair, cursor inside ──
-        // Home-row matrix positions: A29? see map. Left home = 28 29 30 31 (A S D F),
-        // right home = 42 43 44 45 (J K L ;). Use index+middle pairs to avoid pinky rolls.
-        combo_parens   { timeout-ms = <40>; key-positions = <43 44>; bindings = <&kp LPAR &kp RPAR &kp LEFT>; layers = <BASE>; }; // K+L
-        combo_brackets { timeout-ms = <40>; key-positions = <42 43>; bindings = <&kp LBKT &kp RBKT &kp LEFT>; layers = <BASE>; }; // J+K
-        combo_braces   { timeout-ms = <40>; key-positions = <30 31>; bindings = <&kp LBRC &kp RBRC &kp LEFT>; layers = <BASE>; }; // D+F
+        // ── Home-row combos (BASE layer, 40ms) ──────────────────────
+        // Left: 28=Esc 29=A 30=S 31=D 32=F 33=@ | Right: 40=- 41=J 42=K 43=L 44=; 45='
+        combo_equals   { timeout-ms = <40>; key-positions = <28 29>; bindings = <&kp EQUAL>; layers = <BASE>; };           // Esc+A → =
+        combo_pipe     { timeout-ms = <40>; key-positions = <29 32>; bindings = <&kp PIPE>; layers = <BASE>; };            // A+F → |
+        combo_underscore { timeout-ms = <40>; key-positions = <31 32>; bindings = <&kp UNDER>; layers = <BASE>; };          // D+F → _
+        combo_braces   { timeout-ms = <40>; key-positions = <30 31>; bindings = <&pair_braces>; layers = <BASE>; };         // S+D → {}
+        combo_brackets { timeout-ms = <40>; key-positions = <42 43>; bindings = <&pair_brackets>; layers = <BASE>; };       // K+L → []
+        combo_parens   { timeout-ms = <40>; key-positions = <43 44>; bindings = <&pair_parens>; layers = <BASE>; };         // L+; → ()
+
+        // ── Recovery chords: type G/H via adjacent HRM key ──────────
+        combo_g { timeout-ms = <40>; key-positions = <32 33>; bindings = <&kp G>; layers = <BASE>; };       // F+G → G
+        combo_h { timeout-ms = <40>; key-positions = <40 41>; bindings = <&kp H>; layers = <BASE>; };       // H+J → H
 
         // ── System combos (SYS layer only) ──
         combo_bt_clear   { timeout-ms = <120>; key-positions = <1 2>;   layers = <SYS>; bindings = <&bt BT_CLR>; };
@@ -290,21 +322,20 @@
         //
         //   Row 1:  = 1 2 3 4 5       6 7 8 9 0 -
         //   Row 2: Tab Q W E R T       Y U I O P \
-        //   Row 3: Esc A S D F G  ⌫⌦↟  H J K L ; '
+        //   Row 3: Esc A S D F @  ⌫⌦↟  - J K L ; '
         //   Row 4: ⇧  Z X C V B  ▤↹   N M , . / ⇧
         //   Row 5: `  [ ] ( )  ⬅⬆⇨    ← ↓ ↑ → SYS
         //
         //   HRM: A=⌘  S=⌥  D=⌃  F=⇧     J=⇧  K=⌃  L=⌥  ;=⌘
         //   Inner columns (row 3): Delete, Backspace, PgUp  |  Home, PgDn, End
         //   Inner thumb (row 4): APP(mo) Tab  |  CapsWord Tab FUN(mo) NAV(mo)
-        //   Thumb (row 5):    ◌  [ ] ( )  ←⌫ ←⌦ ESC |   ← ↓ ↑ → SYS
         // ═══════════════════════════════════════════════════════════════
         // ═══════════════════════════════════════════════════════════════
         // LAYER 0: BASE — QWERTY + positional HRM
         //
         //   Row 1 (14):  =  1 2 3 4 5  [SYS][·]   [·][SYS]  6 7 8 9 0  -
         //   Row 2 (14): Tab Q W E R T  [·][·]     [·][·]    Y U I O P  \
-        //   Row 3 (18): Esc A S D F G  ⌦ ⌫ ↟      ↡ ⇱ ⇲     H J K L ;  '
+        //   Row 3 (18): Esc A S D F @  ⌦ ⌫ ↟      ↡ ⇱ ⇲     - J K L ;  '
         //   Row 4 (14):  ⇧  Z X C V B     [APP/Esc][Tab]    N M , . /  ⇧
         //   Row 5 (16):  `  [ ] ( )    [SYM⌫][NUM⌦][CW]  [Tab][FUN↵][NAV␣]   ← ↓ ↑ →  SYS
         //
@@ -318,7 +349,7 @@
             bindings = <
 &kp EQUAL          &kp N1       &kp N2       &kp N3        &kp N4        &kp N5    &mo SYS                       &mo SYS    &kp N6  &kp N7        &kp N8        &kp N9       &kp N0          &kp MINUS
 &kp TAB            &kp Q        &kp W        &kp E         &kp R         &kp T     &none                         &none      &kp Y   &kp U         &kp I         &kp O        &kp P           &kp BSLH
-&esc_grv GRAVE ESC &hml LGUI A  &hml LALT S  &hmli LCTRL D &hmli LSHFT F &kp G     &kp DEL  &kp BSPC  &kp PG_UP  &kp PG_DN  &kp HOME &kp END  &kp H  &hmri RSHFT J &hmri RCTRL K &hmr RALT L  &hmr RGUI SEMI  &kp SQT
+&esc_grv GRAVE ESC &hml LGUI A  &hml LALT S  &hmli LCTRL D &hmli LSHFT F &atsign   &kp DEL  &kp BSPC  &kp PG_UP  &kp PG_DN  &kp HOME &kp END  &dash &hmri RSHFT J &hmri RCTRL K &hmr RALT L  &hmr RGUI SEMI  &kp SQT
 &kp LSHFT          &kp Z        &kp X        &kp C         &kp V         &kp B                  &tlt APP ESC  &kp TAB                  &kp N   &kp M         &kp COMMA     &kp DOT      &kp FSLH        &kp RSHFT
 &kp GRAVE           &kp LBKT     &kp RBKT     &kp LPAR      &kp RPAR                &tlt SYM BSPC &tlt NUM DEL &caps_word &kp TAB &tlt FUN ENTER &tlt NAV SPACE      &kp LEFT      &kp DOWN     &kp UP          &kp RIGHT &mo SYS
             >;
