@@ -364,7 +364,7 @@
         //
         //   Row 1 (14): Esc Word← Word→ Tab← Tab→ Print [GoFile][AppWin] App← App→ MissCtl Spotl PgUp PgDn
         //   Row 2 (14): Tab Undo  Redo  Cut  Copy Paste [TClr][T⌃C]  GoLn Word← Word→ Home End  ⌫
-        //   Row 3 (18): Esc ⌃A   ⌃E    ⌃U   ⌃K   ⌃W   ⌦ ⌫ ↟  ↡ ⇱ ⇲   ⌦w ←   ↓    ↑    →    Enter
+        //   Row 3 (18): Esc ⌃A   ⌃E    ⌃U   ⌃K   ⌃W   ⌦ ⌫ ↟  ↡ ⇱ ⇲   ⌫w ←   ↓    ↑    →    Enter
         //   Row 4 (14):  ⇧  Save  Find  GoSym Dupl SelNext   [⌫][⌦]      Sel←w Sel→w Sel↑¶ Sel↓¶ DelLn ⇧
         //   Row 5 (16):  `  MvUp  MvDn Sel⇤ Sel⇥         [⌫][⌦][CW] [Sel←][Sel→][␣]   Home End PgUp PgDn  SYS
         // ═══════════════════════════════════════════════════════════════
