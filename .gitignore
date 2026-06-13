@@ -8,3 +8,6 @@ firmware/*.uf2
 # IDE
 .vscode/
 .idea/
+
+# Assets (upstream reference only)
+assets/
