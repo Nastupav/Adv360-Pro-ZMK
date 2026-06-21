@@ -1,6 +1,11 @@
 /*
- * Kinesis Advantage360 Pro / ZMK — 10x Developer Keymap v6.0
- * macOS-primary. 7 layers. POSITIONAL home-row mods. 76-key matrix.
+ * Kinesis Advantage360 Pro / ZMK — 10x Developer Keymap v6.1
+ * macOS-primary. 7 layers. ASDF+JKL; home-row combos only — no Esc.
+ *
+ * ── WHAT CHANGED FROM v6.0 ────────────────────────────────────────
+ *   • Moved = and # off Esc combos onto home-row-only chords (-+L, S+@).
+ *     Esc (pos 28) is not ergonomic for chording — now completely unused
+ *     in combos. All 15 combos use only ASDF/JKL; positions.
  *
  * ── WHAT CHANGED FROM v5.5 ────────────────────────────────────────
  *   • 8 NEW home-row combos: # ! * ` : "" `` $ on BASE layer — all
@@ -306,13 +311,14 @@
     combos {
         compatible = "zmk,combos";
 
-        // ── Home-row combos (BASE layer, 40ms) — v6.0 10x Dev ──────
-        // Left: 28=Esc 29=A 30=S 31=D 32=F 33=@ | Right: 40=- 41=J 42=K 43=L 44=; 45='
-        combo_hash      { timeout-ms = <40>; key-positions = <28 30>; bindings = <&kp HASH>; layers = <BASE>; };             // Esc+S → #
+        // ── Home-row combos (BASE layer, 40ms) — v6.1 ASDF+JKL; only ─
+        // Left: 29=A 30=S 31=D 32=F 33=@ | Right: 40=- 41=J 42=K 43=L 44=; 45='
+        // Esc (pos 28) intentionally unused in combos — not ergonomic.
+        combo_hash      { timeout-ms = <40>; key-positions = <30 33>; bindings = <&kp HASH>; layers = <BASE>; };             // S+@ → #
         combo_bang      { timeout-ms = <40>; key-positions = <29 31>; bindings = <&kp EXCL>; layers = <BASE>; };             // A+D → !
         combo_star      { timeout-ms = <40>; key-positions = <30 32>; bindings = <&kp ASTRK>; layers = <BASE>; };            // S+F → *
         combo_btick     { timeout-ms = <40>; key-positions = <31 33>; bindings = <&kp GRAVE>; layers = <BASE>; };            // D+@ → `
-        combo_equals    { timeout-ms = <40>; key-positions = <28 29>; bindings = <&kp EQUAL>; layers = <BASE>; };             // Esc+A → =
+        combo_equals    { timeout-ms = <40>; key-positions = <40 43>; bindings = <&kp EQUAL>; layers = <BASE>; };             // -+L → =
         combo_pipe      { timeout-ms = <40>; key-positions = <29 32>; bindings = <&kp PIPE>; layers = <BASE>; };              // A+F → |
         combo_underscore { timeout-ms = <40>; key-positions = <31 32>; bindings = <&kp UNDER>; layers = <BASE>; };            // D+F → _
         combo_braces    { timeout-ms = <40>; key-positions = <30 31>; bindings = <&pair_braces>; layers = <BASE>; };          // S+D → {}
