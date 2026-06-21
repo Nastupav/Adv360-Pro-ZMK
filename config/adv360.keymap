@@ -12,10 +12,9 @@
  *     programming symbols now chordable from home row, zero movement.
  *   • Quote-pair macros: double-quote and backtick pairs with cursor
  *     inside, same as bracket pairs.
- *   • Total 15 home-row combos covering: = | _ {} [] () "" `` # ! * ` : $
+ *   • Total 17 home-row combos covering: = | _ {} [] () "" `` # ! * ` : $ @ -
  *     Single-tap @ on G key, - on H key. Every symbol within 40ms reach.
- *   • J+K = double-quote pair, ;+' = backtick pair, Esc+S = #, A+D = !,
- *     S+F = *, D+@ = `, J+L = :, -+K = $. All adjacent/near-adjacent. 
+ *   • All 17 home-row combos now use only ASDF/JKL; — no Esc chords.
 
  * ── WHAT CHANGED FROM v5.4 ────────────────────────────────────────
  *   • A+S chord → = (home-row combo, no Row 1 pinky stretch)
@@ -70,7 +69,7 @@
  *     row3 (18): 28-33 34 35 36 37 38 39 40-45
  *     row4 (14): 46-51 52              53        54-59
  *     row5 (16): 60-64 65 66 67  68 69 70   71-75
- *   Left home row  = 28(A) 29(S) 30(D) 31(F) ; right = 42(J) 43(K) 44(L) 45(;)
+ *   Left home row  = 28(Esc) 29(A) 30(S) 31(D) 32(F) 33(G)\n *   Right home row = 40(H) 41(J) 42(K) 43(L) 44(;) 45(')
  */
 
 #include <behaviors.dtsi>
@@ -305,20 +304,20 @@
     combos {
         compatible = "zmk,combos";
 
-        // ── Home-row combos (BASE layer, 40ms) — v6.1 ASDF+JKL; only ─
-        // Left: 29=A 30=S 31=D 32=F 33=@ | Right: 40=- 41=J 42=K 43=L 44=; 45='
+        // ── Home-row combos (BASE layer, 40ms) — v6.x ASDF+JKL; only ─
+        // Left: 29=A 30=S 31=D 32=F 33=G | Right: 40=H 41=J 42=K 43=L 44=; 45='
         // Esc (pos 28) intentionally unused in combos — not ergonomic.
-        combo_hash      { timeout-ms = <40>; key-positions = <30 33>; bindings = <&kp HASH>; layers = <BASE>; };             // S+@ → #
+        combo_hash      { timeout-ms = <40>; key-positions = <30 33>; bindings = <&kp HASH>; layers = <BASE>; };             // S+G → #
         combo_bang      { timeout-ms = <40>; key-positions = <29 31>; bindings = <&kp EXCL>; layers = <BASE>; };             // A+D → !
         combo_star      { timeout-ms = <40>; key-positions = <30 32>; bindings = <&kp ASTRK>; layers = <BASE>; };            // S+F → *
-        combo_btick     { timeout-ms = <40>; key-positions = <31 33>; bindings = <&kp GRAVE>; layers = <BASE>; };            // D+@ → `
-        combo_equals    { timeout-ms = <40>; key-positions = <40 43>; bindings = <&kp EQUAL>; layers = <BASE>; };             // -+L → =
+        combo_btick     { timeout-ms = <40>; key-positions = <31 33>; bindings = <&kp GRAVE>; layers = <BASE>; };            // D+G → `
+        combo_equals    { timeout-ms = <40>; key-positions = <40 43>; bindings = <&kp EQUAL>; layers = <BASE>; };             // H+L → =
         combo_pipe      { timeout-ms = <40>; key-positions = <29 32>; bindings = <&kp PIPE>; layers = <BASE>; };              // A+F → |
         combo_underscore { timeout-ms = <40>; key-positions = <31 32>; bindings = <&kp UNDER>; layers = <BASE>; };            // D+F → _
         combo_braces    { timeout-ms = <40>; key-positions = <30 31>; bindings = <&pair_braces>; layers = <BASE>; };          // S+D → {}
         combo_dquotes   { timeout-ms = <40>; key-positions = <41 42>; bindings = <&pair_dquotes>; layers = <BASE>; };         // J+K → ""
         combo_colon     { timeout-ms = <40>; key-positions = <41 43>; bindings = <&kp COLON>; layers = <BASE>; };             // J+L → :
-        combo_dollar    { timeout-ms = <40>; key-positions = <40 42>; bindings = <&kp DLLR>; layers = <BASE>; };              // -+K → $
+        combo_dollar    { timeout-ms = <40>; key-positions = <40 42>; bindings = <&kp DLLR>; layers = <BASE>; };              // H+K → $
         combo_brackets  { timeout-ms = <40>; key-positions = <42 43>; bindings = <&pair_brackets>; layers = <BASE>; };        // K+L → []
         combo_parens    { timeout-ms = <40>; key-positions = <43 44>; bindings = <&pair_parens>; layers = <BASE>; };          // L+; → ()
         combo_btpair    { timeout-ms = <40>; key-positions = <44 45>; bindings = <&pair_btick>; layers = <BASE>; };           // ;+' → ``
@@ -347,7 +346,7 @@
         //
         //   Row 1:  = 1 2 3 4 5       6 7 8 9 0 -
         //   Row 2: Tab Q W E R T       Y U I O P \
-        //   Row 3: Esc A S D F G  ⌫⌦↟  H J K L ; '
+        //   Row 3: Esc A S D F G  ⌦⌫↟  ↡⇱⇲  H J K L ; '
         //   Row 4: ⇧  Z X C V B  ▤↹   N M , . / ⇧
         //   Row 5: `  [ ] ( )  ⬅⬆⇨    ← ↓ ↑ → SYS
         //
@@ -437,7 +436,7 @@
         //   Row 2 (14): Tab ⌫  ↟  ↡  ⇱  ⇲   [·][·]  [·][·]  7  8  9  -  +  ⌫
         //   Row 3 (18): Esc ←  ↓  ↑  →  Home ⌦ ⌫ ↟ ↡ ⇱ ⇲   4  5  6  *  /  Enter
         //   Row 4 (14):  ⇧  ⌃A ⌃E ⌃U ⌃K ⌃W    [⌫][⌦]       1  2  3  .  ,  ⇧
-        //   Row 5 (16):  `  ⌫  ⌦  =  .   [⌫][⌦][0]  [.][↵][␣]   0  .  +  -  Enter
+        //   Row 5 (16):  `  ⌫  ⌦  =  .   [0][0][.]  [↵][␣][⇥]   0  .  +  -  Enter
         // ═══════════════════════════════════════════════════════════════
         layer_num {
             display-name = "NUM";
