@@ -1,7 +1,17 @@
 /*
- * Kinesis Advantage360 Pro / ZMK — Developer-Optimized Keymap v5.5
+ * Kinesis Advantage360 Pro / ZMK — 10x Developer Keymap v6.0
  * macOS-primary. 7 layers. POSITIONAL home-row mods. 76-key matrix.
  *
+ * ── WHAT CHANGED FROM v5.5 ────────────────────────────────────────
+ *   • 8 NEW home-row combos: # ! * ` : "" `` $ on BASE layer — all
+ *     programming symbols now chordable from home row, zero movement.
+ *   • Quote-pair macros: double-quote and backtick pairs with cursor
+ *     inside, same as bracket pairs.
+ *   • Total 15 home-row combos covering: = | _ {} [] () "" `` # ! * ` : $
+ *     Single-tap @ on G key, - on H key. Every symbol within 40ms reach.
+ *   • J+K = double-quote pair, ;+' = backtick pair, Esc+S = #, A+D = !,
+ *     S+F = *, D+@ = `, J+L = :, -+K = $. All adjacent/near-adjacent. 
+
  * ── WHAT CHANGED FROM v5.4 ────────────────────────────────────────
  *   • A+S chord → = (home-row combo, no Row 1 pinky stretch)
  *   • S+F chord → | (home-row combo, no SYM layer switch)
@@ -285,19 +295,33 @@
             bindings = <&kp LBKT>, <&kp RBKT>, <&kp LEFT>; };
         pair_braces: pair_braces { compatible = "zmk,behavior-macro"; #binding-cells = <0>;   // {}
             bindings = <&kp LBRC>, <&kp RBRC>, <&kp LEFT>; };
+
+        // ── Quote pairs (cursor inside) ────────────────────────────
+        pair_dquotes: pair_dquotes { compatible = "zmk,behavior-macro"; #binding-cells = <0>; // ""
+            bindings = <&kp DQT>, <&kp DQT>, <&kp LEFT>; };
+        pair_btick: pair_btick { compatible = "zmk,behavior-macro"; #binding-cells = <0>;     // ``
+            bindings = <&kp GRAVE>, <&kp GRAVE>, <&kp LEFT>; };
     };
 
     combos {
         compatible = "zmk,combos";
 
-        // ── Home-row combos (BASE layer, 40ms) ──────────────────────
+        // ── Home-row combos (BASE layer, 40ms) — v6.0 10x Dev ──────
         // Left: 28=Esc 29=A 30=S 31=D 32=F 33=@ | Right: 40=- 41=J 42=K 43=L 44=; 45='
-        combo_equals   { timeout-ms = <40>; key-positions = <28 29>; bindings = <&kp EQUAL>; layers = <BASE>; };           // Esc+A → =
-        combo_pipe     { timeout-ms = <40>; key-positions = <29 32>; bindings = <&kp PIPE>; layers = <BASE>; };            // A+F → |
-        combo_underscore { timeout-ms = <40>; key-positions = <31 32>; bindings = <&kp UNDER>; layers = <BASE>; };          // D+F → _
-        combo_braces   { timeout-ms = <40>; key-positions = <30 31>; bindings = <&pair_braces>; layers = <BASE>; };         // S+D → {}
-        combo_brackets { timeout-ms = <40>; key-positions = <42 43>; bindings = <&pair_brackets>; layers = <BASE>; };       // K+L → []
-        combo_parens   { timeout-ms = <40>; key-positions = <43 44>; bindings = <&pair_parens>; layers = <BASE>; };         // L+; → ()
+        combo_hash      { timeout-ms = <40>; key-positions = <28 30>; bindings = <&kp HASH>; layers = <BASE>; };             // Esc+S → #
+        combo_bang      { timeout-ms = <40>; key-positions = <29 31>; bindings = <&kp EXCL>; layers = <BASE>; };             // A+D → !
+        combo_star      { timeout-ms = <40>; key-positions = <30 32>; bindings = <&kp ASTRK>; layers = <BASE>; };            // S+F → *
+        combo_btick     { timeout-ms = <40>; key-positions = <31 33>; bindings = <&kp GRAVE>; layers = <BASE>; };            // D+@ → `
+        combo_equals    { timeout-ms = <40>; key-positions = <28 29>; bindings = <&kp EQUAL>; layers = <BASE>; };             // Esc+A → =
+        combo_pipe      { timeout-ms = <40>; key-positions = <29 32>; bindings = <&kp PIPE>; layers = <BASE>; };              // A+F → |
+        combo_underscore { timeout-ms = <40>; key-positions = <31 32>; bindings = <&kp UNDER>; layers = <BASE>; };            // D+F → _
+        combo_braces    { timeout-ms = <40>; key-positions = <30 31>; bindings = <&pair_braces>; layers = <BASE>; };          // S+D → {}
+        combo_dquotes   { timeout-ms = <40>; key-positions = <41 42>; bindings = <&pair_dquotes>; layers = <BASE>; };         // J+K → ""
+        combo_colon     { timeout-ms = <40>; key-positions = <41 43>; bindings = <&kp COLON>; layers = <BASE>; };             // J+L → :
+        combo_dollar    { timeout-ms = <40>; key-positions = <40 42>; bindings = <&kp DLLR>; layers = <BASE>; };              // -+K → $
+        combo_brackets  { timeout-ms = <40>; key-positions = <42 43>; bindings = <&pair_brackets>; layers = <BASE>; };        // K+L → []
+        combo_parens    { timeout-ms = <40>; key-positions = <43 44>; bindings = <&pair_parens>; layers = <BASE>; };          // L+; → ()
+        combo_btpair    { timeout-ms = <40>; key-positions = <44 45>; bindings = <&pair_btick>; layers = <BASE>; };           // ;+' → ``
 
         // ── Recovery chords: type G/H via adjacent HRM key ──────────
         combo_g { timeout-ms = <40>; key-positions = <32 33>; bindings = <&kp G>; layers = <BASE>; };       // F+G → G
