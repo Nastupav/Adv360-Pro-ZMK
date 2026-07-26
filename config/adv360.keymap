@@ -1,75 +1,13 @@
 /*
- * Kinesis Advantage360 Pro / ZMK — 10x Developer Keymap v6.2
- * macOS-primary. 7 layers. G+H restored to home row; @ and - on combos.
+ * Kinesis Advantage360 Pro / ZMK
+ * Deterministic, cross-platform developer keymap.
  *
- * ── WHAT CHANGED FROM v6.0 ────────────────────────────────────────
- *   • Moved = and # off Esc combos onto home-row-only chords (-+L, S+@).
- *     Esc (pos 28) is not ergonomic for chording — now completely unused
- *     in combos. All 15 combos use only ASDF/JKL; positions.
- *
- * ── WHAT CHANGED FROM v5.5 ────────────────────────────────────────
- *   • 8 NEW home-row combos: # ! * ` : "" `` $ on BASE layer — all
- *     programming symbols now chordable from home row, zero movement.
- *   • Quote-pair macros: double-quote and backtick pairs with cursor
- *     inside, same as bracket pairs.
- *   • Total 17 home-row combos covering: = | _ {} [] () "" `` # ! * ` : $ @ -
- *     Single-tap @ on G key, - on H key. Every symbol within 40ms reach.
- *   • All 17 home-row combos now use only ASDF/JKL; — no Esc chords.
-
- * ── WHAT CHANGED FROM v5.4 ────────────────────────────────────────
- *   • A+S chord → = (home-row combo, no Row 1 pinky stretch)
- *   • S+F chord → | (home-row combo, no SYM layer switch)
- *
- * ── WHAT CHANGED FROM v5.3 ────────────────────────────────────────
- *   • Bracket-pair combos (K+L/J+K/D+F) now route through macros instead
- *     of inline bindings. Fixes missing closing bracket + cursor-left.
- *
- * ── WHAT CHANGED FROM v5.2 ────────────────────────────────────────
- *   • BASE home row: G → @ (atsign macro), H → - (dash macro).
- *     Letters G/H recoverable via F+G and H+J 40ms combos.
- *
- * ── WHAT CHANGED FROM v5.0 ────────────────────────────────────────
- *   • STRUCTURE: every layer is now exactly 76 keys (was 78–80). v4.0
- *     invented 4 inner columns on rows 1–2; the board only has 2 there
- *     (and 6 on the home row). Rows now follow [14,14,18,14,16].
- *   • HRM: now TRULY positional via hold-trigger-key-positions (only
- *     fires a mod when the next key is on the OPPOSITE hand). Split into
- *     pinky/ring vs index profiles so the weak Cmd/Alt pinkies get a
- *     longer term and the fast index Shift gets a short one.
- *   • DE-DUP: undo/redo/cut/copy/paste/save now live on ONE physical
- *     home (X/C/V column + S) across every layer that has them.
- *   • MACROS: standardized on VS Code (macOS) shortcuts; added sidebar,
- *     terminal toggle, go-to-line, spotlight, mission control, emoji,
- *     terminal-clear, and a git cluster.
- *
- * ── DESIGN RULES ──────────────────────────────────────────────────
- *   1. Reflex actions (undo/redo/cut/copy/paste/save) keep the SAME
- *      physical keys on every layer → zero relearning across layers.
- *   2. Home-row mods are positional: GUI ALT CTRL SHIFT (pinky→index).
- *   3. macOS Cmd+<left-hand-letter> (⌘A/S/Z/X/W/Q) is chorded with the
- *      RIGHT Cmd (on ';') because positional HRM won't fire same-hand.
- *   4. Bracket pairs on BASE home row via chord combos: () [] {}.
- *   5. SYM grid: openers left, closers right, frequency-weighted.
- *   6. NAV = movement + selection + edit verbs (no bare mods).
- *
- * ── LAYER MAP ─────────────────────────────────────────────────────
- *   BASE — QWERTY + positional HRM + thumb layer-taps
- *   NAV  — hold Right-Space → movement + selection + edit verbs
- *   SYM  — hold Left-Backspace → programming symbols
- *   NUM  — hold Left-Delete → numpad + F-keys
- *   FUN  — hold Right-Enter → IDE tools + debug + media
- *   SYS  — hold top-outer corners → Bluetooth, RGB, firmware
- *   APP  — hold Left-inner thumb (Esc) → window manager (hyper + key)
- *
- * ── KEY-POSITION MAP (matrix index per binding slot) ──────────────
- *   row1  0  1  2  3  4  5 | 6        | 7         |13 14 15 16 17 18 19  (no, see below)
- *   The board's 76-key transform numbers slots in reading order:
- *     row1 (14): 0-5  6        7        8-13
- *     row2 (14): 14-19 20       21       22-27
- *     row3 (18): 28-33 34 35 36 37 38 39 40-45
- *     row4 (14): 46-51 52              53        54-59
- *     row5 (16): 60-64 65 66 67  68 69 70   71-75
- *   Left home row  = 28(Esc) 29(A) 30(S) 31(D) 32(F) 33(G)\n *   Right home row = 40(H) 41(J) 42(K) 43(L) 44(;) 45(')
+ * Design constraints:
+ * - US QWERTY; no dual-role letters and no typing-layer combos.
+ * - Dedicated thumb keys for NAV, SYM, NUM, and GLOBAL.
+ * - Plain modifiers remain composable on every layer.
+ * - F13-F20 form a host-neutral desktop control protocol.
+ * - Destructive actions are available only as SYS-layer combos.
  */
 
 #include <behaviors.dtsi>
@@ -78,433 +16,130 @@
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/outputs.h>
 #include <dt-bindings/zmk/rgb.h>
-#include <behaviors/studio_unlock.dtsi>
 
-#define BASE 0
-#define NAV  1
-#define SYM  2
-#define NUM  3
-#define FUN  4
-#define SYS  5
-#define APP  6
-
-// Right-hand matrix positions + both thumb clusters.
-// A LEFT home-row mod may only engage when the *next* key is one of these.
-#define KEYS_R 8 9 10 11 12 13 22 23 24 25 26 27 39 40 41 42 43 44 45 54 55 56 57 58 59 71 72 73 74 75
-// Left-hand matrix positions + both thumb clusters.
-// A RIGHT home-row mod may only engage when the *next* key is one of these.
-#define KEYS_L 0 1 2 3 4 5 14 15 16 17 18 19 28 29 30 31 32 33 46 47 48 49 50 51 60 61 62 63 64
-// Both thumb clusters (allowed to chord with either hand's mods).
-#define THUMBS 34 35 36 37 38 52 53 65 66 67 68 69 70
+#define BASE   0
+#define NAV    1
+#define SYM    2
+#define NUM    3
+#define GLOBAL 4
+#define SYS    5
 
 / {
-    behaviors {
-        // ── Home Row Mods — Left pinky/ring (GUI, ALT) ────────────
-        // Weak fingers + Cmd/Alt → longer term, idle guard against rolls.
-        hml: home_row_mod_left {
-            compatible = "zmk,behavior-hold-tap";
-            label = "HRM_LEFT";
-            #binding-cells = <2>;
-            flavor = "balanced";
-            tapping-term-ms = <200>;
-            quick-tap-ms = <175>;
-            require-prior-idle-ms = <125>;
-            hold-trigger-on-release;
-            hold-trigger-key-positions = <KEYS_R THUMBS>;
-            bindings = <&kp>, <&kp>;
-        };
-
-        // ── Home Row Mods — Left index (CTRL, SHIFT on D/F) ───────
-        // Fast, strong fingers → shorter term so chords feel instant.
-        hmli: home_row_mod_left_index {
-            compatible = "zmk,behavior-hold-tap";
-            label = "HRM_LEFT_IDX";
-            #binding-cells = <2>;
-            flavor = "balanced";
-            tapping-term-ms = <170>;
-            quick-tap-ms = <175>;
-            require-prior-idle-ms = <100>;
-            hold-trigger-on-release;
-            hold-trigger-key-positions = <KEYS_R THUMBS>;
-            bindings = <&kp>, <&kp>;
-        };
-
-        // ── Home Row Mods — Right pinky/ring (GUI, ALT) ───────────
-        hmr: home_row_mod_right {
-            compatible = "zmk,behavior-hold-tap";
-            label = "HRM_RIGHT";
-            #binding-cells = <2>;
-            flavor = "balanced";
-            tapping-term-ms = <200>;
-            quick-tap-ms = <175>;
-            require-prior-idle-ms = <125>;
-            hold-trigger-on-release;
-            hold-trigger-key-positions = <KEYS_L THUMBS>;
-            bindings = <&kp>, <&kp>;
-        };
-
-        // ── Home Row Mods — Right index (CTRL, SHIFT on K/J) ──────
-        hmri: home_row_mod_right_index {
-            compatible = "zmk,behavior-hold-tap";
-            label = "HRM_RIGHT_IDX";
-            #binding-cells = <2>;
-            flavor = "balanced";
-            tapping-term-ms = <170>;
-            quick-tap-ms = <175>;
-            require-prior-idle-ms = <100>;
-            hold-trigger-on-release;
-            hold-trigger-key-positions = <KEYS_L THUMBS>;
-            bindings = <&kp>, <&kp>;
-        };
-
-        // ── Thumb Layer-Tap (hold→layer, tap→key) ────────────────
-        // No idle guard: thumbs must layer-switch even mid-roll. Higher
-        // term on Space (NAV) handled implicitly by balanced flavor.
-        tlt: thumb_layer_tap {
-            compatible = "zmk,behavior-hold-tap";
-            label = "THUMB_LAYER_TAP";
-            #binding-cells = <2>;
-            flavor = "balanced";
-            tapping-term-ms = <200>;
-            quick-tap-ms = <200>;
-            bindings = <&mo>, <&kp>;
-        };
-
-        // ── Escape/Grave Hold-Tap → TAP = Esc, HOLD = ` ──────────
-        // (v4.0 had these reversed: hold=Esc/tap=grave.)
-        esc_grv: escape_grave {
-            compatible = "zmk,behavior-hold-tap";
-            label = "ESC_GRV";
-            #binding-cells = <2>;
-            flavor = "balanced";
-            tapping-term-ms = <180>;
-            bindings = <&kp>, <&kp>;
-        };
-    };
-
-    macros {
-        // ── VS Code: panels & navigation (macOS) ──────────────────
-        sidebar: sidebar { compatible = "zmk,behavior-macro"; #binding-cells = <0>;   // ⌘B toggle sidebar
-            bindings = <&macro_press &kp LGUI>, <&macro_tap &kp B>, <&macro_release &kp LGUI>; };
-        termtog: termtog { compatible = "zmk,behavior-macro"; #binding-cells = <0>;   // ⌃` toggle integrated terminal
-            bindings = <&macro_press &kp LCTRL>, <&macro_tap &kp GRAVE>, <&macro_release &kp LCTRL>; };
-        panel: panel { compatible = "zmk,behavior-macro"; #binding-cells = <0>;       // ⌘J toggle panel
-            bindings = <&macro_press &kp LGUI>, <&macro_tap &kp J>, <&macro_release &kp LGUI>; };
-        cmdpal: cmdpal { compatible = "zmk,behavior-macro"; #binding-cells = <0>;     // ⌘⇧P command palette
-            bindings = <&macro_press &kp LGUI>, <&macro_press &kp LSHFT>, <&macro_tap &kp P>, <&macro_release &kp LSHFT>, <&macro_release &kp LGUI>; };
-        gotofile: gotofile { compatible = "zmk,behavior-macro"; #binding-cells = <0>; // ⌘P quick open file
-            bindings = <&macro_press &kp LGUI>, <&macro_tap &kp P>, <&macro_release &kp LGUI>; };
-        gotosym: gotosym { compatible = "zmk,behavior-macro"; #binding-cells = <0>;   // ⌘⇧O go to symbol
-            bindings = <&macro_press &kp LGUI>, <&macro_press &kp LSHFT>, <&macro_tap &kp O>, <&macro_release &kp LSHFT>, <&macro_release &kp LGUI>; };
-        gotoln: gotoln { compatible = "zmk,behavior-macro"; #binding-cells = <0>;     // ⌃G go to line
-            bindings = <&macro_press &kp LCTRL>, <&macro_tap &kp G>, <&macro_release &kp LCTRL>; };
-        findf: findf { compatible = "zmk,behavior-macro"; #binding-cells = <0>;       // ⌘⇧F find in files
-            bindings = <&macro_press &kp LGUI>, <&macro_press &kp LSHFT>, <&macro_tap &kp F>, <&macro_release &kp LSHFT>, <&macro_release &kp LGUI>; };
-        godef: godef { compatible = "zmk,behavior-macro"; #binding-cells = <0>;       // F12 go to definition
-            bindings = <&macro_tap &kp F12>; };
-        frefs: frefs { compatible = "zmk,behavior-macro"; #binding-cells = <0>;       // ⇧F12 find references
-            bindings = <&macro_press &kp LSHFT>, <&macro_tap &kp F12>, <&macro_release &kp LSHFT>; };
-        renam: renam { compatible = "zmk,behavior-macro"; #binding-cells = <0>;       // F2 rename symbol
-            bindings = <&macro_tap &kp F2>; };
-        qfix: qfix { compatible = "zmk,behavior-macro"; #binding-cells = <0>;         // ⌘. quick fix / code action
-            bindings = <&macro_press &kp LGUI>, <&macro_tap &kp DOT>, <&macro_release &kp LGUI>; };
-        fmt: fmt { compatible = "zmk,behavior-macro"; #binding-cells = <0>;           // ⇧⌥F format document
-            bindings = <&macro_press &kp LSHFT>, <&macro_press &kp LALT>, <&macro_tap &kp F>, <&macro_release &kp LALT>, <&macro_release &kp LSHFT>; };
-        comline: comline { compatible = "zmk,behavior-macro"; #binding-cells = <0>;   // ⌘/ toggle line comment
-            bindings = <&macro_press &kp LGUI>, <&macro_tap &kp FSLH>, <&macro_release &kp LGUI>; };
-        comblock: comblock { compatible = "zmk,behavior-macro"; #binding-cells = <0>; // ⇧⌥A toggle block comment
-            bindings = <&macro_press &kp LSHFT>, <&macro_press &kp LALT>, <&macro_tap &kp A>, <&macro_release &kp LALT>, <&macro_release &kp LSHFT>; };
-
-        // ── Line Operations (VS Code macOS) ───────────────────────
-        delln: delln { compatible = "zmk,behavior-macro"; #binding-cells = <0>;       // ⌘⇧K delete line
-            bindings = <&macro_press &kp LGUI>, <&macro_press &kp LSHFT>, <&macro_tap &kp K>, <&macro_release &kp LSHFT>, <&macro_release &kp LGUI>; };
-        mvup: mvup { compatible = "zmk,behavior-macro"; #binding-cells = <0>;         // ⌥↑ move line up
-            bindings = <&macro_press &kp LALT>, <&macro_tap &kp UP>, <&macro_release &kp LALT>; };
-        mvdn: mvdn { compatible = "zmk,behavior-macro"; #binding-cells = <0>;         // ⌥↓ move line down
-            bindings = <&macro_press &kp LALT>, <&macro_tap &kp DOWN>, <&macro_release &kp LALT>; };
-        dupl: dupl { compatible = "zmk,behavior-macro"; #binding-cells = <0>;         // ⇧⌥↓ copy line down
-            bindings = <&macro_press &kp LSHFT>, <&macro_press &kp LALT>, <&macro_tap &kp DOWN>, <&macro_release &kp LALT>, <&macro_release &kp LSHFT>; };
-
-        // ── Debug (VS Code F-keys) ────────────────────────────────
-        dbgc: dbgc { compatible = "zmk,behavior-macro"; #binding-cells = <0>;         // F5 continue/start
-            bindings = <&macro_tap &kp F5>; };
-        dbgo: dbgo { compatible = "zmk,behavior-macro"; #binding-cells = <0>;         // F10 step over
-            bindings = <&macro_tap &kp F10>; };
-        dbgi: dbgi { compatible = "zmk,behavior-macro"; #binding-cells = <0>;         // F11 step into
-            bindings = <&macro_tap &kp F11>; };
-        dbgs: dbgs { compatible = "zmk,behavior-macro"; #binding-cells = <0>;         // ⇧F5 stop
-            bindings = <&macro_press &kp LSHFT>, <&macro_tap &kp F5>, <&macro_release &kp LSHFT>; };
-        dbgb: dbgb { compatible = "zmk,behavior-macro"; #binding-cells = <0>;         // F9 toggle breakpoint
-            bindings = <&macro_tap &kp F9>; };
-        dbgr: dbgr { compatible = "zmk,behavior-macro"; #binding-cells = <0>;         // ⇧⌘F5 restart
-            bindings = <&macro_press &kp LSHFT>, <&macro_press &kp LGUI>, <&macro_tap &kp F5>, <&macro_release &kp LGUI>, <&macro_release &kp LSHFT>; };
-
-        // ── Multi-Cursor (VS Code macOS) ──────────────────────────
-        addcur: addcur { compatible = "zmk,behavior-macro"; #binding-cells = <0>;     // ⌥⌘↓ add cursor below
-            bindings = <&macro_press &kp LALT>, <&macro_press &kp LGUI>, <&macro_tap &kp DOWN>, <&macro_release &kp LGUI>, <&macro_release &kp LALT>; };
-        selnext: selnext { compatible = "zmk,behavior-macro"; #binding-cells = <0>;   // ⌘D add next occurrence
-            bindings = <&macro_press &kp LGUI>, <&macro_tap &kp D>, <&macro_release &kp LGUI>; };
-        selallocc: selallocc { compatible = "zmk,behavior-macro"; #binding-cells = <0>; // ⇧⌘L select all occurrences
-            bindings = <&macro_press &kp LSHFT>, <&macro_press &kp LGUI>, <&macro_tap &kp L>, <&macro_release &kp LGUI>, <&macro_release &kp LSHFT>; };
-
-        // ── Git (VS Code: Git: command palette entries) ───────────
-        gitstage: gitstage { compatible = "zmk,behavior-macro"; #binding-cells = <0>; // ⌘K ⌘⌥S stage all changes
-            bindings = <&macro_press &kp LGUI>, <&macro_tap &kp K>, <&macro_release &kp LGUI>,
-                       <&macro_press &kp LGUI>, <&macro_press &kp LALT>, <&macro_tap &kp S>, <&macro_release &kp LALT>, <&macro_release &kp LGUI>; };
-        gitcommit: gitcommit { compatible = "zmk,behavior-macro"; #binding-cells = <0>; // ⌘↵ commit (from SCM input)
-            bindings = <&macro_press &kp LGUI>, <&macro_tap &kp RET>, <&macro_release &kp LGUI>; };
-        scm: scm { compatible = "zmk,behavior-macro"; #binding-cells = <0>;           // ⌃⇧G open Source Control
-            bindings = <&macro_press &kp LCTRL>, <&macro_press &kp LSHFT>, <&macro_tap &kp G>, <&macro_release &kp LSHFT>, <&macro_release &kp LCTRL>; };
-
-        // ── Terminal / shell ──────────────────────────────────────
-        tclear: tclear { compatible = "zmk,behavior-macro"; #binding-cells = <0>;     // ⌃L clear screen
-            bindings = <&macro_press &kp LCTRL>, <&macro_tap &kp L>, <&macro_release &kp LCTRL>; };
-        tintr: tintr { compatible = "zmk,behavior-macro"; #binding-cells = <0>;       // ⌃C interrupt
-            bindings = <&macro_press &kp LCTRL>, <&macro_tap &kp C>, <&macro_release &kp LCTRL>; };
-
-        // ── macOS system ──────────────────────────────────────────
-        spotl: spotl { compatible = "zmk,behavior-macro"; #binding-cells = <0>;       // ⌘Space Spotlight
-            bindings = <&macro_press &kp LGUI>, <&macro_tap &kp SPACE>, <&macro_release &kp LGUI>; };
-        mctrl: mctrl { compatible = "zmk,behavior-macro"; #binding-cells = <0>;       // ⌃↑ Mission Control
-            bindings = <&macro_press &kp LCTRL>, <&macro_tap &kp UP>, <&macro_release &kp LCTRL>; };
-        emoji: emoji { compatible = "zmk,behavior-macro"; #binding-cells = <0>;       // ⌃⌘Space emoji picker
-            bindings = <&macro_press &kp LCTRL>, <&macro_press &kp LGUI>, <&macro_tap &kp SPACE>, <&macro_release &kp LGUI>, <&macro_release &kp LCTRL>; };
-        appwin: appwin { compatible = "zmk,behavior-macro"; #binding-cells = <0>;     // ⌘` cycle windows of app
-            bindings = <&macro_press &kp LGUI>, <&macro_tap &kp GRAVE>, <&macro_release &kp LGUI>; };
-
-        // ── Compound operators (one tap → two-character programming operator) ──
-        arrow: arrow { compatible = "zmk,behavior-macro"; #binding-cells = <0>;        // ->
-            bindings = <&kp MINUS>, <&kp GT>; };
-        fatarrow: fatarrow { compatible = "zmk,behavior-macro"; #binding-cells = <0>;  // =>
-            bindings = <&kp EQUAL>, <&kp GT>; };
-        eqeq: eqeq { compatible = "zmk,behavior-macro"; #binding-cells = <0>;          // ==
-            bindings = <&kp EQUAL>, <&kp EQUAL>; };
-        neq: neq { compatible = "zmk,behavior-macro"; #binding-cells = <0>;            // !=
-            bindings = <&kp EXCL>, <&kp EQUAL>; };
-        andand: andand { compatible = "zmk,behavior-macro"; #binding-cells = <0>;      // &&
-            bindings = <&kp AMPS>, <&kp AMPS>; };
-        oror: oror { compatible = "zmk,behavior-macro"; #binding-cells = <0>;          // ||
-            bindings = <&kp PIPE>, <&kp PIPE>; };
-
-        // ── Bracket pairs — type both brackets then cursor-left ────
-        pair_parens: pair_parens { compatible = "zmk,behavior-macro"; #binding-cells = <0>;   // ()
-            bindings = <&kp LPAR>, <&kp RPAR>, <&kp LEFT>; };
-        pair_brackets: pair_brackets { compatible = "zmk,behavior-macro"; #binding-cells = <0>; // []
-            bindings = <&kp LBKT>, <&kp RBKT>, <&kp LEFT>; };
-        pair_braces: pair_braces { compatible = "zmk,behavior-macro"; #binding-cells = <0>;   // {}
-            bindings = <&kp LBRC>, <&kp RBRC>, <&kp LEFT>; };
-
-        // ── Quote pairs (cursor inside) ────────────────────────────
-        pair_dquotes: pair_dquotes { compatible = "zmk,behavior-macro"; #binding-cells = <0>; // ""
-            bindings = <&kp DQT>, <&kp DQT>, <&kp LEFT>; };
-        pair_btick: pair_btick { compatible = "zmk,behavior-macro"; #binding-cells = <0>;     // ``
-            bindings = <&kp GRAVE>, <&kp GRAVE>, <&kp LEFT>; };
-    };
-
     combos {
         compatible = "zmk,combos";
 
-        // ── Home-row combos (BASE layer, 40ms) — v6.x ASDF+JKL; only ─
-        // Left: 29=A 30=S 31=D 32=F 33=G | Right: 40=H 41=J 42=K 43=L 44=; 45='
-        // Esc (pos 28) intentionally unused in combos — not ergonomic.
-        combo_hash      { timeout-ms = <40>; key-positions = <30 33>; bindings = <&kp HASH>; layers = <BASE>; };             // S+G → #
-        combo_bang      { timeout-ms = <40>; key-positions = <29 31>; bindings = <&kp EXCL>; layers = <BASE>; };             // A+D → !
-        combo_star      { timeout-ms = <40>; key-positions = <30 32>; bindings = <&kp ASTRK>; layers = <BASE>; };            // S+F → *
-        combo_btick     { timeout-ms = <40>; key-positions = <31 33>; bindings = <&kp GRAVE>; layers = <BASE>; };            // D+G → `
-        combo_equals    { timeout-ms = <40>; key-positions = <40 43>; bindings = <&kp EQUAL>; layers = <BASE>; };             // H+L → =
-        combo_pipe      { timeout-ms = <40>; key-positions = <29 32>; bindings = <&kp PIPE>; layers = <BASE>; };              // A+F → |
-        combo_underscore { timeout-ms = <40>; key-positions = <31 32>; bindings = <&kp UNDER>; layers = <BASE>; };            // D+F → _
-        combo_braces    { timeout-ms = <40>; key-positions = <30 31>; bindings = <&pair_braces>; layers = <BASE>; };          // S+D → {}
-        combo_dquotes   { timeout-ms = <40>; key-positions = <41 42>; bindings = <&pair_dquotes>; layers = <BASE>; };         // J+K → ""
-        combo_colon     { timeout-ms = <40>; key-positions = <41 43>; bindings = <&kp COLON>; layers = <BASE>; };             // J+L → :
-        combo_dollar    { timeout-ms = <40>; key-positions = <40 42>; bindings = <&kp DLLR>; layers = <BASE>; };              // H+K → $
-        combo_brackets  { timeout-ms = <40>; key-positions = <42 43>; bindings = <&pair_brackets>; layers = <BASE>; };        // K+L → []
-        combo_parens    { timeout-ms = <40>; key-positions = <43 44>; bindings = <&pair_parens>; layers = <BASE>; };          // L+; → ()
-        combo_btpair    { timeout-ms = <40>; key-positions = <44 45>; bindings = <&pair_btick>; layers = <BASE>; };           // ;+' → ``
+        // Deliberate, SYS-only chords. No combo affects normal typing.
+        combo_bt_clear {
+            timeout-ms = <150>;
+            key-positions = <1 2>;
+            layers = <SYS>;
+            bindings = <&bt BT_CLR>;
+        };
 
-        // ── @ and - via home-row chords ─────────────────────────────
-        combo_at        { timeout-ms = <40>; key-positions = <32 33>; bindings = <&kp AT>; layers = <BASE>; };                // F+G → @
-        combo_minus     { timeout-ms = <40>; key-positions = <40 41>; bindings = <&kp MINUS>; layers = <BASE>; };             // H+J → -
-
-        // ── System combos (SYS layer only) ──
-        // bt_clear 120ms: faster, non-destructive. bootloader 200ms: deliberate, destructive.
-        combo_bt_clear   { timeout-ms = <120>; key-positions = <1 2>;   layers = <SYS>; bindings = <&bt BT_CLR>; };
-        combo_bootloader { timeout-ms = <200>; key-positions = <20 21>; layers = <SYS>; bindings = <&bootloader>; };
-
-        // ── Quick-save combo (BASE layer only): chord A+S → ⌘S ──
-        // A=29, S=30 (adjacent left home keys). Routes through left-hand letters,
-        // so we send the Cmd explicitly rather than relying on the (positional) HRM.
-        combo_qsave { timeout-ms = <45>; key-positions = <29 30>; layers = <BASE>;
-            bindings = <&macro_press &kp LGUI>, <&macro_tap &kp S>, <&macro_release &kp LGUI>; };
+        combo_bootloader {
+            timeout-ms = <250>;
+            key-positions = <20 21>;
+            layers = <SYS>;
+            bindings = <&bootloader>;
+        };
     };
 
     keymap {
         compatible = "zmk,keymap";
 
-        // ═══════════════════════════════════════════════════════════════
-        // LAYER 0: BASE
-        //
-        //   Row 1:  = 1 2 3 4 5       6 7 8 9 0 -
-        //   Row 2: Tab Q W E R T       Y U I O P \
-        //   Row 3: Esc A S D F G  ⌦⌫↟  ↡⇱⇲  H J K L ; '
-        //   Row 4: ⇧  Z X C V B  ▤↹   N M , . / ⇧
-        //   Row 5: `  [ ] ( )  ⬅⬆⇨    ← ↓ ↑ → SYS
-        //
-        //   HRM: A=⌘  S=⌥  D=⌃  F=⇧     J=⇧  K=⌃  L=⌥  ;=⌘
-        //   Inner columns (row 3): Delete, Backspace, PgUp  |  Home, PgDn, End
-        //   Inner thumb (row 4): APP(mo) Tab  |  CapsWord Tab FUN(mo) NAV(mo)
-        // ═══════════════════════════════════════════════════════════════
-        // ═══════════════════════════════════════════════════════════════
-        // LAYER 0: BASE — QWERTY + positional HRM
-        //
-        //   Row 1 (14):  =  1 2 3 4 5  [SYS][·]   [·][SYS]  6 7 8 9 0  -
-        //   Row 2 (14): Tab Q W E R T  [·][·]     [·][·]    Y U I O P  \
-        //   Row 3 (18): Esc A S D F G  ⌦ ⌫ ↟      ↡ ⇱ ⇲     H J K L ;  '
-        //   Row 4 (14):  ⇧  Z X C V B     [APP/Esc][Tab]    N M , . /  ⇧
-        //   Row 5 (16):  `  [ ] ( )    [SYM⌫][NUM⌦][CW]  [Tab][FUN↵][NAV␣]   ← ↓ ↑ →  SYS
-        //
-        //   HRM (pinky→index):  A=⌘  S=⌥  D=⌃  F=⇧   |   J=⇧  K=⌃  L=⌥  ;=⌘
-        //     (D/F and J/K use the faster *index* HRM profile.)
-        //   Esc key: TAP=Esc, HOLD=`  (esc_grv)
-        //   Row-3 inner: ⌦ ⌫ PgUp | PgDn Home End
-        // ═══════════════════════════════════════════════════════════════
+        /*
+         * BASE
+         *
+         *  =  1 2 3 4 5  SYS | SYS  6 7 8 9 0 -
+         * Tab Q W E R T   Caps|Repeat Y U I O P \
+         * Esc A S D F G  A C G|G C A H J K L ; '
+         * Shf Z X C V B    NAV|SYM   N M , . / Shf
+         *  `  [ ] ( )   Bsp Del NUM|GLOBAL Ent Spc  Left Down Up Right SYS
+         *
+         * Upper thumbs are mirrored Alt/Ctrl/GUI, with GUI nearest center.
+         */
         default_layer {
             display-name = "BASE";
             bindings = <
-&kp EQUAL          &kp N1       &kp N2       &kp N3        &kp N4        &kp N5    &mo SYS                       &mo SYS    &kp N6  &kp N7        &kp N8        &kp N9       &kp N0          &kp MINUS
-&kp TAB            &kp Q        &kp W        &kp E         &kp R         &kp T     &none                         &none      &kp Y   &kp U         &kp I         &kp O        &kp P           &kp BSLH
-&esc_grv GRAVE ESC &hml LGUI A  &hml LALT S  &hmli LCTRL D &hmli LSHFT F &kp G    &kp DEL  &kp BSPC  &kp PG_UP  &kp PG_DN  &kp HOME &kp END  &kp H &hmri RSHFT J &hmri RCTRL K &hmr RALT L  &hmr RGUI SEMI  &kp SQT
-&kp LSHFT          &kp Z        &kp X        &kp C         &kp V         &kp B                  &tlt APP ESC  &kp TAB                  &kp N   &kp M         &kp COMMA     &kp DOT      &kp FSLH        &kp RSHFT
-&kp GRAVE           &kp LBKT     &kp RBKT     &kp LPAR      &kp RPAR                &tlt SYM BSPC &tlt NUM DEL &caps_word &kp TAB &tlt FUN ENTER &tlt NAV SPACE      &kp LEFT      &kp DOWN     &kp UP          &kp RIGHT &mo SYS
+&kp EQUAL &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &mo SYS                         &mo SYS &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &kp MINUS
+&kp TAB   &kp Q  &kp W  &kp E  &kp R  &kp T  &caps_word                      &key_repeat &kp Y &kp U &kp I &kp O &kp P &kp BSLH
+&kp ESC   &kp A  &kp S  &kp D  &kp F  &kp G  &kp LALT &kp LCTRL &kp LGUI    &kp RGUI &kp RCTRL &kp RALT &kp H &kp J &kp K &kp L &kp SEMI &kp SQT
+&kp LSHFT &kp Z  &kp X  &kp C  &kp V  &kp B              &mo NAV             &mo SYM              &kp N &kp M &kp COMMA &kp DOT &kp FSLH &kp RSHFT
+&kp GRAVE &kp LBKT &kp RBKT &kp LPAR &kp RPAR       &kp BSPC &kp DEL &mo NUM &mo GLOBAL &kp ENTER &kp SPACE       &kp LEFT &kp DOWN &kp UP &kp RIGHT &mo SYS
             >;
         };
 
-        // ═══════════════════════════════════════════════════════════════
-        // LAYER 1: NAV — Movement + Selection + Edit verbs (hold Right-Space)
-        //
-        //   RIGHT hand = movement (same H=Home, J/K/L/; = ← ↓ ↑ → on every row tier).
-        //   LEFT hand  = readline (⌃A/E/U/K/W) + clipboard on the X/C/V anchor.
-        //
-        //   Row 1 (14): Esc Word← Word→ Tab← Tab→ Print [GoFile][AppWin] App← App→ MissCtl Spotl PgUp PgDn
-        //   Row 2 (14): Tab Undo  Redo  Cut  Copy Paste [TClr][T⌃C]  GoLn Word← Word→ Home End  ⌫
-        //   Row 3 (18): Esc ⌃A   ⌃E    ⌃U   ⌃K   ⌃W   ⌦ ⌫ ↟  ↡ ⇱ ⇲   ⌫w ←   ↓    ↑    →    Enter
-        //   Row 4 (14):  ⇧  Save  Find  GoSym Dupl SelNext   [⌫][⌦]      Sel←w Sel→w Sel↑¶ Sel↓¶ DelLn ⇧
-        //   Row 5 (16):  `  MvUp  MvDn Sel⇤ Sel⇥         [⌫][⌦][CW] [Sel←][Sel→][␣]   Home End PgUp PgDn  SYS
-        // ═══════════════════════════════════════════════════════════════
+        /* NAV: hold the left middle thumb; use Vim-shaped H/J/K/L. */
         layer_nav {
             display-name = "NAV";
             bindings = <
-&kp ESC    &kp LA(LEFT) &kp LA(RIGHT) &kp LC(LS(TAB)) &kp LC(TAB) &kp PSCRN  &gotofile                      &appwin &kp LG(LS(TAB)) &kp LG(TAB) &mctrl     &spotl     &kp PG_UP &kp PG_DN
-&kp TAB    &kp LG(Z)    &kp LG(LS(Z)) &kp LG(X)       &kp LG(C)   &kp LG(V)  &tclear                        &tintr  &gotoln         &kp LA(LEFT) &kp LA(RIGHT) &kp HOME &kp END   &kp BSPC
-&kp ESC    &kp LC(A)    &kp LC(E)     &kp LC(U)       &kp LC(K)   &kp LC(W)  &kp DEL  &kp BSPC  &kp PG_UP    &kp PG_DN &kp HOME &kp END  &kp LA(DEL) &kp LEFT  &kp DOWN  &kp UP    &kp RIGHT &kp ENTER
-&kp LSHFT  &kp LG(S)    &kp LG(F)     &gotosym        &dupl       &selnext                  &kp BSPC  &kp DEL                   &kp LA(LS(LEFT)) &kp LA(LS(RIGHT)) &kp LA(LS(UP)) &kp LA(LS(DOWN)) &delln &kp RSHFT
-&kp GRAVE  &mvup        &mvdn         &kp LG(LS(LEFT)) &kp LG(LS(RIGHT))      &kp BSPC &kp DEL &caps_word &kp LS(LEFT) &kp LS(RIGHT) &kp ENTER    &kp HOME  &kp END   &kp PG_UP &kp PG_DN &mo SYS
+&kp ESC &none &none &none &none &none &trans                                 &trans &none &none &none &none &none &none
+&kp TAB &none &none &none &none &none &caps_word                             &key_repeat &kp HOME &kp PG_UP &kp PG_DN &kp END &kp BSPC &kp DEL
+&kp ESC &none &none &none &none &none &trans &trans &trans                   &trans &trans &trans &kp LEFT &kp DOWN &kp UP &kp RIGHT &kp HOME &kp END
+&trans  &none &none &none &none &none              &trans                    &trans                 &kp HOME &kp PG_DN &kp PG_UP &kp END &kp DEL &trans
+&none &none &none &none &none       &trans &trans &trans &trans &trans &trans       &kp HOME &kp PG_DN &kp PG_UP &kp END &trans
             >;
         };
 
-        // ═══════════════════════════════════════════════════════════════
-        // LAYER 2: SYM — Programming Symbols (hold Left-Backspace)
-        //
-        //   ZERO duplicates. Every symbol appears exactly once.
-        //   Inner slots (rows 1-2) = compound operators, thumb-accessible.
-        //   Row 3 = brackets openers-left/closers-right + all quote variants.
-        //   Row 5 = compound operators + freq-use symbol clusters.
-        //
-        //   Row 1 (14):  `   !   @   #   $   %   [==] [!=]   ^   &   *   |   ?   ~
-        //   Row 2 (14): Tab  /   \   <   >   "   [->] [=>]   (   )   +   =   :   ;
-        //   Row 3 (18): Esc  [   {   '   "   `    ⌦   ⌫   ↟    ↡   ⇱   ⇲    -   _   }   ]   .   ,
-        //   Row 4 (14):  ⇧   &&  ||  !=  ==  =>       [⌫] [⌦]       *   /   %   $   #   ⇧
-        //   Row 5 (16):  `   ->  =>  |   ~   =        [#] [@] [!]   [?] [:] [␣]   +   -   _   \
-        // ═══════════════════════════════════════════════════════════════
+        /*
+         * SYM: paired and mnemonic.
+         * Home row:  < { [ ( =  |  + ) ] } > -
+         * Top row preserves the familiar US shifted-number symbols.
+         */
         layer_sym {
             display-name = "SYM";
             bindings = <
-&kp GRAVE  &kp EXCL  &kp AT    &kp HASH  &kp DLLR  &kp PRCNT  &eqeq             &neq     &kp CARET &kp AMPS &kp ASTRK &kp PIPE  &kp QMARK &kp TILDE
-&kp TAB    &kp FSLH  &kp BSLH  &kp LT    &kp GT    &kp DQT    &fatarrow          &arrow   &kp LPAR  &kp RPAR  &kp PLUS &kp EQUAL &kp COLON &kp SEMI
-&kp ESC    &kp LBKT  &kp LBRC  &kp SQT   &kp DQT   &kp GRAVE  &kp DEL &kp BSPC  &kp PG_UP &kp PG_DN &kp HOME &kp END &kp MINUS &kp UNDER &kp RBRC  &kp RBKT &kp DOT   &kp COMMA
-&kp LSHFT  &andand    &oror     &neq      &eqeq     &fatarrow             &kp BSPC  &kp DEL                    &kp ASTRK &kp FSLH &kp PRCNT &kp DLLR  &kp HASH  &kp RSHFT
-&kp GRAVE  &arrow     &fatarrow &kp PIPE   &kp TILDE  &kp EQUAL       &kp HASH &kp AT &kp EXCL &kp QMARK &kp COLON &kp SPACE       &kp PLUS  &kp MINUS &kp UNDER &kp BSLH
+&kp PLUS &kp EXCL &kp AT &kp HASH &kp DLLR &kp PRCNT &trans                   &trans &kp CARET &kp AMPS &kp ASTRK &kp LPAR &kp RPAR &kp UNDER
+&kp TAB &kp GRAVE &kp TILDE &kp BSLH &kp PIPE &kp COLON &trans               &trans &kp SEMI &kp SQT &kp DQT &kp FSLH &kp QMARK &kp BSLH
+&kp ESC &kp LT &kp LBRC &kp LBKT &kp LPAR &kp EQUAL &trans &trans &trans     &trans &trans &trans &kp PLUS &kp RPAR &kp RBKT &kp RBRC &kp GT &kp MINUS
+&trans &kp EXCL &kp AT &kp HASH &kp DLLR &kp PRCNT           &trans          &trans             &kp CARET &kp AMPS &kp ASTRK &kp COLON &kp QMARK &trans
+&kp GRAVE &kp BSLH &kp PIPE &kp LT &kp GT       &trans &trans &trans &trans &trans &trans       &kp PLUS &kp MINUS &kp EQUAL &kp UNDER &kp FSLH
             >;
         };
 
-        // ═══════════════════════════════════════════════════════════════
-        // LAYER 3: NUM — Numpad + F-Keys (hold Left-Delete)
-        //
-        //   Right hand = full numpad. Left hand = F-keys + nav + readline.
-        //
-        //   Row 1 (14): Esc F1 F2 F3 F4 F5  [·][·]  [·][·]  F6 F7 F8 F9 F10 F11
-        //   Row 2 (14): Tab ⌫  ↟  ↡  ⇱  ⇲   [·][·]  [·][·]  7  8  9  -  +  ⌫
-        //   Row 3 (18): Esc ←  ↓  ↑  →  Home ⌦ ⌫ ↟ ↡ ⇱ ⇲   4  5  6  *  /  Enter
-        //   Row 4 (14):  ⇧  ⌃A ⌃E ⌃U ⌃K ⌃W    [⌫][⌦]       1  2  3  .  ,  ⇧
-        //   Row 5 (16):  `  ⌫  ⌦  =  .   [0][0][.]  [↵][␣][⇥]   0  .  +  -  Enter
-        // ═══════════════════════════════════════════════════════════════
+        /* NUM: left-hand F keys and a standard right-hand numpad. */
         layer_num {
             display-name = "NUM";
             bindings = <
-&kp ESC    &kp F1    &kp F2    &kp F3    &kp F4    &kp F5    &none                       &none   &kp F6 &kp F7 &kp F8 &kp F9    &kp F10   &kp F11
-&kp TAB    &kp BSPC  &kp PG_UP &kp PG_DN &kp HOME  &kp END   &none                       &none   &kp N7 &kp N8 &kp N9 &kp MINUS &kp PLUS  &kp BSPC
-&kp ESC    &kp LEFT  &kp DOWN  &kp UP    &kp RIGHT &kp HOME  &kp DEL &kp BSPC &kp PG_UP   &kp PG_DN &kp HOME &kp END &kp N4 &kp N5 &kp N6 &kp ASTRK &kp FSLH &kp ENTER
-&kp LSHFT  &kp LC(A) &kp LC(E) &kp LC(U) &kp LC(K) &kp LC(W)           &kp BSPC  &kp DEL                     &kp N1 &kp N2 &kp N3 &kp DOT   &kp COMMA &kp RSHFT
-&kp GRAVE  &kp BSPC  &kp DEL   &kp EQUAL &kp DOT             &kp N0   &kp N0   &kp DOT &kp ENTER &kp SPACE &kp TAB      &kp N0 &kp DOT   &kp PLUS  &kp MINUS &kp ENTER
+&kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &trans                             &trans &none &none &none &none &none &none
+&kp F7 &kp F8 &kp F9 &kp F10 &kp F11 &kp F12 &trans                         &trans &kp KP_N7 &kp KP_N8 &kp KP_N9 &kp KP_DIVIDE &kp KP_MULTIPLY &kp BSPC
+&kp ESC &none &none &none &none &none &trans &trans &trans                   &trans &trans &trans &kp KP_N4 &kp KP_N5 &kp KP_N6 &kp KP_MINUS &kp KP_PLUS &kp KP_ENTER
+&trans &none &none &none &none &none               &trans                    &trans                &kp KP_N1 &kp KP_N2 &kp KP_N3 &kp KP_DOT &kp COMMA &trans
+&none &none &none &none &none       &trans &trans &trans &trans &trans &trans       &kp KP_N0 &kp KP_DOT &kp KP_PLUS &kp KP_MINUS &kp KP_ENTER
             >;
         };
 
-        // ═══════════════════════════════════════════════════════════════
-        // LAYER 4: FUN — IDE Tools + Debug + Media (hold Right-Enter)
-        //
-        //   LEFT-hand clipboard anchor (Z/X/C/V) matches BASE positions so
-        //   undo/cut/copy/paste/redo never move between layers.
-        //
-        //   Row 1 (14): Esc F1 F2 F3 F4 F5  [Stage][Commit]  F6 F7 F8 F9 F10 F11
-        //   Row 2 (14): Tab Term Side CmdP GoDef Refs [CmBlk][CmLn] Cont BP Over Into Stop Restart
-        //   Row 3 (18): Esc Save Find Fmt QFix Rename ⌦ ⌫ ↟ ↡ ⇱ ⇲ Tab← Tab→ AddCur SelNext SelAllOcc SCM
-        //   Row 4 (14):  ⇧  Undo Cut Copy Paste Redo   [⌫][⌦]    ◀◀ ⏯ ▶▶ 🔉 🔊 ⇧
-        //   Row 5 (16):  `  Scr3 Scr4 Scr5 Spotl  [⌫][⌦][Emoji] [Panel][Term][␣] Home End PgUp PgDn SYS
-        // ═══════════════════════════════════════════════════════════════
-        layer_fun {
-            display-name = "FUN";
+        /*
+         * GLOBAL protocol:
+         *   1..8        -> F13..F20         (workspace)
+         *   Shift+1..8  -> Shift+F13..F20   (move to workspace)
+         *   H/J/K/L     -> Ctrl+F13..F16    (focus direction)
+         *   Shift+HJKL  -> Ctrl+Shift+F13..F16 (move direction)
+         *   [ / ]       -> Ctrl+F17/F18     (previous/next workspace)
+         *   F / R       -> Ctrl+F19/F20     (fullscreen/float)
+         *   Q / P       -> Ctrl+Shift+F19/F20 (close/split)
+         *   Enter/T/B/E/Space/V/G -> Alt+F13..F19 (core applications)
+         */
+        layer_global {
+            display-name = "GLOBAL";
             bindings = <
-&kp ESC    &kp F1       &kp F2       &kp F3       &kp F4       &kp F5    &gitstage                      &gitcommit &kp F6  &kp F7  &kp F8  &kp F9    &kp F10     &kp F11
-&kp TAB    &termtog     &sidebar     &cmdpal      &godef       &frefs    &comblock &comline             &dbgc   &dbgb   &dbgo   &dbgi     &dbgs       &dbgr
-&kp ESC    &kp LG(S)    &findf       &fmt         &qfix        &renam    &kp DEL &kp BSPC &kp PG_UP      &kp PG_DN &kp HOME &kp END &kp LC(LS(TAB)) &kp LC(TAB) &addcur &selnext &selallocc &scm
-&kp LSHFT  &kp LG(Z)    &kp LG(X)    &kp LG(C)    &kp LG(V)    &kp LG(LS(Z))      &kp BSPC  &kp DEL               &kp C_PREV &kp C_PP &kp C_NEXT &kp C_VOL_DN &kp C_VOL_UP &kp RSHFT
-&kp GRAVE  &kp LG(LS(N3)) &kp LG(LS(N4)) &kp LG(LS(N5)) &spotl         &kp BSPC &kp DEL &emoji &panel &termtog &kp SPACE       &kp HOME &kp END &kp PG_UP &kp PG_DN &mo SYS
+&none &kp F13 &kp F14 &kp F15 &kp F16 &kp F17 &trans                         &trans &kp F18 &kp F19 &kp F20 &none &none &none
+&none &kp LC(LS(F19)) &none &kp LA(F16) &kp LC(F20) &kp LA(F14) &trans       &trans &none &none &none &none &kp LC(LS(F20)) &none
+&none &none &none &none &kp LC(F19) &kp LA(F19) &trans &trans &trans         &trans &trans &trans &kp LC(F13) &kp LC(F14) &kp LC(F15) &kp LC(F16) &none &none
+&trans &none &none &none &kp LA(F18) &kp LA(F15)             &trans          &trans             &none &none &none &none &none &trans
+&none &kp LC(F17) &kp LC(F18) &none &none       &trans &trans &trans &trans &kp LA(F13) &kp LA(F17)       &none &none &none &none &trans
             >;
         };
 
-        // ═══════════════════════════════════════════════════════════════
-        // LAYER 5: SYS — Bluetooth, RGB, Backlight, Firmware
-        //   BT_CLR and bootloader are reachable only via the SYS-only combos.
-        // ═══════════════════════════════════════════════════════════════
+        /* SYS: connectivity, indicators, media, and protected maintenance. */
         layer_sys {
             display-name = "SYS";
             bindings = <
-&studio_unlock &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4 &trans                       &trans  &bt BT_NXT &bt BT_PRV &none &none &none &none
-&none      &none        &none        &none        &none        &none        &trans                       &trans  &none &none &none &none &none &none
-&none      &none        &none        &none        &none        &none        &trans &trans &trans          &trans &trans &trans &rgb_ug RGB_TOG &rgb_ug RGB_BRI &rgb_ug RGB_BRD &rgb_ug RGB_EFF &rgb_ug RGB_EFR &rgb_ug RGB_SPI
-&none      &none        &none        &none        &none        &none                 &kp C_BRI_DN &kp C_BRI_UP             &kp C_PREV &kp C_PP &kp C_NEXT &kp C_VOL_DN &kp C_VOL_UP &kp C_MUTE
-&bootloader &bt BT_CLR  &bt BT_NXT   &bt BT_PRV   &none                     &out OUT_TOG &none &none &none &none &none      &bl BL_INC &bl BL_DEC &bl BL_TOG &kp LC(LG(Q)) &trans
-            >;
-        };
-
-        // ═══════════════════════════════════════════════════════════════
-        // LAYER 6: APP — Window Manager / Hyper (hold Left-inner thumb Esc)
-        //   Sends Ctrl+Alt+Cmd+<key> (Hyper) — bind in Hammerspoon.
-        //
-        //   Row 1 (14): H` H1 H2 H3 H4 H5  [·][·]  [·][·]  H6 H7 H8 H9 H0 H-
-        //   Row 2 (14): HTab HQ HW HE HR HT [·][·] [·][·]  HY HU HI HO HP H\
-        //   Row 3 (18): HEsc HA HS HD HF HG F13 F14 F15  F16 F17 F18  HH HJ HK HL H; H'
-        //   Row 4 (14):  ⇧  HZ HX HC HV HB    [F19][F20]   HN HM H, H. H/ ⇧
-        //   Row 5 (16): H`  H[ H] H( H)   [F21][F22][F23] [F24][HSpace][·] H← H↓ H↑ H→ SYS
-        // ═══════════════════════════════════════════════════════════════
-        layer_app {
-            display-name = "APP";
-            bindings = <
-&kp LC(LA(LG(GRAVE))) &kp LC(LA(LG(N1))) &kp LC(LA(LG(N2))) &kp LC(LA(LG(N3))) &kp LC(LA(LG(N4))) &kp LC(LA(LG(N5))) &none                       &none &kp LC(LA(LG(N6))) &kp LC(LA(LG(N7))) &kp LC(LA(LG(N8))) &kp LC(LA(LG(N9))) &kp LC(LA(LG(N0))) &kp LC(LA(LG(MINUS)))
-&kp LC(LA(LG(TAB)))   &kp LC(LA(LG(Q)))  &kp LC(LA(LG(W)))  &kp LC(LA(LG(E)))  &kp LC(LA(LG(R)))  &kp LC(LA(LG(T)))  &none                       &none &kp LC(LA(LG(Y)))  &kp LC(LA(LG(U)))  &kp LC(LA(LG(I)))  &kp LC(LA(LG(O)))  &kp LC(LA(LG(P)))  &kp LC(LA(LG(BSLH)))
-&kp LC(LA(LG(ESC)))   &kp LC(LA(LG(A)))  &kp LC(LA(LG(S)))  &kp LC(LA(LG(D)))  &kp LC(LA(LG(F)))  &kp LC(LA(LG(G)))  &kp F13 &kp F14 &kp F15     &kp F16 &kp F17 &kp F18 &kp LC(LA(LG(H))) &kp LC(LA(LG(J))) &kp LC(LA(LG(K))) &kp LC(LA(LG(L))) &kp LC(LA(LG(SEMI))) &kp LC(LA(LG(SQT)))
-&kp LSHFT             &kp LC(LA(LG(Z)))  &kp LC(LA(LG(X)))  &kp LC(LA(LG(C)))  &kp LC(LA(LG(V)))  &kp LC(LA(LG(B)))            &kp F19 &kp F20                       &kp LC(LA(LG(N))) &kp LC(LA(LG(M))) &kp LC(LA(LG(COMMA))) &kp LC(LA(LG(DOT))) &kp LC(LA(LG(FSLH))) &kp RSHFT
-&kp LC(LA(LG(GRAVE))) &kp LC(LA(LG(LBKT))) &kp LC(LA(LG(RBKT))) &kp LC(LA(LG(LPAR))) &kp LC(LA(LG(RPAR)))         &kp F21 &kp F22 &kp F23 &kp F24 &kp LC(LA(LG(SPACE))) &trans &kp LC(LA(LG(LEFT))) &kp LC(LA(LG(DOWN))) &kp LC(LA(LG(UP))) &kp LC(LA(LG(RIGHT))) &mo SYS
+&out OUT_USB &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4 &trans   &trans &out OUT_BLE &out OUT_TOG &none &none &none &none
+&none &none &none &none &none &none &none                                             &none &none &none &none &none &none &none
+&none &none &none &none &none &none &trans &trans &trans                              &trans &trans &trans &rgb_ug RGB_TOG &rgb_ug RGB_BRI &rgb_ug RGB_BRD &rgb_ug RGB_EFF &rgb_ug RGB_EFR &rgb_ug RGB_SPI
+&trans &none &none &none &none &none                         &trans                    &trans                &kp C_PREV &kp C_PP &kp C_NEXT &kp C_VOL_DN &kp C_VOL_UP &trans
+&none &none &none &none &none       &out OUT_USB &out OUT_BLE &out OUT_TOG &bl BL_TOG &bl BL_DEC &bl BL_INC       &rgb_ug RGB_TOG &rgb_ug RGB_BRD &rgb_ug RGB_BRI &kp C_MUTE &trans
             >;
         };
     };

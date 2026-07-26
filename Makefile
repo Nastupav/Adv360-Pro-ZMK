@@ -1,4 +1,5 @@
 DOCKER := $(shell { command -v podman || command -v docker; })
+CONTAINER_USERNS := $(if $(findstring podman,$(DOCKER)),--userns=keep-id:uid=0,)
 TIMESTAMP := $(shell date -u +"%Y%m%d%H%M")
 COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null)
 ifeq ($(shell uname),Darwin)
@@ -12,31 +13,29 @@ endif
 .PHONY: all left clean_firmware clean_image clean
 
 all:
-	$(shell bin/get_version_local.sh clique >> /dev/null)
+	mkdir -p firmware
 	$(DOCKER) build --tag zmk --file Dockerfile .
-	$(DOCKER) run --rm --name zmk \
+	$(DOCKER) run --rm --name zmk $(CONTAINER_USERNS) \
 		-v $(PWD)/firmware:/app/firmware$(SELINUX1) \
 		-v $(PWD)/config:/app/config:ro$(SELINUX2) \
 		-e TIMESTAMP=$(TIMESTAMP) \
 		-e COMMIT=$(COMMIT) \
 		-e BUILD_RIGHT=true \
 		zmk
-	git checkout config/version.dtsi
 
 left:
-	$(shell bin/get_version_local.sh clique >> /dev/null)
+	mkdir -p firmware
 	$(DOCKER) build --tag zmk --file Dockerfile .
-	$(DOCKER) run --rm --name zmk \
+	$(DOCKER) run --rm --name zmk $(CONTAINER_USERNS) \
 		-v $(PWD)/firmware:/app/firmware$(SELINUX1) \
 		-v $(PWD)/config:/app/config:ro$(SELINUX2) \
 		-e TIMESTAMP=$(TIMESTAMP) \
 		-e COMMIT=$(COMMIT) \
 		-e BUILD_RIGHT=false \
 		zmk
-	git checkout config/version.dtsi
 
 clean_firmware:
-	rm -f firmware/*.uf2
+	rm -f firmware/*.uf2 firmware/SHA256SUMS
 
 clean_image:
 	$(DOCKER) image rm zmk docker.io/zmkfirmware/zmk-build-arm:stable

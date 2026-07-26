@@ -2,7 +2,7 @@
 .DS_Store
 
 # Build artifacts
-firmware/*.uf2
+firmware/
 *.uf2
 
 # IDE
