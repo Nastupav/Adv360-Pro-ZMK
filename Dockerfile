@@ -1,4 +1,4 @@
-FROM docker.io/zmkfirmware/zmk-build-arm:stable
+FROM docker.io/zmkfirmware/zmk-build-arm@sha256:edb1c953438c6f720ddb79c3762f3972013b7fbbaf4fff3592fc869983e7afc5
 
 WORKDIR /app
 

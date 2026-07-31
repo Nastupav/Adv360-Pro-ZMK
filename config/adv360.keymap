@@ -6,7 +6,8 @@
  * - US QWERTY; no dual-role letters and no typing-layer combos.
  * - Dedicated thumb keys for NAV, SYM, NUM, and GLOBAL.
  * - Plain modifiers remain composable on every layer.
- * - F13-F20 form a host-neutral desktop control protocol.
+ * - Layer home-row actions use ASDF and JKL; — never G/H.
+ * - Modified F13-F20 form a host-neutral desktop control protocol.
  * - Destructive actions are available only as SYS-layer combos.
  */
 
@@ -15,6 +16,7 @@
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/outputs.h>
+#include <dt-bindings/zmk/pointing.h>
 #include <dt-bindings/zmk/rgb.h>
 
 #define BASE   0
@@ -25,6 +27,86 @@
 #define SYS    5
 
 / {
+    macros {
+        // Editor-independent literal tokens. 20/20 ms is the speed-focused
+        // starting point; the field test rejects any dropped/reordered output.
+        op_eqeq: op_eqeq { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp EQUAL>, <&kp EQUAL>; };
+        op_neq: op_neq { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp EXCL>, <&kp EQUAL>; };
+        op_lte: op_lte { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp LT>, <&kp EQUAL>; };
+        op_gte: op_gte { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp GT>, <&kp EQUAL>; };
+        op_arrow: op_arrow { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp MINUS>, <&kp GT>; };
+        op_fatarrow: op_fatarrow { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp EQUAL>, <&kp GT>; };
+        op_and: op_and { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp AMPS>, <&kp AMPS>; };
+        op_or: op_or { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp PIPE>, <&kp PIPE>; };
+        op_walrus: op_walrus { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp COLON>, <&kp EQUAL>; };
+        op_pow: op_pow { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp ASTRK>, <&kp ASTRK>; };
+        op_floordiv: op_floordiv { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp FSLH>, <&kp FSLH>; };
+
+        // PowerShell comparison family follows its canonical ordering.
+        ps_eq: ps_eq { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp MINUS>, <&kp E>, <&kp Q>; };
+        ps_ne: ps_ne { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp MINUS>, <&kp N>, <&kp E>; };
+        ps_lt: ps_lt { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp MINUS>, <&kp L>, <&kp T>; };
+        ps_le: ps_le { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp MINUS>, <&kp L>, <&kp E>; };
+        ps_gt: ps_gt { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp MINUS>, <&kp G>, <&kp T>; };
+        ps_ge: ps_ge { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp MINUS>, <&kp G>, <&kp E>; };
+
+        // SQL, PowerShell, Python, and Spark punctuation shared across editors.
+        op_sql_ne: op_sql_ne { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp LT>, <&kp GT>; };
+        op_scope: op_scope { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp COLON>, <&kp COLON>; };
+        ps_current: ps_current { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp DLLR>, <&kp UNDER>; };
+        op_comment: op_comment { compatible = "zmk,behavior-macro"; #binding-cells = <0>;
+            wait-ms = <20>; tap-ms = <20>; bindings = <&kp MINUS>, <&kp MINUS>; };
+    };
+
+    behaviors {
+        // Only dedicated thumb keys use timing behavior. Hold-preferred makes
+        // a layer chord resolve on the next key-down, not on key release.
+        tlt: thumb_layer_tap {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "hold-preferred";
+            tapping-term-ms = <170>;
+            bindings = <&mo>, <&kp>;
+        };
+
+        num_caps: num_caps {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "hold-preferred";
+            tapping-term-ms = <170>;
+            bindings = <&mo>, <&caps_word>;
+        };
+
+        sk_lazy: sticky_key_lazy {
+            compatible = "zmk,behavior-sticky-key";
+            #binding-cells = <1>;
+            release-after-ms = <1000>;
+            quick-release;
+            lazy;
+            bindings = <&kp>;
+        };
+    };
+
     combos {
         compatible = "zmk,combos";
 
@@ -51,10 +133,10 @@
          * BASE
          *
          *  =  1 2 3 4 5  SYS | SYS  6 7 8 9 0 -
-         * Tab Q W E R T   Caps|Repeat Y U I O P \
+         * Tab Q W E R T   StickyCmd|StickyCtrl Y U I O P \
          * Esc A S D F G  A C G|G C A H J K L ; '
-         * Shf Z X C V B    NAV|SYM   N M , . / Shf
-         *  `  [ ] ( )   Bsp Del NUM|GLOBAL Ent Spc  Left Down Up Right SYS
+         * Shf Z X C V B  Esc/NAV|Tab/SYM  N M , . / Shf
+         *  `  [ ] ( )   Bsp Del CapsWord/NUM|Launcher/GLOBAL Ent Spc  Left Down Up Right SYS
          *
          * Upper thumbs are mirrored Alt/Ctrl/GUI, with GUI nearest center.
          */
@@ -62,48 +144,53 @@
             display-name = "BASE";
             bindings = <
 &kp EQUAL &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &mo SYS                         &mo SYS &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &kp MINUS
-&kp TAB   &kp Q  &kp W  &kp E  &kp R  &kp T  &caps_word                      &key_repeat &kp Y &kp U &kp I &kp O &kp P &kp BSLH
+&kp TAB   &kp Q  &kp W  &kp E  &kp R  &kp T  &sk_lazy LGUI                   &sk_lazy LCTRL &kp Y &kp U &kp I &kp O &kp P &kp BSLH
 &kp ESC   &kp A  &kp S  &kp D  &kp F  &kp G  &kp LALT &kp LCTRL &kp LGUI    &kp RGUI &kp RCTRL &kp RALT &kp H &kp J &kp K &kp L &kp SEMI &kp SQT
-&kp LSHFT &kp Z  &kp X  &kp C  &kp V  &kp B              &mo NAV             &mo SYM              &kp N &kp M &kp COMMA &kp DOT &kp FSLH &kp RSHFT
-&kp GRAVE &kp LBKT &kp RBKT &kp LPAR &kp RPAR       &kp BSPC &kp DEL &mo NUM &mo GLOBAL &kp ENTER &kp SPACE       &kp LEFT &kp DOWN &kp UP &kp RIGHT &mo SYS
-            >;
-        };
-
-        /* NAV: hold the left middle thumb; use Vim-shaped H/J/K/L. */
-        layer_nav {
-            display-name = "NAV";
-            bindings = <
-&kp ESC &none &none &none &none &none &trans                                 &trans &none &none &none &none &none &none
-&kp TAB &none &none &none &none &none &caps_word                             &key_repeat &kp HOME &kp PG_UP &kp PG_DN &kp END &kp BSPC &kp DEL
-&kp ESC &none &none &none &none &none &trans &trans &trans                   &trans &trans &trans &kp LEFT &kp DOWN &kp UP &kp RIGHT &kp HOME &kp END
-&trans  &none &none &none &none &none              &trans                    &trans                 &kp HOME &kp PG_DN &kp PG_UP &kp END &kp DEL &trans
-&none &none &none &none &none       &trans &trans &trans &trans &trans &trans       &kp HOME &kp PG_DN &kp PG_UP &kp END &trans
+&kp LSHFT &kp Z  &kp X  &kp C  &kp V  &kp B              &tlt NAV ESC          &tlt SYM TAB          &kp N &kp M &kp COMMA &kp DOT &kp FSLH &kp RSHFT
+&kp GRAVE &kp LBKT &kp RBKT &kp LPAR &kp RPAR       &kp BSPC &kp DEL &num_caps NUM 0 &tlt GLOBAL LA(F13) &kp ENTER &kp SPACE  &kp LEFT &kp DOWN &kp UP &kp RIGHT &mo SYS
             >;
         };
 
         /*
-         * SYM: paired and mnemonic.
-         * Home row:  < { [ ( =  |  + ) ] } > -
-         * Top row preserves the familiar US shifted-number symbols.
+         * NAV: hold Esc/NAV.
+         * ASDF = Home/PgDn/PgUp/End; JKL; = Left/Down/Up/Right.
+         * Row 4 right = selection Left/Down/Up/Right.
+         */
+        layer_nav {
+            display-name = "NAV";
+            bindings = <
+&none &none &none &none &none &none &trans                                   &trans &none &none &none &none &none &none
+&trans &none &none &none &none &none &trans                                  &trans &msc SCRL_LEFT &msc SCRL_DOWN &msc SCRL_UP &msc SCRL_RIGHT &kp BSPC &kp DEL
+&trans &kp HOME &kp PG_DN &kp PG_UP &kp END &none &trans &trans &trans        &trans &trans &trans &none &kp LEFT &kp DOWN &kp UP &kp RIGHT &none
+&trans &none &none &none &none &none               &trans                    &trans                &kp LS(LEFT) &kp LS(DOWN) &kp LS(UP) &kp LS(RIGHT) &none &trans
+&none &none &none &none &none       &trans &trans &trans &mkp MCLK &mkp LCLK &mkp RCLK  &none &none &none &none &trans
+            >;
+        };
+
+        /*
+         * SYM: Python/PowerShell/SQL/PySpark frequency without BASE duplication.
+         * ASDF = _ : ! ?; JKL; = + * & |.
+         * Row 1 = shifted symbols; Row 2 = language-neutral operators.
+         * Row 4 = PowerShell comparisons plus SQL/shared punctuation.
          */
         layer_sym {
             display-name = "SYM";
             bindings = <
-&kp PLUS &kp EXCL &kp AT &kp HASH &kp DLLR &kp PRCNT &trans                   &trans &kp CARET &kp AMPS &kp ASTRK &kp LPAR &kp RPAR &kp UNDER
-&kp TAB &kp GRAVE &kp TILDE &kp BSLH &kp PIPE &kp COLON &trans               &trans &kp SEMI &kp SQT &kp DQT &kp FSLH &kp QMARK &kp BSLH
-&kp ESC &kp LT &kp LBRC &kp LBKT &kp LPAR &kp EQUAL &trans &trans &trans     &trans &trans &trans &kp PLUS &kp RPAR &kp RBKT &kp RBRC &kp GT &kp MINUS
-&trans &kp EXCL &kp AT &kp HASH &kp DLLR &kp PRCNT           &trans          &trans             &kp CARET &kp AMPS &kp ASTRK &kp COLON &kp QMARK &trans
-&kp GRAVE &kp BSLH &kp PIPE &kp LT &kp GT       &trans &trans &trans &trans &trans &trans       &kp PLUS &kp MINUS &kp EQUAL &kp UNDER &kp FSLH
+&none &kp AT &kp HASH &kp DLLR &kp PRCNT &kp CARET &trans                    &trans &kp LBRC &kp RBRC &kp DQT &kp LT &kp GT &kp TILDE
+&trans &op_eqeq &op_neq &op_lte &op_gte &op_arrow &trans                    &trans &op_fatarrow &op_and &op_or &op_walrus &op_pow &op_floordiv
+&trans &kp UNDER &kp COLON &kp EXCL &kp QMARK &none &trans &trans &trans     &trans &trans &trans &none &kp PLUS &kp ASTRK &kp AMPS &kp PIPE &none
+&trans &ps_eq &ps_ne &ps_lt &ps_le &ps_gt              &trans                &trans                &ps_ge &op_sql_ne &op_scope &ps_current &op_comment &trans
+&trans &trans &trans &trans &trans       &trans &trans &trans &trans &trans &trans       &trans &trans &trans &trans &trans
             >;
         };
 
-        /* NUM: left-hand F keys and a standard right-hand numpad. */
+        /* NUM: left-hand F keys and a right-hand number block. */
         layer_num {
             display-name = "NUM";
             bindings = <
 &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &trans                             &trans &none &none &none &none &none &none
 &kp F7 &kp F8 &kp F9 &kp F10 &kp F11 &kp F12 &trans                         &trans &kp KP_N7 &kp KP_N8 &kp KP_N9 &kp KP_DIVIDE &kp KP_MULTIPLY &kp BSPC
-&kp ESC &none &none &none &none &none &trans &trans &trans                   &trans &trans &trans &kp KP_N4 &kp KP_N5 &kp KP_N6 &kp KP_MINUS &kp KP_PLUS &kp KP_ENTER
+&kp ESC &none &none &none &none &none &trans &trans &trans                   &trans &trans &trans &none &kp KP_N4 &kp KP_N5 &kp KP_N6 &kp KP_PLUS &none
 &trans &none &none &none &none &none               &trans                    &trans                &kp KP_N1 &kp KP_N2 &kp KP_N3 &kp KP_DOT &kp COMMA &trans
 &none &none &none &none &none       &trans &trans &trans &trans &trans &trans       &kp KP_N0 &kp KP_DOT &kp KP_PLUS &kp KP_MINUS &kp KP_ENTER
             >;
@@ -113,33 +200,35 @@
          * GLOBAL protocol:
          *   1..8        -> F13..F20         (workspace)
          *   Shift+1..8  -> Shift+F13..F20   (move to workspace)
-         *   H/J/K/L     -> Ctrl+F13..F16    (focus direction)
-         *   Shift+HJKL  -> Ctrl+Shift+F13..F16 (move direction)
+         *   J/K/L/;     -> Ctrl+F13..F16    (focus direction)
+         *   Shift+JKL;  -> Ctrl+Shift+F13..F16 (move direction)
          *   [ / ]       -> Ctrl+F17/F18     (previous/next workspace)
-         *   F / R       -> Ctrl+F19/F20     (fullscreen/float)
-         *   Q / P       -> Ctrl+Shift+F19/F20 (close/split)
-         *   Enter/T/B/E/Space/V/G -> Alt+F13..F19 (core applications)
+         *   A/S/D/F     -> close/split/float/fullscreen
+         *   Alt+F13..F20 -> launcher/terminal/browser/files/editor/project/Git/AI
          */
         layer_global {
             display-name = "GLOBAL";
             bindings = <
 &none &kp F13 &kp F14 &kp F15 &kp F16 &kp F17 &trans                         &trans &kp F18 &kp F19 &kp F20 &none &none &none
-&none &kp LC(LS(F19)) &none &kp LA(F16) &kp LC(F20) &kp LA(F14) &trans       &trans &none &none &none &none &kp LC(LS(F20)) &none
-&none &none &none &none &kp LC(F19) &kp LA(F19) &trans &trans &trans         &trans &trans &trans &kp LC(F13) &kp LC(F14) &kp LC(F15) &kp LC(F16) &none &none
-&trans &none &none &none &kp LA(F18) &kp LA(F15)             &trans          &trans             &none &none &none &none &none &trans
-&none &kp LC(F17) &kp LC(F18) &none &none       &trans &trans &trans &trans &kp LA(F13) &kp LA(F17)       &none &none &none &none &trans
+&none &none &kp LA(F15) &kp LA(F17) &none &kp LA(F14) &trans                 &trans &none &kp LA(F19) &kp LA(F20) &kp LA(F16) &kp LA(F18) &none
+&none &kp LC(LS(F19)) &kp LC(LS(F20)) &kp LC(F20) &kp LC(F19) &none &trans &trans &trans &trans &trans &trans &none &kp LC(F13) &kp LC(F14) &kp LC(F15) &kp LC(F16) &none
+&trans &none &none &none &none &none                         &trans          &trans             &none &none &none &none &none &trans
+&none &kp LC(F17) &kp LC(F18) &none &none       &trans &trans &trans &trans &trans &trans       &none &none &none &none &trans
             >;
         };
 
-        /* SYS: connectivity, indicators, media, and protected maintenance. */
+        /*
+         * SYS: connectivity, indicators, media, and protected maintenance.
+         * ASDF = USB/BLE/toggle/next profile; JKL; = RGB toggle/up/down/effect.
+         */
         layer_sys {
             display-name = "SYS";
             bindings = <
-&out OUT_USB &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4 &trans   &trans &out OUT_BLE &out OUT_TOG &none &none &none &none
+&none &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4 &trans          &trans &none &none &none &none &none &none
 &none &none &none &none &none &none &none                                             &none &none &none &none &none &none &none
-&none &none &none &none &none &none &trans &trans &trans                              &trans &trans &trans &rgb_ug RGB_TOG &rgb_ug RGB_BRI &rgb_ug RGB_BRD &rgb_ug RGB_EFF &rgb_ug RGB_EFR &rgb_ug RGB_SPI
+&none &out OUT_USB &out OUT_BLE &out OUT_TOG &bt BT_NXT &none &trans &trans &trans     &trans &trans &trans &none &rgb_ug RGB_TOG &rgb_ug RGB_BRI &rgb_ug RGB_BRD &rgb_ug RGB_EFF &none
 &trans &none &none &none &none &none                         &trans                    &trans                &kp C_PREV &kp C_PP &kp C_NEXT &kp C_VOL_DN &kp C_VOL_UP &trans
-&none &none &none &none &none       &out OUT_USB &out OUT_BLE &out OUT_TOG &bl BL_TOG &bl BL_DEC &bl BL_INC       &rgb_ug RGB_TOG &rgb_ug RGB_BRD &rgb_ug RGB_BRI &kp C_MUTE &trans
+&none &none &none &none &none       &trans &trans &trans &bl BL_TOG &bl BL_DEC &bl BL_INC       &rgb_ug RGB_EFR &rgb_ug RGB_SPI &none &kp C_MUTE &trans
             >;
         };
     };

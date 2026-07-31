@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "macos": {
+    "terminal": { "command": ["/usr/bin/open", "-a", "Ghostty"] },
+    "browser": { "command": ["/usr/bin/open", "-a", "Safari"] },
+    "files": { "command": ["/usr/bin/open", "-a", "Finder"] },
+    "editor": { "command": ["/usr/bin/open", "-a", "Visual Studio Code"] },
+    "project": { "command": ["/Applications/Ghostty.app/Contents/MacOS/ghostty", "-e", "{repo}/scripts/project_picker.sh"] },
+    "git": { "command": ["/Applications/Ghostty.app/Contents/MacOS/ghostty", "-e", "/opt/homebrew/bin/lazygit"] },
+    "ai": { "command": ["/usr/bin/open", "-a", "ChatGPT"], "fallback_url": "https://chatgpt.com/" }
+  },
+  "linux": {
+    "launcher": { "command": ["wofi", "--show", "drun"] },
+    "terminal": { "command": ["ghostty"] },
+    "browser": { "command": ["firefox"] },
+    "files": { "command": ["thunar"] },
+    "editor": { "command": ["code"] },
+    "project": { "command": ["ghostty", "-e", "{repo}/scripts/project_picker.sh"] },
+    "git": { "command": ["ghostty", "-e", "lazygit"] },
+    "ai": { "command": ["xdg-open", "https://chatgpt.com/"] }
+  }
+}

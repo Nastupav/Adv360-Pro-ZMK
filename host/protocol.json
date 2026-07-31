@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "carrier": {
+    "first_key": "F13",
+    "last_key": "F20",
+    "slots": 8
+  },
+  "namespaces": {
+    "workspace": { "modifiers": [], "slots": 8 },
+    "move_workspace": { "modifiers": ["shift"], "slots": 8 },
+    "focus_direction": { "modifiers": ["control"], "keys": ["F13", "F14", "F15", "F16"] },
+    "move_direction": { "modifiers": ["control", "shift"], "keys": ["F13", "F14", "F15", "F16"] },
+    "window_state": { "modifiers": ["control"], "keys": ["F17", "F18", "F19", "F20"] },
+    "window_command": { "modifiers": ["control", "shift"], "keys": ["F19", "F20"] },
+    "developer_action": { "modifiers": ["alt"], "slots": 8 }
+  },
+  "directions": ["left", "down", "up", "right"],
+  "actions": [
+    { "slot": 1, "signal": "Alt+F13", "gesture": "tap GLOBAL thumb", "name": "launcher" },
+    { "slot": 2, "signal": "Alt+F14", "gesture": "GLOBAL+T", "name": "terminal" },
+    { "slot": 3, "signal": "Alt+F15", "gesture": "GLOBAL+W", "name": "browser" },
+    { "slot": 4, "signal": "Alt+F16", "gesture": "GLOBAL+O", "name": "files" },
+    { "slot": 5, "signal": "Alt+F17", "gesture": "GLOBAL+E", "name": "editor" },
+    { "slot": 6, "signal": "Alt+F18", "gesture": "GLOBAL+P", "name": "project" },
+    { "slot": 7, "signal": "Alt+F19", "gesture": "GLOBAL+U", "name": "git" },
+    { "slot": 8, "signal": "Alt+F20", "gesture": "GLOBAL+I", "name": "ai" }
+  ]
+}

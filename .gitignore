@@ -4,6 +4,8 @@
 # Build artifacts
 firmware/
 *.uf2
+__pycache__/
+*.pyc
 
 # IDE
 .vscode/

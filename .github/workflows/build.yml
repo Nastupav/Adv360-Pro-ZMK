@@ -9,33 +9,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: zmkfirmware/zmk-build-arm:stable
+      image: zmkfirmware/zmk-build-arm@sha256:edb1c953438c6f720ddb79c3762f3972013b7fbbaf4fff3592fc869983e7afc5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate keymap shape
-        shell: bash
+      - name: Install Lua syntax parser
         run: |
-          set -euo pipefail
-          mapfile -t counts < <(
-            awk '
-              /^[[:space:]]*bindings = </ { in_bind = 1; count = 0; next }
-              in_bind && /^[[:space:]]*>;/ { print count; in_bind = 0; next }
-              in_bind {
-                line = $0
-                while (match(line, /&[A-Za-z_]+/)) {
-                  count++
-                  line = substr(line, RSTART + RLENGTH)
-                }
-              }
-            ' config/adv360.keymap
-          )
-          [[ "${#counts[@]}" -eq 6 ]]
-          for count in "${counts[@]}"; do
-            [[ "$count" -eq 76 ]]
-          done
-          ! grep -Eq 'behavior-hold-tap|behavior-macro|studio_unlock' config/adv360.keymap
+          apt-get update
+          apt-get install -y --no-install-recommends lua5.4
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Test workflow contract
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Verify firmware and host semantics
+        run: python3 scripts/verify_workflow.py
 
       - name: Cache west modules
         uses: actions/cache@v4
@@ -66,12 +55,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          prefix="adv360-$(date -u +'%Y%m%d%H%M')-${GITHUB_SHA::7}"
+          config_hash=$(python3 scripts/firmware_fingerprint.py)
+          commit=${GITHUB_SHA::12}
+          prefix="adv360-${commit}-${config_hash}"
           mkdir -p firmware
           cp build/left/zephyr/zmk.uf2 "firmware/${prefix}-left.uf2"
           cp build/right/zephyr/zmk.uf2 "firmware/${prefix}-right.uf2"
-          cd firmware
-          sha256sum ./*.uf2 > SHA256SUMS
+          (
+            cd firmware
+            sha256sum ./*.uf2 > SHA256SUMS
+          )
+          printf '{\n  "schema": 1,\n  "commit": "%s",\n  "config_sha256": "%s",\n  "dirty": false,\n  "left": true,\n  "right": true\n}\n' \
+            "$commit" "$config_hash" > firmware/build-manifest.json
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4

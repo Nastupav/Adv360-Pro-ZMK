@@ -1,0 +1,15 @@
+.git
+firmware
+docs
+host
+scripts
+tests
+assets
+.github
+.DS_Store
+__pycache__
+*.pyc
+*.uf2
+*.md
+LICENSE
+Makefile
