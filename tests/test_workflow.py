@@ -209,6 +209,31 @@ class WorkflowVerifierTests(unittest.TestCase):
         left_defconfig = (ROOT / "config/boards/arm/adv360/adv360_left_defconfig").read_text()
         self.assertNotIn("F13-F24", left_defconfig)
 
+    def test_zmk_studio_left_half_contract(self) -> None:
+        keymap = (ROOT / "config/adv360.keymap").read_text()
+        config = (ROOT / "config/adv360.conf").read_text()
+        build = (ROOT / "bin/build.sh").read_text()
+        workflow = (ROOT / ".github/workflows/build.yml").read_text()
+        board = (ROOT / "config/boards/arm/adv360/adv360.dtsi").read_text()
+        layouts = (ROOT / "config/boards/arm/adv360/adv360-layouts.dtsi").read_text()
+        readme = (ROOT / "README.md").read_text()
+        agent_contract = (ROOT / "AGENTS.md").read_text()
+
+        self.assertIn("#include <behaviors/studio_unlock.dtsi>", keymap)
+        self.assertEqual(verify_workflow.layer_rows(keymap, "layer_sys")[1][9], "&studio_unlock")
+        self.assertIn("CONFIG_ZMK_STUDIO=n", config, "right peripheral must keep Studio disabled")
+        self.assertEqual(build.count("-S studio-rpc-usb-uart"), 1)
+        self.assertEqual(build.count("-DCONFIG_ZMK_STUDIO=y"), 1)
+        self.assertEqual(workflow.count("-S studio-rpc-usb-uart"), 1)
+        self.assertEqual(workflow.count("-DCONFIG_ZMK_STUDIO=y"), 1)
+        self.assertIn("zmk,physical-layout = &physical_layout0", board)
+        self.assertIn('compatible = "zmk,physical-layout"', layouts)
+        self.assertIn("keys", layouts)
+        self.assertIn("ZMK Studio", readme)
+        self.assertIn("SYS + U", readme)
+        self.assertIn("Studio edits", agent_contract)
+        self.assertNotIn("ZMK Studio remains disabled", agent_contract)
+
     def test_left_build_removes_same_fingerprint_right_artifact(self) -> None:
         build = (ROOT / "bin/build.sh").read_text()
         self.assertIn('rm -f "firmware/${prefix}-right.uf2"', build)

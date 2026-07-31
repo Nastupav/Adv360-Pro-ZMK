@@ -186,8 +186,21 @@ clean reset and re-pair:
 Vendor procedure:
 <https://github.com/KinesisCorporation/Adv360-Pro-ZMK#flashing-firmware>
 
-Studio/Clique runtime keymap editing remains disabled; Git is the sole keymap
-authority. RGB and the white backlight start off to protect battery life.
+## ZMK Studio
+
+ZMK Studio is enabled on the left/central half over USB. The right half remains
+a normal split peripheral and intentionally does not include the Studio transport.
+
+1. Flash both newly generated UF2 files.
+2. Connect the left half by USB and select USB output with `SYS + A`.
+3. Open <https://zmk.studio/> in Chrome/Edge or the native application.
+4. When Studio requests authorization, press `SYS + U` to unlock editing.
+
+Studio edits are stored on the keyboard and override later `.keymap` changes. Use
+**Restore Stock Settings** in ZMK Studio before expecting newly flashed Git
+keymap changes to take effect.
+
+RGB and the white backlight start off to protect battery life.
 
 ## Seven-day field test
 

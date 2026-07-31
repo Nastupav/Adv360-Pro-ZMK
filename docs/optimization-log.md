@@ -8,9 +8,10 @@ Status: static gates and independent spec re-review passed; physical field test 
 
 Static evidence:
 
-- `make test`: 26/26 tests passed.
+- `make test`: 27/27 tests passed.
 - `make verify` and `make verify-active`: passed.
-- Both firmware halves built from fingerprint `9d6b8465cdb1`; checksums passed.
+- Both firmware halves built from fingerprint `f6edf08e82b5`; ZMK Studio was
+  compiled into the left/central half and both checksums passed.
 - Independent review found and drove fixes for a stale F21-F24 AeroSpace
   reference and stale same-prefix right artifacts after `make left`.
 - Pre-commit quality review drove fail-closed Lua parsing, safe Hyprland shell

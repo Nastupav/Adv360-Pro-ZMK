@@ -11,8 +11,9 @@ prefix="adv360-${commit}-${config_hash}${dirty_suffix}"
 
 mkdir -p firmware
 
-west build -s zmk/app -p -d build/left -b adv360_left -- \
-    -DZMK_CONFIG="${project_dir}/config"
+west build -s zmk/app -p -d build/left -b adv360_left -S studio-rpc-usb-uart -- \
+    -DZMK_CONFIG="${project_dir}/config" \
+    -DCONFIG_ZMK_STUDIO=y
 cp build/left/zephyr/zmk.uf2 "firmware/${prefix}-left.uf2"
 
 artifacts=("${prefix}-left.uf2")

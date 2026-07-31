@@ -10,7 +10,9 @@ This repository is an evidence-driven, speed-focused Kinesis Advantage360 Pro co
 - Never use Esc in a combo.
 - Frequent GUI/Cmd and Ctrl paths stay plain or sticky and composable.
 - Firmware macros emit literal tokens only: no cursor movement, trailing spaces, editor commands, or auto-pairs.
-- Git is the keymap authority; ZMK Studio remains disabled.
+- ZMK Studio is enabled only on the left/central half; preserve the USB RPC
+  snippet, `SYS + U` unlock, and Studio-free right peripheral. Studio edits
+  override Git keymap changes until **Restore Stock Settings** is used.
 
 ## Current speed profile
 

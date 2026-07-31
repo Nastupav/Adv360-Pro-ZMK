@@ -45,8 +45,8 @@ jobs:
           west update
           west zephyr-export
 
-      - name: Build left
-        run: west build -s zmk/app -p -d build/left -b adv360_left -- -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
+      - name: Build left (ZMK Studio central)
+        run: west build -s zmk/app -p -d build/left -b adv360_left -S studio-rpc-usb-uart -- -DZMK_CONFIG="${GITHUB_WORKSPACE}/config" -DCONFIG_ZMK_STUDIO=y
 
       - name: Build right
         run: west build -s zmk/app -p -d build/right -b adv360_right -- -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"

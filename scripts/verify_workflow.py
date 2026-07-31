@@ -88,6 +88,8 @@ def check_keymap() -> None:
         "GLOBAL": layer_rows(text, "layer_global"),
         "SYS": layer_rows(text, "layer_sys"),
     }
+    require("#include <behaviors/studio_unlock.dtsi>" in text, "ZMK Studio unlock behavior is not included")
+    require(layers["SYS"][1][9] == "&studio_unlock", "SYS+U must provide ZMK Studio unlock")
 
     for name in ("NAV", "SYM", "NUM", "GLOBAL", "SYS"):
         home = layers[name][2]
@@ -171,7 +173,7 @@ def check_keymap() -> None:
     conf = uncomment((ROOT / "config/adv360.conf").read_text(), marker="#")
     for token in ("CONFIG_ZMK_HID_KEYBOARD_NKRO_EXTENDED_REPORT=y", "CONFIG_ZMK_POINTING=y", "CONFIG_ZMK_STUDIO=n", "CONFIG_ZMK_BACKLIGHT_ON_START=n", "CONFIG_ZMK_RGB_UNDERGLOW_ON_START=n"):
         require(token in conf, f"adv360.conf missing {token}")
-    print("PASS keymap geometry, thumb timing, macros, pointer controls, and power defaults")
+    print("PASS keymap geometry, thumb timing, macros, Studio unlock, pointer controls, and power defaults")
 
 
 def check_protocol() -> dict[str, Any]:
@@ -326,6 +328,16 @@ def check_build_and_docs() -> None:
     require("build-manifest.json" in build and "timestamp" not in build.lower(), "build outputs are not deterministic")
     require(".DEFAULT_GOAL := all" in makefile, "make must default to both firmware halves")
     require("lua5.4" in workflow, "CI must install a Lua syntax parser")
+    require(build.count("-S studio-rpc-usb-uart") == 1 and build.count("-DCONFIG_ZMK_STUDIO=y") == 1,
+            "local build must enable ZMK Studio only on the left/central half")
+    require(workflow.count("-S studio-rpc-usb-uart") == 1 and workflow.count("-DCONFIG_ZMK_STUDIO=y") == 1,
+            "CI must enable ZMK Studio only on the left/central half")
+
+    board = (ROOT / "config/boards/arm/adv360/adv360.dtsi").read_text()
+    layouts = (ROOT / "config/boards/arm/adv360/adv360-layouts.dtsi").read_text()
+    require("zmk,physical-layout = &physical_layout0" in board, "board lacks selected ZMK Studio physical layout")
+    require('compatible = "zmk,physical-layout"' in layouts and "keys" in layouts,
+            "ZMK Studio physical layout lacks key geometry")
 
     readme = (ROOT / "README.md").read_text()
     protocol = (ROOT / "host/PROTOCOL.md").read_text()
@@ -338,6 +350,10 @@ def check_build_and_docs() -> None:
     for token in ("speed-profile candidate", "independent spec re-review passed", "macro output errors", "accept / revert / iterate"):
         require(token in optimization_log, f"optimization log missing {token}")
     require("All 21 literal macros use 20/20 ms timing" in readme, "README speed-macro inventory is stale")
+    require("ZMK Studio" in readme and "SYS + U" in readme and "Restore Stock Settings" in readme,
+            "README lacks ZMK Studio connection/unlock/persistence guidance")
+    require("SYS + U" in agent_contract and "Studio edits" in agent_contract and "ZMK Studio remains disabled" not in agent_contract,
+            "agent contract contradicts ZMK Studio support")
     require((ROOT / "docs/7-day-field-test.md").exists(), "field-test documentation missing")
 
 
