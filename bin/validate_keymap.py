@@ -145,12 +145,34 @@ else:
             fail(f"{node} is missing require-prior-idle-ms")
 
 # --- 5. combos --------------------------------------------------------------
+# Behaviors that lose data or drop the keyboard off the bus. A combo bound to
+# one of these must span both hands, so a fumbled one-handed press can never
+# reach it.
+DESTRUCTIVE = ("bt BT_CLR", "bt BT_CLR_ALL", "sys_reset", "bootloader")
+
 combos = extract_block(src, r"combos\s*\{")
 if combos:
-    for positions in re.findall(r"key-positions\s*=\s*<([^>]*)>", combos):
-        for pos in parse_int_list(positions):
+    for node, body in re.findall(r"(\w+)\s*\{(.*?)\}\s*;", combos, flags=re.S):
+        pos_match = re.search(r"key-positions\s*=\s*<([^>]*)>", body)
+        bind_match = re.search(r"bindings\s*=\s*<\s*&([^>]*)>", body)
+        if not pos_match:
+            fail(f"combo {node} has no key-positions")
+            continue
+        positions = parse_int_list(pos_match.group(1))
+        for pos in positions:
             if not 0 <= pos < KEY_COUNT:
-                fail(f"combo key-position {pos} out of range")
+                fail(f"combo {node} key-position {pos} out of range")
+
+        binding = bind_match.group(1).strip() if bind_match else ""
+        if any(binding.startswith(d) for d in DESTRUCTIVE):
+            left = [p for p in positions if p in hands["KEYS_L"]]
+            right = [p for p in positions if p in hands["KEYS_R"]]
+            if not (left and right):
+                fail(
+                    f"combo {node} triggers &{binding} but its positions "
+                    f"{positions} are all on one hand; destructive combos must "
+                    f"span both hands"
+                )
 
 # --- 1. layer binding counts ------------------------------------------------
 keymap = extract_block(src, r"keymap\s*\{")

@@ -17,6 +17,9 @@ jobs:
       - name: Validate keymap structure
         run: python3 bin/validate_keymap.py
 
+      - name: Validate F13-F20 protocol against host configs
+        run: python3 bin/validate_protocol.py
+
       - name: Check README layer diagrams are current
         run: python3 bin/render_keymap.py --check
 

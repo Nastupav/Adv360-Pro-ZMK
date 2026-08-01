@@ -14,6 +14,7 @@ endif
 
 validate:
 	python3 bin/validate_keymap.py
+	python3 bin/validate_protocol.py
 	python3 bin/render_keymap.py --check
 
 render:

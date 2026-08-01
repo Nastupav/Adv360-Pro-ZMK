@@ -54,6 +54,11 @@ KEY = {
     "LALT": "Alt", "RALT": "Alt", "LGUI": "Cmd", "RGUI": "Cmd",
     "C_PREV": "Prev", "C_NEXT": "Next", "C_PP": "Play",
     "C_MUTE": "Mute", "C_VOL_UP": "Vol+", "C_VOL_DN": "Vol-",
+    "C_BRI_UP": "Lum+", "C_BRI_DN": "Lum-", "C_STOP": "Stop",
+    "C_EJECT": "Ejct", "C_AL_CALC": "Calc", "C_AL_FILES": "File",
+    "C_AC_SEARCH": "Srch", "C_AL_LOCK": "Lock", "GLOBE": "Lang",
+    "PSCRN": "PrtSc", "SLCK": "ScLk", "PAUSE_BREAK": "Paus",
+    "K_APP": "Menu", "CAPS": "Caps", "KP_NUM": "#Num",
 }
 
 MOD_SHORT = {"LGUI": "G", "RGUI": "G", "LCTRL": "C", "RCTRL": "C",
@@ -69,6 +74,7 @@ KP = {"DIVIDE": "/", "MULTIPLY": "*", "MINUS": "-", "PLUS": "+",
 
 BEHAVIOR_ARG = {
     "BT_SEL": "BT", "BT_NXT": "BT>", "BT_PRV": "BT<", "BT_CLR": "BTclr",
+    "BT_DISC": "BTx",
     "OUT_USB": "USB", "OUT_BLE": "BLE", "OUT_TOG": "Out~",
     "BL_TOG": "BL~", "BL_DEC": "BL-", "BL_INC": "BL+",
 }

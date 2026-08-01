@@ -39,7 +39,9 @@ systems.
 
 `MACRO` fires when `NAV` and `SYM` are held together — both middle thumbs.
 That costs no dedicated key, and the two thumbs are already the ones your
-hands rest against, so the whole macro bank is one chord away.
+hands rest against, so the whole macro bank is one chord away. The one habit
+this rules out is resting a thumb on `NAV` while working on `SYM`: that is the
+macro chord, so you would get `->` where you wanted `[`.
 
 Every position on every layer is bound. `&trans` is content, not emptiness: it
 exposes the layer underneath, which is exactly what makes `WIN` a thin overlay
@@ -232,11 +234,11 @@ base layer &nbsp;&middot;&nbsp; `>` truncated macro (see the reference below)
 **SYS**
 
 ```text
-     USB          BT0          BT1          BT2          BT3          BT4           ^^                                                                                            ^^          BLE          Out~         BT>          BT<        C_BRI_DN     C_BRI_UP
-     BL~          BL-         =>WIN         BL+           ON          OFF           ^^                                                                                            ^^        BT_DISC0     BT_DISC1     BT_DISC2     BT_DISC3     BT_DISC4       SPD
-      ^^         =>MAC         HUD          HUI          SAD          SAI           ^^                        ^^           ^^      |       ^^           ^^                        ^^          RGB          BRD          BRI          EFF          EFR          SPI
-      ^^         PSCRN         SLCK     PAUSE_BREAK     K_APP         CAPS                                                 ^^      |       ^^                                                 Prev         Play         Next         Vol-         Vol+          ^^
-    C_STOP      C_EJECT     C_AL_CALC    C_AL_FILES  C_AC_SEARCH                                 ^^           ^^           ^^      |       ^^           ^^           ^^                                    Mute         #Num        GLOBE      C_AL_LOCK        ^^
+  USB    BT0    BT1    BT2    BT3    BT4     ^^                                                  ^^    BLE    Out~   BT>    BT<    Lum-   Lum+
+  BL~    BL-   =>WIN   BL+     ON    OFF     ^^                                                  ^^    BTx0   BTx1   BTx2   BTx3   BTx4   SPD
+   ^^   =>MAC   HUD    HUI    SAD    SAI     ^^            ^^     ^^   |    ^^     ^^            ^^    RGB    BRD    BRI    EFF    EFR    SPI
+   ^^   PrtSc   ScLk   Paus   Menu   Caps                         ^^   |    ^^                         Prev   Play   Next   Vol-   Vol+    ^^
+  Stop   Ejct   Calc   File   Srch                  ^^     ^^     ^^   |    ^^     ^^     ^^                  Mute   #Num   Lang   Lock    ^^
 ```
 
 **NAVWIN**
@@ -299,9 +301,15 @@ combos, and only on `SYS`:
 
 | Combo (on `SYS`) | Action |
 |---|---|
-| `1` + `2` | Clear all Bluetooth bonds |
-| `4` + `5` | Soft reset |
+| `=` + `-` (outer ends of the number row) | Clear all Bluetooth bonds |
+| Both outer `Shift` keys | Soft reset |
 | Both inner top keys | Enter bootloader |
+
+Each one spans both hands and uses opposite ends of a row, so none can fire
+from a fumbled one-handed press. Deliberately, none of them sit on the
+Bluetooth profile keys: chording two adjacent profile selectors is exactly what
+you do when switching hosts, and that must never be able to wipe your bonds.
+`make validate` rejects any destructive combo placed on a single hand.
 
 Use the physical reset button for the right half when necessary. Runtime ZMK
 Studio/Clique keymap editing is disabled; git is the source of truth.
@@ -326,11 +334,17 @@ run the same validation and build in GitHub Actions.
 ### Tooling
 
 ```sh
-bin/validate_keymap.py          # 76 bindings per layer, hand sets, combos
+bin/validate_keymap.py          # layer shape, arity, dead keys, macros, combos
+bin/validate_protocol.py        # GLOBAL layer vs. the three host configs
 bin/render_keymap.py            # print the layer diagrams
 bin/render_keymap.py --write    # regenerate the diagrams in this README
 bin/render_keymap.py --check    # fail if the diagrams are stale
 ```
+
+`validate_protocol.py` is the one that catches the quiet failures: it parses
+the `GLOBAL` layer and all three host files and fails if a signal is emitted
+but unhandled, handled but unreachable, or handled by two hosts and forgotten
+by the third.
 
 The diagrams above are generated from `config/adv360.keymap`, so they cannot
 drift from the firmware. CI fails if they do.

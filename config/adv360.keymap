@@ -109,24 +109,32 @@
     combos {
         compatible = "zmk,combos";
 
-        // Deliberate, SYS-only chords. No combo affects normal typing.
+        /*
+         * Deliberate, SYS-only chords. No combo affects normal typing.
+         *
+         * Every destructive combo spans both hands and uses opposite ends of
+         * a row, so it cannot fire from a fumbled one-handed press. In
+         * particular none of them sit on the BT profile keys: chording two
+         * adjacent profile selectors is exactly what you do when switching
+         * hosts, and that must never be able to clear your bonds.
+         */
         combo_bt_clear {
             timeout-ms = <150>;
-            key-positions = <1 2>;
+            key-positions = <0 13>;      // outer ends of the number row
             layers = <SYS>;
             bindings = <&bt BT_CLR>;
         };
 
         combo_sys_reset {
             timeout-ms = <150>;
-            key-positions = <4 5>;
+            key-positions = <46 59>;     // outer Shift keys
             layers = <SYS>;
             bindings = <&sys_reset>;
         };
 
         combo_bootloader {
             timeout-ms = <250>;
-            key-positions = <20 21>;
+            key-positions = <20 21>;     // inner top pair, one per hand
             layers = <SYS>;
             bindings = <&bootloader>;
         };
