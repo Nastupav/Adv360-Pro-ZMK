@@ -14,28 +14,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate keymap shape
-        shell: bash
-        run: |
-          set -euo pipefail
-          mapfile -t counts < <(
-            awk '
-              /^[[:space:]]*bindings = </ { in_bind = 1; count = 0; next }
-              in_bind && /^[[:space:]]*>;/ { print count; in_bind = 0; next }
-              in_bind {
-                line = $0
-                while (match(line, /&[A-Za-z_]+/)) {
-                  count++
-                  line = substr(line, RSTART + RLENGTH)
-                }
-              }
-            ' config/adv360.keymap
-          )
-          [[ "${#counts[@]}" -eq 6 ]]
-          for count in "${counts[@]}"; do
-            [[ "$count" -eq 76 ]]
-          done
-          ! grep -Eq 'behavior-hold-tap|behavior-macro|studio_unlock' config/adv360.keymap
+      - name: Validate keymap structure
+        run: python3 bin/validate_keymap.py
+
+      - name: Check README layer diagrams are current
+        run: python3 bin/render_keymap.py --check
 
       - name: Cache west modules
         uses: actions/cache@v4

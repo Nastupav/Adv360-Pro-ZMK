@@ -10,9 +10,16 @@ SELINUX1 := :z
 SELINUX2 := ,z
 endif
 
-.PHONY: all left clean_firmware clean_image clean
+.PHONY: all left validate render clean_firmware clean_image clean
 
-all:
+validate:
+	python3 bin/validate_keymap.py
+	python3 bin/render_keymap.py --check
+
+render:
+	python3 bin/render_keymap.py --write
+
+all: validate
 	mkdir -p firmware
 	$(DOCKER) build --tag zmk --file Dockerfile .
 	$(DOCKER) run --rm --name zmk $(CONTAINER_USERNS) \
@@ -23,7 +30,7 @@ all:
 		-e BUILD_RIGHT=true \
 		zmk
 
-left:
+left: validate
 	mkdir -p firmware
 	$(DOCKER) build --tag zmk --file Dockerfile .
 	$(DOCKER) run --rm --name zmk $(CONTAINER_USERNS) \

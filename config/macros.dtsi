@@ -1,0 +1,92 @@
+/*
+ * Text macros for the MACRO layer (hold both middle thumbs) and for the nine
+ * operator keys on SYM's bottom row.
+ *
+ * Every macro is a plain tap sequence: no held modifiers spanning the macro,
+ * no layer changes, nothing that can leave a modifier stuck. Sequences that
+ * wrap a cursor position end with LEFT taps so the caret lands inside.
+ *
+ * Timing is deliberately uniform. 5 ms is fast enough to feel instant and slow
+ * enough to survive BLE HID on Windows; raise both numbers together if a host
+ * ever drops characters.
+ */
+
+#define TEXT_MACRO(nm, ...)                                                    \
+    nm: nm {                                                                   \
+        compatible = "zmk,behavior-macro";                                     \
+        #binding-cells = <0>;                                                  \
+        wait-ms = <5>;                                                         \
+        tap-ms = <5>;                                                          \
+        bindings = <__VA_ARGS__>;                                              \
+    };
+
+/ {
+    macros {
+        /* ---- SQL keywords ------------------------------------------- */
+        TEXT_MACRO(m_select,   &kp LS(S) &kp LS(E) &kp LS(L) &kp LS(E) &kp LS(C) &kp LS(T) &kp SPACE)
+        TEXT_MACRO(m_from,     &kp LS(F) &kp LS(R) &kp LS(O) &kp LS(M) &kp SPACE)
+        TEXT_MACRO(m_where,    &kp LS(W) &kp LS(H) &kp LS(E) &kp LS(R) &kp LS(E) &kp SPACE)
+        TEXT_MACRO(m_groupby,  &kp LS(G) &kp LS(R) &kp LS(O) &kp LS(U) &kp LS(P) &kp SPACE &kp LS(B) &kp LS(Y) &kp SPACE)
+        TEXT_MACRO(m_orderby,  &kp LS(O) &kp LS(R) &kp LS(D) &kp LS(E) &kp LS(R) &kp SPACE &kp LS(B) &kp LS(Y) &kp SPACE)
+        TEXT_MACRO(m_join,     &kp LS(J) &kp LS(O) &kp LS(I) &kp LS(N) &kp SPACE)
+        TEXT_MACRO(m_leftjoin, &kp LS(L) &kp LS(E) &kp LS(F) &kp LS(T) &kp SPACE &kp LS(J) &kp LS(O) &kp LS(I) &kp LS(N) &kp SPACE)
+        TEXT_MACRO(m_on,       &kp LS(O) &kp LS(N) &kp SPACE)
+        TEXT_MACRO(m_as,       &kp LS(A) &kp LS(S) &kp SPACE)
+        TEXT_MACRO(m_isnull,   &kp LS(I) &kp LS(S) &kp SPACE &kp LS(N) &kp LS(U) &kp LS(L) &kp LS(L))
+        TEXT_MACRO(m_notnull,  &kp LS(I) &kp LS(S) &kp SPACE &kp LS(N) &kp LS(O) &kp LS(T) &kp SPACE &kp LS(N) &kp LS(U) &kp LS(L) &kp LS(L))
+        TEXT_MACRO(m_countall, &kp LS(C) &kp LS(O) &kp LS(U) &kp LS(N) &kp LS(T) &kp LPAR &kp ASTRK &kp RPAR)
+
+        /* ---- Python -------------------------------------------------- */
+        TEXT_MACRO(m_def,      &kp D &kp E &kp F &kp SPACE)
+        TEXT_MACRO(m_class,    &kp C &kp L &kp A &kp S &kp S &kp SPACE)
+        TEXT_MACRO(m_import,   &kp I &kp M &kp P &kp O &kp R &kp T &kp SPACE)
+        TEXT_MACRO(m_pyfrom,   &kp F &kp R &kp O &kp M &kp SPACE)
+        TEXT_MACRO(m_return,   &kp R &kp E &kp T &kp U &kp R &kp N &kp SPACE)
+        TEXT_MACRO(m_self,     &kp S &kp E &kp L &kp F &kp DOT)
+        TEXT_MACRO(m_print,    &kp P &kp R &kp I &kp N &kp T &kp LPAR &kp RPAR &kp LEFT)
+        TEXT_MACRO(m_fstring,  &kp F &kp DQT &kp DQT &kp LEFT)
+        TEXT_MACRO(m_lambda,   &kp L &kp A &kp M &kp B &kp D &kp A &kp SPACE)
+        TEXT_MACRO(m_none,     &kp LS(N) &kp O &kp N &kp E)
+        TEXT_MACRO(m_true,     &kp LS(T) &kp R &kp U &kp E)
+        TEXT_MACRO(m_false,    &kp LS(F) &kp A &kp L &kp S &kp E)
+
+        /* ---- Operators ----------------------------------------------- */
+        TEXT_MACRO(m_arrow,    &kp MINUS &kp GT)
+        TEXT_MACRO(m_fatarrow, &kp EQUAL &kp GT)
+        TEXT_MACRO(m_ne,       &kp EXCL  &kp EQUAL)
+        TEXT_MACRO(m_eq,       &kp EQUAL &kp EQUAL)
+        TEXT_MACRO(m_walrus,   &kp COLON &kp EQUAL)
+        TEXT_MACRO(m_le,       &kp LT    &kp EQUAL)
+        TEXT_MACRO(m_ge,       &kp GT    &kp EQUAL)
+        TEXT_MACRO(m_sqlne,    &kp LT    &kp GT)
+        TEXT_MACRO(m_scope,    &kp COLON &kp COLON)
+        TEXT_MACRO(m_dunder,   &kp UNDER &kp UNDER)
+        TEXT_MACRO(m_pow,      &kp ASTRK &kp ASTRK)
+
+        /* ---- PowerShell and shell ------------------------------------ */
+        TEXT_MACRO(m_psvar,    &kp DLLR &kp UNDER)
+        TEXT_MACRO(m_subexp,   &kp DLLR &kp LPAR &kp RPAR &kp LEFT)
+        TEXT_MACRO(m_psarray,  &kp AT &kp LPAR &kp RPAR &kp LEFT)
+        TEXT_MACRO(m_pshash,   &kp AT &kp LBRC &kp RBRC &kp LEFT)
+        TEXT_MACRO(m_pipe,     &kp PIPE &kp SPACE)
+        TEXT_MACRO(m_eqop,     &kp MINUS &kp E &kp Q &kp SPACE)
+        TEXT_MACRO(m_neop,     &kp MINUS &kp N &kp E &kp SPACE)
+        TEXT_MACRO(m_updir,    &kp DOT &kp DOT &kp FSLH)
+        TEXT_MACRO(m_homedir,  &kp TILDE &kp FSLH)
+        TEXT_MACRO(m_redirect, &kp N2 &kp GT &kp AMPS &kp N1)
+        TEXT_MACRO(m_hex,      &kp N0 &kp X)
+
+        /* ---- Comments and wrappers ----------------------------------- */
+        TEXT_MACRO(m_hashcmt,  &kp HASH &kp SPACE)
+        TEXT_MACRO(m_sqlcmt,   &kp MINUS &kp MINUS &kp SPACE)
+        TEXT_MACRO(m_blockcmt, &kp FSLH &kp ASTRK &kp SPACE &kp SPACE &kp ASTRK &kp FSLH &kp LEFT &kp LEFT &kp LEFT)
+        TEXT_MACRO(m_docstr,   &kp DQT &kp DQT &kp DQT)
+        TEXT_MACRO(m_ellipsis, &kp DOT &kp DOT &kp DOT)
+        TEXT_MACRO(m_todo,     &kp LS(T) &kp LS(O) &kp LS(D) &kp LS(O) &kp COLON &kp SPACE)
+        TEXT_MACRO(m_fixme,    &kp LS(F) &kp LS(I) &kp LS(X) &kp LS(M) &kp LS(E) &kp COLON &kp SPACE)
+        TEXT_MACRO(m_note,     &kp LS(N) &kp LS(O) &kp LS(T) &kp LS(E) &kp COLON &kp SPACE)
+        TEXT_MACRO(m_hack,     &kp LS(H) &kp LS(A) &kp LS(C) &kp LS(K) &kp COLON &kp SPACE)
+    };
+};
+
+#undef TEXT_MACRO

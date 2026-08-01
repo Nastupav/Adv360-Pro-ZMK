@@ -1,0 +1,241 @@
+#!/usr/bin/env python3
+"""Structural validation for config/adv360.keymap.
+
+Checks that are cheap here and expensive on the keyboard:
+  1. Every keymap layer binds exactly KEY_COUNT positions.
+  2. The expected layers exist, in the expected order, with matching #defines.
+  3. KEYS_L / KEYS_R / THUMBS partition 0..KEY_COUNT-1 exactly once.
+  4. hold-trigger-key-positions on each home-row-mod behavior references the
+     opposite hand plus the thumbs (never its own hand).
+  5. Combo key-positions are in range.
+  6. Runtime keymap editing (studio_unlock) is not exposed.
+  7. Braces and angle brackets balance.
+"""
+
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+KEY_COUNT = 76
+EXPECTED_LAYERS = [
+    ("layer_mac", "MAC", 0),
+    ("layer_win", "WIN", 1),
+    ("layer_nav", "NAV", 2),
+    ("layer_sym", "SYM", 3),
+    ("layer_num", "NUM", 4),
+    ("layer_global", "GLOBAL", 5),
+    ("layer_sys", "SYS", 6),
+    ("layer_nav_win", "NAV_WIN", 7),
+    ("layer_macro", "MACRO", 8),
+]
+
+ROOT = Path(__file__).resolve().parent.parent
+KEYMAP = ROOT / "config" / "adv360.keymap"
+MACROS = ROOT / "config" / "macros.dtsi"
+
+errors: list[str] = []
+
+
+def fail(msg: str) -> None:
+    errors.append(msg)
+
+
+def strip_comments(text: str) -> str:
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    return re.sub(r"//[^\n]*", "", text)
+
+
+def extract_block(text: str, header_re: str) -> str | None:
+    """Return the body of the first `<name> {` block matching header_re."""
+    m = re.search(header_re, text)
+    if not m:
+        return None
+    start = text.index("{", m.end() - 1) if "{" not in m.group(0) else m.end() - 1
+    depth = 0
+    for i in range(start, len(text)):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start + 1 : i]
+    return None
+
+
+def parse_int_list(raw: str) -> list[int]:
+    return [int(tok) for tok in re.findall(r"\b\d+\b", raw)]
+
+
+raw = KEYMAP.read_text()
+src = strip_comments(raw)
+
+# --- 7. bracket balance -----------------------------------------------------
+for open_ch, close_ch in (("{", "}"), ("<", ">")):
+    if open_ch == "<":
+        # only count angle brackets that delimit property values
+        opens = len(re.findall(r"=\s*<", src)) + len(re.findall(r">\s*,\s*<", src))
+        closes = len(re.findall(r">\s*;", src)) + len(re.findall(r">\s*,\s*<", src))
+    else:
+        opens, closes = src.count(open_ch), src.count(close_ch)
+    if opens != closes:
+        fail(f"unbalanced {open_ch}{close_ch}: {opens} open vs {closes} close")
+
+# --- 6. no runtime keymap editing ------------------------------------------
+if "studio_unlock" in src:
+    fail("studio_unlock present; git must stay the sole keymap authority")
+
+# --- 2/3. #defines ----------------------------------------------------------
+defines = dict(re.findall(r"^#define\s+(\w+)\s+(.+)$", src, flags=re.M))
+
+for _node, name, index in EXPECTED_LAYERS:
+    if name not in defines:
+        fail(f"missing #define {name}")
+    elif defines[name].strip() != str(index):
+        fail(f"#define {name} is {defines[name].strip()}, expected {index}")
+
+hands: dict[str, set[int]] = {}
+for group in ("KEYS_L", "KEYS_R", "THUMBS"):
+    if group not in defines:
+        fail(f"missing #define {group}")
+        hands[group] = set()
+        continue
+    values = parse_int_list(defines[group])
+    if len(values) != len(set(values)):
+        fail(f"{group} contains duplicate positions")
+    hands[group] = set(values)
+
+union = hands["KEYS_L"] | hands["KEYS_R"] | hands["THUMBS"]
+total = sum(len(v) for v in hands.values())
+if total != KEY_COUNT or union != set(range(KEY_COUNT)):
+    missing = sorted(set(range(KEY_COUNT)) - union)
+    overlap = total - len(union)
+    fail(
+        f"KEYS_L/KEYS_R/THUMBS must partition 0..{KEY_COUNT - 1}: "
+        f"{len(union)} unique, {overlap} overlapping, missing {missing}"
+    )
+
+# --- 4. home-row-mod hold-trigger sets --------------------------------------
+behaviors = extract_block(src, r"behaviors\s*\{")
+if behaviors is None:
+    fail("no behaviors node found")
+else:
+    expected_trigger = {
+        "home_row_mod_left": ("KEYS_R", "KEYS_L"),
+        "home_row_mod_right": ("KEYS_L", "KEYS_R"),
+    }
+    for node, (want, forbid) in expected_trigger.items():
+        body = extract_block(behaviors, rf"{node}\s*\{{")
+        if body is None:
+            fail(f"behavior {node} not found")
+            continue
+        trig = re.search(r"hold-trigger-key-positions\s*=\s*<([^>]*)>", body)
+        if not trig:
+            fail(f"{node} has no hold-trigger-key-positions")
+            continue
+        tokens = set(trig.group(1).split())
+        if tokens != {want, "THUMBS"}:
+            fail(f"{node} hold-trigger set is {sorted(tokens)}, expected [{want}, THUMBS]")
+        if forbid in tokens:
+            fail(f"{node} allows same-hand ({forbid}) hold resolution")
+        if "hold-trigger-on-release" not in body:
+            fail(f"{node} is missing hold-trigger-on-release")
+        if "require-prior-idle-ms" not in body:
+            fail(f"{node} is missing require-prior-idle-ms")
+
+# --- 5. combos --------------------------------------------------------------
+combos = extract_block(src, r"combos\s*\{")
+if combos:
+    for positions in re.findall(r"key-positions\s*=\s*<([^>]*)>", combos):
+        for pos in parse_int_list(positions):
+            if not 0 <= pos < KEY_COUNT:
+                fail(f"combo key-position {pos} out of range")
+
+# --- 1. layer binding counts ------------------------------------------------
+keymap = extract_block(src, r"keymap\s*\{")
+if keymap is None:
+    fail("no keymap node found")
+    print("\n".join(f"FAIL: {e}" for e in errors), file=sys.stderr)
+    sys.exit(1)
+
+found = re.findall(
+    r"(\w+)\s*\{[^{}]*?bindings\s*=\s*<(.*?)>\s*;",
+    keymap,
+    flags=re.S,
+)
+
+if [name for name, _ in found] != [node for node, _, _ in EXPECTED_LAYERS]:
+    fail(
+        "layer order mismatch:\n"
+        f"  found:    {[n for n, _ in found]}\n"
+        f"  expected: {[n for n, _, _ in EXPECTED_LAYERS]}"
+    )
+
+# Source-level argument counts for behaviors whose arguments are not macros
+# that expand to several device-tree cells. bt/bl/rgb_ug are excluded because
+# e.g. BT_CLR expands to two cells from one source token.
+ARITY = {
+    "trans": 0, "none": 0, "caps_word": 0, "key_repeat": 0,
+    "bootloader": 0, "sys_reset": 0,
+    "kp": 1, "mo": 1, "to": 1, "tog": 1, "sl": 1, "out": 1,
+    "hml": 2, "hmr": 2,
+}
+
+# Text macros take no parameters. Collect their labels so a typo in a macro
+# name, or a macro used but never defined, fails here.
+macro_src = strip_comments(MACROS.read_text()) if MACROS.exists() else ""
+defined_macros = set(re.findall(r"TEXT_MACRO\(\s*(m_\w+)", macro_src))
+if not defined_macros:
+    fail("no text macros found in config/macros.dtsi")
+ARITY.update({name: 0 for name in defined_macros})
+
+counts: list[tuple[str, int]] = []
+for name, body in found:
+    bindings = [b.split() for b in body.split("&") if b.strip()]
+    counts.append((name, len(bindings)))
+    if len(bindings) != KEY_COUNT:
+        fail(
+            f"layer {name} has {len(bindings)} bindings, "
+            f"expected {KEY_COUNT} ({len(bindings) - KEY_COUNT:+d})"
+        )
+    for pos, tokens in enumerate(bindings):
+        behavior, args = tokens[0], tokens[1:]
+        want = ARITY.get(behavior)
+        if want is None:
+            continue
+        if len(args) != want:
+            fail(
+                f"layer {name} position {pos}: &{behavior} takes {want} "
+                f"argument(s), got {len(args)} ({' '.join(tokens)})"
+            )
+
+# --- 8. macros are all defined and all used --------------------------------
+used_macros = set(re.findall(r"&(m_\w+)", keymap))
+for name in sorted(used_macros - defined_macros):
+    fail(f"&{name} is used in the keymap but not defined in macros.dtsi")
+for name in sorted(defined_macros - used_macros):
+    fail(f"&{name} is defined in macros.dtsi but never used")
+
+# --- 9. no dead keys -------------------------------------------------------
+# Design rule: every position does something or falls through on purpose.
+# &trans is content (it exposes the layer below); &none is wasted space.
+dead = {name: [i for i, t in enumerate(b.split() for b in
+               [x for x in body.split("&") if x.strip()]) if t[0] == "none"]
+        for name, body in found}
+for name, positions in dead.items():
+    if positions:
+        fail(
+            f"layer {name} has {len(positions)} dead &none key(s) at "
+            f"{positions}; bind them or use &trans"
+        )
+
+if errors:
+    for e in errors:
+        print(f"FAIL: {e}", file=sys.stderr)
+    sys.exit(1)
+
+width = max(len(n) for n, _ in counts)
+for name, n in counts:
+    print(f"  ok  {name:<{width}}  {n} bindings")
+print(f"\nadv360.keymap: {len(counts)} layers x {KEY_COUNT} keys, all checks passed")

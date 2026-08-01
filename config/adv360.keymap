@@ -1,13 +1,21 @@
 /*
  * Kinesis Advantage360 Pro / ZMK
- * Deterministic, cross-platform developer keymap.
+ * Developer keymap: macOS + Windows + Linux, Python / SQL / PowerShell / Vim.
  *
- * Design constraints:
- * - US QWERTY; no dual-role letters and no typing-layer combos.
- * - Dedicated thumb keys for NAV, SYM, NUM, and GLOBAL.
- * - Plain modifiers remain composable on every layer.
- * - F13-F20 form a host-neutral desktop control protocol.
- * - Destructive actions are available only as SYS-layer combos.
+ * Design:
+ * - Timeless home-row mods (GACS) with same-hand suppression and prior-idle
+ *   gating, so fast typing never waits on a timing decision.
+ * - Real Cmd/Ctrl on the inner thumbs, because same-hand Cmd+C/V/Z/S/A/W
+ *   cannot be produced by a same-hand home-row mod.
+ * - MAC is the default base. WIN is an overlay that swaps GUI<->Ctrl on both
+ *   the home row and the thumbs, so the "command" modifier never moves.
+ * - NAV carries OS-correct clipboard, word motion and editor actions. Holding
+ *   NAV while WIN is active pulls in NAV_WIN via a conditional layer.
+ * - MACRO is reached by holding both middle thumbs (NAV + SYM). It costs no
+ *   thumb key of its own and holds the full text-macro bank.
+ * - GLOBAL emits a host-neutral F13-F20 protocol consumed by AeroSpace
+ *   (macOS), Hyprland (Linux) and komorebi/AutoHotkey (Windows).
+ * - Destructive firmware actions exist only as SYS-layer combos.
  */
 
 #include <behaviors.dtsi>
@@ -17,14 +25,87 @@
 #include <dt-bindings/zmk/outputs.h>
 #include <dt-bindings/zmk/rgb.h>
 
-#define BASE   0
-#define NAV    1
-#define SYM    2
-#define NUM    3
-#define GLOBAL 4
-#define SYS    5
+#include "macros.dtsi"
+
+#define MAC     0
+#define WIN     1
+#define NAV     2
+#define SYM     3
+#define NUM     4
+#define GLOBAL  5
+#define SYS     6
+#define NAV_WIN 7
+#define MACRO   8
+
+/*
+ * Key-position map (76 keys, 0-indexed, matches matrix_transform0).
+ *
+ *  0  1  2  3  4  5  6                                  7  8  9 10 11 12 13
+ * 14 15 16 17 18 19 20                                 21 22 23 24 25 26 27
+ * 28 29 30 31 32 33 34   35 36            37 38        39 40 41 42 43 44 45
+ * 46 47 48 49 50 51            52      53              54 55 56 57 58 59
+ * 60 61 62 63 64      65 66 67            68 69 70        71 72 73 74 75
+ */
+#define KEYS_L  0  1  2  3  4  5  6 14 15 16 17 18 19 20 28 29 30 31 32 33 34 46 47 48 49 50 51 60 61 62 63 64
+#define KEYS_R  7  8  9 10 11 12 13 21 22 23 24 25 26 27 39 40 41 42 43 44 45 54 55 56 57 58 59 71 72 73 74 75
+#define THUMBS 35 36 37 38 52 53 65 66 67 68 69 70
 
 / {
+    behaviors {
+        /*
+         * Home-row mods, "timeless" tuning.
+         *
+         * require-prior-idle-ms: if the previous key was pressed within this
+         *   window the hold is abandoned outright. This is what kills rolls
+         *   like "sd" or "kl" turning into modifiers.
+         * hold-trigger-key-positions: only the opposite hand and the thumbs
+         *   can resolve a hold, so same-hand rolls stay letters.
+         * hold-trigger-on-release: lets you stack two mods on one hand before
+         *   the other hand commits (e.g. Ctrl+Shift+<right-hand key>).
+         * quick-tap-ms: tap-then-hold within this window repeats the letter
+         *   instead of engaging the modifier.
+         */
+        hml: home_row_mod_left {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <280>;
+            quick-tap-ms = <175>;
+            require-prior-idle-ms = <150>;
+            hold-trigger-key-positions = <KEYS_R THUMBS>;
+            hold-trigger-on-release;
+            bindings = <&kp>, <&kp>;
+        };
+
+        hmr: home_row_mod_right {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <280>;
+            quick-tap-ms = <175>;
+            require-prior-idle-ms = <150>;
+            hold-trigger-key-positions = <KEYS_L THUMBS>;
+            hold-trigger-on-release;
+            bindings = <&kp>, <&kp>;
+        };
+    };
+
+    conditional_layers {
+        compatible = "zmk,conditional-layers";
+
+        // Windows base + NAV held -> Windows-flavoured editing keys.
+        nav_win {
+            if-layers = <WIN NAV>;
+            then-layer = <NAV_WIN>;
+        };
+
+        // Both middle thumbs -> the text-macro bank. Costs no dedicated key.
+        macro_chord {
+            if-layers = <NAV SYM>;
+            then-layer = <MACRO>;
+        };
+    };
+
     combos {
         compatible = "zmk,combos";
 
@@ -34,6 +115,13 @@
             key-positions = <1 2>;
             layers = <SYS>;
             bindings = <&bt BT_CLR>;
+        };
+
+        combo_sys_reset {
+            timeout-ms = <150>;
+            key-positions = <4 5>;
+            layers = <SYS>;
+            bindings = <&sys_reset>;
         };
 
         combo_bootloader {
@@ -48,98 +136,314 @@
         compatible = "zmk,keymap";
 
         /*
-         * BASE
+         * MAC - default base.
          *
-         *  =  1 2 3 4 5  SYS | SYS  6 7 8 9 0 -
-         * Tab Q W E R T   Caps|Repeat Y U I O P \
-         * Esc A S D F G  A C G|G C A H J K L ; '
-         * Shf Z X C V B    NAV|SYM   N M , . / Shf
-         *  `  [ ] ( )   Bsp Del NUM|GLOBAL Ent Spc  Left Down Up Right SYS
-         *
-         * Upper thumbs are mirrored Alt/Ctrl/GUI, with GUI nearest center.
+         * Home-row mods (hold):  A=Cmd  S=Alt  D=Ctrl  F=Shift
+         *                        J=Shift K=Ctrl L=Alt  ;=Cmd
+         * Inner thumbs are real Cmd; outer thumbs are real Ctrl.
          */
-        default_layer {
-            display-name = "BASE";
+        layer_mac {
+            display-name = "MAC";
             bindings = <
-&kp EQUAL &kp N1 &kp N2 &kp N3 &kp N4 &kp N5 &mo SYS                         &mo SYS &kp N6 &kp N7 &kp N8 &kp N9 &kp N0 &kp MINUS
-&kp TAB   &kp Q  &kp W  &kp E  &kp R  &kp T  &caps_word                      &key_repeat &kp Y &kp U &kp I &kp O &kp P &kp BSLH
-&kp ESC   &kp A  &kp S  &kp D  &kp F  &kp G  &kp LALT &kp LCTRL &kp LGUI    &kp RGUI &kp RCTRL &kp RALT &kp H &kp J &kp K &kp L &kp SEMI &kp SQT
-&kp LSHFT &kp Z  &kp X  &kp C  &kp V  &kp B              &mo NAV             &mo SYM              &kp N &kp M &kp COMMA &kp DOT &kp FSLH &kp RSHFT
-&kp GRAVE &kp LBKT &kp RBKT &kp LPAR &kp RPAR       &kp BSPC &kp DEL &mo NUM &mo GLOBAL &kp ENTER &kp SPACE       &kp LEFT &kp DOWN &kp UP &kp RIGHT &mo SYS
-            >;
-        };
+&kp EQUAL   &kp N1        &kp N2        &kp N3         &kp N4         &kp N5     &mo SYS
+    &mo SYS &kp N6        &kp N7        &kp N8         &kp N9         &kp N0     &kp MINUS
 
-        /* NAV: hold the left middle thumb; use Vim-shaped H/J/K/L. */
-        layer_nav {
-            display-name = "NAV";
-            bindings = <
-&kp ESC &none &none &none &none &none &trans                                 &trans &none &none &none &none &none &none
-&kp TAB &none &none &none &none &none &caps_word                             &key_repeat &kp HOME &kp PG_UP &kp PG_DN &kp END &kp BSPC &kp DEL
-&kp ESC &none &none &none &none &none &trans &trans &trans                   &trans &trans &trans &kp LEFT &kp DOWN &kp UP &kp RIGHT &kp HOME &kp END
-&trans  &none &none &none &none &none              &trans                    &trans                 &kp HOME &kp PG_DN &kp PG_UP &kp END &kp DEL &trans
-&none &none &none &none &none       &trans &trans &trans &trans &trans &trans       &kp HOME &kp PG_DN &kp PG_UP &kp END &trans
+&kp TAB     &kp Q         &kp W         &kp E          &kp R          &kp T      &caps_word
+    &key_repeat &kp Y     &kp U         &kp I          &kp O          &kp P      &kp BSLH
+
+&kp ESC     &hml LGUI A   &hml LALT S   &hml LCTRL D   &hml LSHFT F   &kp G      &kp LALT
+    &kp LCTRL &kp LGUI                                 &kp RGUI &kp RCTRL
+    &kp RALT  &kp H       &hmr RSHFT J  &hmr RCTRL K   &hmr RALT L    &hmr RGUI SEMI  &kp SQT
+
+&kp LSHFT   &kp Z         &kp X         &kp C          &kp V          &kp B
+    &mo NAV                                            &mo SYM
+    &kp N     &kp M       &kp COMMA     &kp DOT        &kp FSLH       &kp RSHFT
+
+&kp GRAVE   &kp LBKT      &kp RBKT      &kp LPAR       &kp RPAR
+    &kp BSPC  &kp DEL     &mo NUM                      &mo GLOBAL     &kp ENTER  &kp SPACE
+    &kp LEFT  &kp DOWN    &kp UP        &kp RIGHT      &mo SYS
             >;
         };
 
         /*
-         * SYM: paired and mnemonic.
-         * Home row:  < { [ ( =  |  + ) ] } > -
-         * Top row preserves the familiar US shifted-number symbols.
+         * WIN - overlay on MAC (&to WIN from SYS+W, &to MAC from SYS+A).
+         *
+         * Only the modifiers move: GUI and Ctrl swap on the home row and on
+         * the thumbs, so the inner thumb is always "the command key" and the
+         * pinky home-row mod is always "the other one". Everything else falls
+         * through to MAC, which is the point of an overlay - transparency here
+         * is the content, not an empty key.
+         *
+         * Home-row mods (hold):  A=Ctrl S=Alt  D=Cmd   F=Shift
+         *                        J=Shift K=Cmd L=Alt   ;=Ctrl
+         */
+        layer_win {
+            display-name = "WIN";
+            bindings = <
+&trans      &trans        &trans        &trans         &trans         &trans     &trans
+    &trans  &trans        &trans        &trans         &trans         &trans     &trans
+
+&trans      &trans        &trans        &trans         &trans         &trans     &trans
+    &trans  &trans        &trans        &trans         &trans         &trans     &trans
+
+&trans      &hml LCTRL A  &hml LALT S   &hml LGUI D    &hml LSHFT F   &trans     &trans
+    &kp LGUI  &kp LCTRL                                &kp RCTRL &kp RGUI
+    &trans    &trans      &hmr RSHFT J  &hmr RGUI K    &hmr RALT L    &hmr RCTRL SEMI &trans
+
+&trans      &trans        &trans        &trans         &trans         &trans
+    &trans                                             &trans
+    &trans    &trans      &trans        &trans         &trans         &trans
+
+&trans      &trans        &trans        &trans         &trans
+    &trans    &trans      &trans                       &trans         &trans     &trans
+    &trans    &trans      &trans        &trans         &trans
+            >;
+        };
+
+        /*
+         * NAV - hold left middle thumb. macOS flavour; WIN pulls in NAV_WIN.
+         *
+         * Number row = tab/pane switching (Cmd+1..0) and close tab.
+         * Upper row  = select-all/save/find/find-in-files/quick-open, then
+         *              word motion, paging and document jumps.
+         * Home row   = undo/cut/copy/paste/redo, then Vim-shaped arrows.
+         * Lower row  = rename/definition/references/find-next/prev, then
+         *              word delete, backspace, delete, insert.
+         * Bottom row = zoom out, history back/forward, zoom in, reopen tab.
+         */
+        layer_nav {
+            display-name = "NAV";
+            bindings = <
+&kp LG(GRAVE) &kp LG(N1)  &kp LG(N2)    &kp LG(N3)     &kp LG(N4)     &kp LG(N5) &trans
+    &trans  &kp LG(N6)    &kp LG(N7)    &kp LG(N8)     &kp LG(N9)     &kp LG(N0) &kp LG(W)
+
+&trans      &kp LG(A)     &kp LG(S)     &kp LG(F)      &kp LG(LS(F))  &kp LG(P)  &trans
+    &trans  &kp LA(LEFT)  &kp PG_DN     &kp PG_UP      &kp LA(RIGHT)  &kp LG(UP) &kp LG(DOWN)
+
+&trans      &kp LG(Z)     &kp LG(X)     &kp LG(C)      &kp LG(V)      &kp LG(LS(Z)) &trans
+    &trans    &trans                                   &trans   &trans
+    &trans    &kp LEFT    &kp DOWN      &kp UP         &kp RIGHT      &kp HOME   &kp END
+
+&trans      &kp F2        &kp F12       &kp LS(F12)    &kp F3         &kp LS(F3)
+    &trans                                             &trans
+    &kp LA(BSPC) &kp LA(DEL) &kp BSPC   &kp DEL        &kp INS        &trans
+
+&kp LG(MINUS) &kp LG(LBKT) &kp LG(RBKT) &kp LG(EQUAL)  &kp LG(LS(T))
+    &trans    &trans      &trans                       &trans         &trans     &trans
+    &trans    &trans      &trans        &trans         &trans
+            >;
+        };
+
+        /*
+         * SYM - hold right middle thumb.
+         *
+         * Home row is the enclosure ladder, mirrored:
+         *     <  {  [  (  :   |   _  )  ]  }  >  =
+         * Left index stretch is ':' and right index stretch is '_' - the two
+         * highest-frequency punctuation marks in Python and SQL.
+         * Bottom row is the nine multi-character operators you reach for
+         * hourly; the rest of the bank lives on MACRO.
          */
         layer_sym {
             display-name = "SYM";
             bindings = <
-&kp PLUS &kp EXCL &kp AT &kp HASH &kp DLLR &kp PRCNT &trans                   &trans &kp CARET &kp AMPS &kp ASTRK &kp LPAR &kp RPAR &kp UNDER
-&kp TAB &kp GRAVE &kp TILDE &kp BSLH &kp PIPE &kp COLON &trans               &trans &kp SEMI &kp SQT &kp DQT &kp FSLH &kp QMARK &kp BSLH
-&kp ESC &kp LT &kp LBRC &kp LBKT &kp LPAR &kp EQUAL &trans &trans &trans     &trans &trans &trans &kp PLUS &kp RPAR &kp RBKT &kp RBRC &kp GT &kp MINUS
-&trans &kp EXCL &kp AT &kp HASH &kp DLLR &kp PRCNT           &trans          &trans             &kp CARET &kp AMPS &kp ASTRK &kp COLON &kp QMARK &trans
-&kp GRAVE &kp BSLH &kp PIPE &kp LT &kp GT       &trans &trans &trans &trans &trans &trans       &kp PLUS &kp MINUS &kp EQUAL &kp UNDER &kp FSLH
-            >;
-        };
+&trans      &kp EXCL      &kp AT        &kp HASH       &kp DLLR       &kp PRCNT  &trans
+    &trans  &kp CARET     &kp AMPS      &kp ASTRK      &kp LPAR       &kp RPAR   &trans
 
-        /* NUM: left-hand F keys and a standard right-hand numpad. */
-        layer_num {
-            display-name = "NUM";
-            bindings = <
-&kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6 &trans                             &trans &none &none &none &none &none &none
-&kp F7 &kp F8 &kp F9 &kp F10 &kp F11 &kp F12 &trans                         &trans &kp KP_N7 &kp KP_N8 &kp KP_N9 &kp KP_DIVIDE &kp KP_MULTIPLY &kp BSPC
-&kp ESC &none &none &none &none &none &trans &trans &trans                   &trans &trans &trans &kp KP_N4 &kp KP_N5 &kp KP_N6 &kp KP_MINUS &kp KP_PLUS &kp KP_ENTER
-&trans &none &none &none &none &none               &trans                    &trans                &kp KP_N1 &kp KP_N2 &kp KP_N3 &kp KP_DOT &kp COMMA &trans
-&none &none &none &none &none       &trans &trans &trans &trans &trans &trans       &kp KP_N0 &kp KP_DOT &kp KP_PLUS &kp KP_MINUS &kp KP_ENTER
+&trans      &kp TILDE     &kp GRAVE     &kp BSLH       &kp PIPE       &kp SEMI   &trans
+    &trans  &kp DQT       &kp SQT       &kp QMARK      &kp FSLH       &kp BSLH   &trans
+
+&trans      &kp LT        &kp LBRC      &kp LBKT       &kp LPAR       &kp COLON  &trans
+    &trans    &trans                                   &trans   &trans
+    &trans    &kp UNDER   &kp RPAR      &kp RBKT       &kp RBRC       &kp GT     &kp EQUAL
+
+&trans      &kp CARET     &kp DLLR      &kp MINUS      &kp UNDER      &kp ASTRK
+    &trans                                             &trans
+    &kp AMPS  &kp PIPE    &m_pow        &m_walrus      &kp EXCL       &trans
+
+&m_sqlne    &m_arrow      &m_fatarrow   &m_ne          &m_eq
+    &trans    &trans      &trans                       &trans         &trans     &trans
+    &m_le     &m_ge       &m_scope      &m_dunder      &trans
             >;
         };
 
         /*
-         * GLOBAL protocol:
-         *   1..8        -> F13..F20         (workspace)
-         *   Shift+1..8  -> Shift+F13..F20   (move to workspace)
-         *   H/J/K/L     -> Ctrl+F13..F16    (focus direction)
-         *   Shift+HJKL  -> Ctrl+Shift+F13..F16 (move direction)
-         *   [ / ]       -> Ctrl+F17/F18     (previous/next workspace)
-         *   F / R       -> Ctrl+F19/F20     (fullscreen/float)
-         *   Q / P       -> Ctrl+Shift+F19/F20 (close/split)
-         *   Enter/T/B/E/Space/V/G -> Alt+F13..F19 (core applications)
+         * NUM - hold left bottom thumb.
+         * Left hand is F1-F12 in two aligned rows, then the hex digits A-F in
+         * reading order with an "0x" macro under X, comparison operators, and
+         * a grouping cluster on the bottom row.
+         * Right hand is a real numpad; the number row falls through so 6-0
+         * stay available while entering data.
+         */
+        layer_num {
+            display-name = "NUM";
+            bindings = <
+&kp F1      &kp F2        &kp F3        &kp F4         &kp F5         &kp F6     &trans
+    &trans  &trans        &trans        &trans         &trans         &trans     &trans
+
+&kp F7      &kp F8        &kp F9        &kp F10        &kp F11        &kp F12    &trans
+    &trans  &kp KP_N7     &kp KP_N8     &kp KP_N9      &kp KP_DIVIDE  &kp KP_MULTIPLY &kp BSPC
+
+&trans      &kp A         &kp B         &kp C          &kp D          &kp E      &trans
+    &trans    &trans                                   &trans   &trans
+    &trans    &kp KP_N4   &kp KP_N5     &kp KP_N6      &kp KP_MINUS   &kp KP_PLUS &kp KP_ENTER
+
+&trans      &kp F         &m_hex        &kp EQUAL      &kp LT         &kp GT
+    &trans                                             &trans
+    &kp KP_N1 &kp KP_N2   &kp KP_N3     &kp KP_DOT     &kp COMMA      &trans
+
+&kp PRCNT   &kp CARET     &kp ASTRK     &kp LPAR       &kp RPAR
+    &trans    &trans      &trans                       &trans         &trans     &trans
+    &kp KP_N0 &kp KP_DOT  &kp KP_EQUAL  &kp KP_ENTER   &trans
+            >;
+        };
+
+        /*
+         * GLOBAL - hold right bottom thumb. Emits the F13-F20 protocol.
+         *
+         * Bank 1  F13..F20              workspace 1-8
+         *        +Shift                 move window to workspace
+         * Bank 1  Ctrl+F13..F16         focus left/down/up/right
+         *        +Shift                 move window in that direction
+         *         Ctrl+F17/F18          previous/next workspace
+         *        +Shift                 move window to previous/next workspace
+         *         Ctrl+F19/F20          fullscreen / float
+         *        +Shift                 close window / toggle layout
+         * Bank 2  Ctrl+Alt+F13..F16     resize left/down/up/right
+         *         Ctrl+Alt+F17/F18      focus previous/next monitor
+         *        +Shift                 move window to that monitor
+         *         Ctrl+Alt+F19          balance / reset layout
+         *         Ctrl+Alt+F20          pin (sticky) window
+         * Bank 3  Alt+Shift+F13..F16    screenshot region, screenshot window,
+         *                               clipboard history, colour picker
+         * Apps    Alt+F13..F20          terminal, browser, code, files,
+         *                               launcher, chat, notes, git
+         *
+         * Arrow cluster mirrors HJKL focus so the layer is usable one-handed.
          */
         layer_global {
             display-name = "GLOBAL";
             bindings = <
-&none &kp F13 &kp F14 &kp F15 &kp F16 &kp F17 &trans                         &trans &kp F18 &kp F19 &kp F20 &none &none &none
-&none &kp LC(LS(F19)) &none &kp LA(F16) &kp LC(F20) &kp LA(F14) &trans       &trans &none &none &none &none &kp LC(LS(F20)) &none
-&none &none &none &none &kp LC(F19) &kp LA(F19) &trans &trans &trans         &trans &trans &trans &kp LC(F13) &kp LC(F14) &kp LC(F15) &kp LC(F16) &none &none
-&trans &none &none &none &kp LA(F18) &kp LA(F15)             &trans          &trans             &none &none &none &none &none &trans
-&none &kp LC(F17) &kp LC(F18) &none &none       &trans &trans &trans &trans &kp LA(F13) &kp LA(F17)       &none &none &none &none &trans
+&kp LC(LS(F17)) &kp F13   &kp F14       &kp F15        &kp F16        &kp F17    &trans
+    &trans  &kp F18       &kp F19       &kp F20        &kp LC(LA(LS(F17))) &kp LC(LA(LS(F18))) &kp LC(LS(F18))
+
+&kp LA(LS(F13)) &kp LC(LS(F19)) &kp LC(F20) &kp LA(F16) &kp LC(LA(F19)) &kp LA(F13) &trans
+    &trans  &kp LC(LS(F13)) &kp LC(LS(F14)) &kp LC(LS(F15)) &kp LC(LS(F16)) &kp LC(LS(F20)) &kp LC(LA(F20))
+
+&trans      &kp LA(F17)   &kp LA(F18)   &kp LA(F19)    &kp LC(F19)    &kp LA(F20) &trans
+    &trans    &trans                                   &trans   &trans
+    &trans    &kp LC(F13) &kp LC(F14)   &kp LC(F15)    &kp LC(F16)    &kp LC(F17) &kp LC(F18)
+
+&trans      &kp LA(LS(F14)) &kp LA(LS(F15)) &kp LA(F15) &kp LA(LS(F16)) &kp LA(F14)
+    &trans                                             &trans
+    &kp LC(LA(F13)) &kp LC(LA(F14)) &kp LC(LA(F15)) &kp LC(LA(F16)) &kp LC(LS(F19)) &trans
+
+&kp LC(F19) &kp LC(F17)   &kp LC(F18)   &kp LC(LA(F17)) &kp LC(LA(F18))
+    &trans    &trans      &trans                       &trans         &trans     &trans
+    &kp LC(F13) &kp LC(F14) &kp LC(F15) &kp LC(F16)    &trans
             >;
         };
 
-        /* SYS: connectivity, indicators, media, and protected maintenance. */
+        /*
+         * SYS - hold either inner top key or the bottom-right key.
+         *
+         * A -> base layer MAC (Apple)      W -> base layer WIN
+         * Number row: USB out, BT profiles 0-4, BLE out, output toggle,
+         *             BT next/prev, display brightness.
+         * Upper row:  backlight, RGB on/off, BT disconnect per profile.
+         * Home row:   RGB hue/saturation on the left, RGB toggle/brightness/
+         *             effect/speed on the right.
+         * Lower row:  PrintScreen, ScrollLock, Pause, Menu, CapsLock, media.
+         * Bottom row: stop, eject, calculator, files, search, mute, NumLock,
+         *             keyboard-layout, lock screen.
+         *
+         * Combos (SYS only): 1+2 clear BT bonds, 4+5 soft reset,
+         *                    inner-top pair enter bootloader.
+         */
         layer_sys {
             display-name = "SYS";
             bindings = <
-&out OUT_USB &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4 &trans   &trans &out OUT_BLE &out OUT_TOG &none &none &none &none
-&none &none &none &none &none &none &none                                             &none &none &none &none &none &none &none
-&none &none &none &none &none &none &trans &trans &trans                              &trans &trans &trans &rgb_ug RGB_TOG &rgb_ug RGB_BRI &rgb_ug RGB_BRD &rgb_ug RGB_EFF &rgb_ug RGB_EFR &rgb_ug RGB_SPI
-&trans &none &none &none &none &none                         &trans                    &trans                &kp C_PREV &kp C_PP &kp C_NEXT &kp C_VOL_DN &kp C_VOL_UP &trans
-&none &none &none &none &none       &out OUT_USB &out OUT_BLE &out OUT_TOG &bl BL_TOG &bl BL_DEC &bl BL_INC       &rgb_ug RGB_TOG &rgb_ug RGB_BRD &rgb_ug RGB_BRI &kp C_MUTE &trans
+&out OUT_USB &bt BT_SEL 0 &bt BT_SEL 1  &bt BT_SEL 2   &bt BT_SEL 3   &bt BT_SEL 4 &trans
+    &trans  &out OUT_BLE  &out OUT_TOG  &bt BT_NXT     &bt BT_PRV     &kp C_BRI_DN &kp C_BRI_UP
+
+&bl BL_TOG  &bl BL_DEC    &to WIN       &bl BL_INC     &rgb_ug RGB_ON &rgb_ug RGB_OFF &trans
+    &trans  &bt BT_DISC 0 &bt BT_DISC 1 &bt BT_DISC 2  &bt BT_DISC 3  &bt BT_DISC 4 &rgb_ug RGB_SPD
+
+&trans      &to MAC       &rgb_ug RGB_HUD &rgb_ug RGB_HUI &rgb_ug RGB_SAD &rgb_ug RGB_SAI &trans
+    &trans    &trans                                   &trans   &trans
+    &trans    &rgb_ug RGB_TOG &rgb_ug RGB_BRD &rgb_ug RGB_BRI &rgb_ug RGB_EFF &rgb_ug RGB_EFR &rgb_ug RGB_SPI
+
+&trans      &kp PSCRN     &kp SLCK      &kp PAUSE_BREAK &kp K_APP     &kp CAPS
+    &trans                                             &trans
+    &kp C_PREV &kp C_PP   &kp C_NEXT    &kp C_VOL_DN   &kp C_VOL_UP   &trans
+
+&kp C_STOP  &kp C_EJECT   &kp C_AL_CALC &kp C_AL_FILES &kp C_AC_SEARCH
+    &trans    &trans      &trans                       &trans         &trans     &trans
+    &kp C_MUTE &kp KP_NUM &kp GLOBE     &kp C_AL_LOCK  &trans
+            >;
+        };
+
+        /*
+         * NAV_WIN - automatic when WIN base is active and NAV is held.
+         * Rewrites only the macOS-specific bindings from NAV: Cmd becomes
+         * Ctrl, Option word-motion becomes Ctrl word-motion, document
+         * start/end become Ctrl+Home / Ctrl+End, and browser history moves to
+         * Alt+Left / Alt+Right. Everything else falls through to NAV.
+         */
+        layer_nav_win {
+            display-name = "NAVWIN";
+            bindings = <
+&kp LC(TAB) &kp LC(N1)    &kp LC(N2)    &kp LC(N3)     &kp LC(N4)     &kp LC(N5) &trans
+    &trans  &kp LC(N6)    &kp LC(N7)    &kp LC(N8)     &kp LC(N9)     &kp LC(N0) &kp LC(W)
+
+&trans      &kp LC(A)     &kp LC(S)     &kp LC(F)      &kp LC(LS(F))  &kp LC(P)  &trans
+    &trans  &kp LC(LEFT)  &trans        &trans         &kp LC(RIGHT)  &kp LC(HOME) &kp LC(END)
+
+&trans      &kp LC(Z)     &kp LC(X)     &kp LC(C)      &kp LC(V)      &kp LC(Y)  &trans
+    &trans    &trans                                   &trans   &trans
+    &trans    &trans      &trans        &trans         &trans         &trans     &trans
+
+&trans      &trans        &trans        &trans         &trans         &trans
+    &trans                                             &trans
+    &kp LC(BSPC) &kp LC(DEL) &trans     &trans         &trans         &trans
+
+&kp LC(MINUS) &kp LA(LEFT) &kp LA(RIGHT) &kp LC(EQUAL) &kp LC(LS(T))
+    &trans    &trans      &trans                       &trans         &trans     &trans
+    &trans    &trans      &trans        &trans         &trans
+            >;
+        };
+
+        /*
+         * MACRO - automatic while both middle thumbs are held (NAV + SYM).
+         *
+         * Number row: SQL keywords.
+         * Upper row:  Python keywords and wrappers.
+         * Home row:   the multi-character operators.
+         * Lower row:  PowerShell and shell fragments.
+         * Bottom row: comment openers and comment tags.
+         *
+         * Every entry is a plain tap sequence defined in macros.dtsi.
+         */
+        layer_macro {
+            display-name = "MACRO";
+            bindings = <
+&m_select   &m_from       &m_where      &m_groupby     &m_orderby     &m_join    &trans
+    &trans  &m_leftjoin   &m_on         &m_as          &m_isnull      &m_notnull &m_countall
+
+&m_def      &m_class      &m_import     &m_pyfrom      &m_return      &m_self    &trans
+    &trans  &m_print      &m_fstring    &m_lambda      &m_none        &m_true    &m_false
+
+&trans      &m_arrow      &m_fatarrow   &m_ne          &m_eq          &m_walrus  &trans
+    &trans    &trans                                   &trans   &trans
+    &trans    &m_le       &m_ge         &m_sqlne       &m_scope       &m_dunder  &m_pow
+
+&trans      &m_psvar      &m_subexp     &m_psarray     &m_pshash      &m_pipe
+    &trans                                             &trans
+    &m_eqop   &m_neop     &m_updir      &m_homedir     &m_redirect    &trans
+
+&m_hashcmt  &m_sqlcmt     &m_blockcmt   &m_docstr      &m_ellipsis
+    &trans    &trans      &trans                       &trans         &trans     &trans
+    &m_todo   &m_fixme    &m_note       &m_hack        &trans
             >;
         };
     };
