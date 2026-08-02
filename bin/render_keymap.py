@@ -160,6 +160,8 @@ def label(binding: str) -> str:
         return keyname(args[0])
     if behavior in ("hml", "hmr"):
         return f"{keyname(args[1])}/{MOD_SHORT.get(args[0], args[0])}"
+    if behavior == "tlt":
+        return f"{keyname(args[1])}/{args[0]}"
     if behavior in ("mo", "to", "tog", "sl"):
         prefix = {"mo": "", "to": "=>", "tog": "~", "sl": "."}[behavior]
         return prefix + args[0]

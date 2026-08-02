@@ -88,6 +88,32 @@
             hold-trigger-on-release;
             bindings = <&kp>, <&kp>;
         };
+
+        /*
+         * Thumb layer-tap, used only on the big Del and Enter keys as a
+         * second, more comfortable route to NAV and SYM. The small &mo keys
+         * remain, so instant layer access is always available.
+         *
+         * flavor = "tap-preferred": only the timer can resolve the hold, so
+         *   rolling Del or Enter into the next key always types the key. This
+         *   costs ~200 ms to reach the layer, which is the right trade for a
+         *   backup route on a key whose tap is high-frequency.
+         * quick-tap-ms: tap then hold still auto-repeats Del and Enter, so
+         *   holding Delete to eat a run of text keeps working.
+         *
+         * Deliberately no require-prior-idle-ms here: it would make the layer
+         * unreachable mid-sentence, which is exactly when it is wanted. That
+         * is also why Space and Backspace are NOT layer-taps - space rolls
+         * into the next letter constantly and cannot be protected this way.
+         */
+        tlt: thumb_layer_tap {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <200>;
+            quick-tap-ms = <175>;
+            bindings = <&mo>, <&kp>;
+        };
     };
 
     conditional_layers {
@@ -168,7 +194,7 @@
     &kp N     &kp M       &kp COMMA     &kp DOT        &kp FSLH       &kp RSHFT
 
 &kp GRAVE   &kp LBKT      &kp RBKT      &kp LPAR       &kp RPAR
-    &kp BSPC  &kp DEL     &mo NUM                      &mo GLOBAL     &kp ENTER  &kp SPACE
+    &kp BSPC  &tlt NAV DEL &mo NUM                     &mo GLOBAL  &tlt SYM ENTER &kp SPACE
     &kp LEFT  &kp DOWN    &kp UP        &kp RIGHT      &mo SYS
             >;
         };

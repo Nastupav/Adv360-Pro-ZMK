@@ -201,7 +201,7 @@ ARITY = {
     "trans": 0, "none": 0, "caps_word": 0, "key_repeat": 0,
     "bootloader": 0, "sys_reset": 0,
     "kp": 1, "mo": 1, "to": 1, "tog": 1, "sl": 1, "out": 1,
-    "hml": 2, "hmr": 2,
+    "hml": 2, "hmr": 2, "tlt": 2,
 }
 
 # Text macros take no parameters. Collect their labels so a typo in a macro

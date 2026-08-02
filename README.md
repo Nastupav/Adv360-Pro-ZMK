@@ -21,8 +21,8 @@ Two ideas carry the whole layout:
 |---|---|---|
 | `MAC` | Default | QWERTY, home-row mods, Cmd on inner thumbs |
 | `WIN` | `SYS` + `W` (back via `SYS` + `A`) | GUI/Ctrl swapped; everything else falls through to `MAC` |
-| `NAV` | Hold left middle thumb | Motion, clipboard, editor verbs |
-| `SYM` | Hold right middle thumb | Programming symbols |
+| `NAV` | Hold left middle thumb, or hold `Del` | Motion, clipboard, editor verbs |
+| `SYM` | Hold right middle thumb, or hold `Enter` | Programming symbols |
 | `NUM` | Hold left bottom thumb | Numpad and F1-F12 |
 | `GLOBAL` | Hold right bottom thumb | Host-neutral window-manager protocol |
 | `SYS` | Hold either inner top key, or bottom-right | Bluetooth, output, lighting, maintenance |
@@ -81,6 +81,30 @@ if holds feel sluggish.
 
 The outer pinky `Shift` keys remain real Shifts. They are the ones to use for
 shift-clicking and for Shift-modified `GLOBAL` signals.
+
+## Thumbs
+
+`NAV` and `SYM` each have two routes. The small middle thumb keys are plain
+`&mo` — instant, and incapable of misfiring. The large `Del` and `Enter` keys
+are layer-taps (`tlt`) onto the same layers, for when your thumb is already
+resting there.
+
+The layer-taps use `tap-preferred`, so only the timer resolves the hold:
+rolling `Del` or `Enter` into the next key always types the key. Reaching the
+layer that way costs about 200 ms, which is why the instant `&mo` keys stay.
+`quick-tap-ms` preserves auto-repeat, so holding `Del` to eat a run of text
+still works.
+
+`Space` and `Backspace` are deliberately *not* layer-taps. Space rolls into the
+following letter constantly, and the protection that makes the home-row mods
+safe — `require-prior-idle-ms` — cannot be used here: it would disable the hold
+for exactly the mid-sentence case where the layer is wanted. Backspace needs
+plain hold-to-repeat. On a 36-key board you would have no choice; the
+Advantage 360 has six thumb keys per hand, so there is no reason to gamble on
+the two highest-frequency ones.
+
+A side effect worth knowing: `Del`+`Enter` held together reaches `MACRO`, the
+same as both middle thumbs.
 
 ## Symbols
 
@@ -174,11 +198,11 @@ base layer &nbsp;&middot;&nbsp; `>` truncated macro (see the reference below)
 **MAC**
 
 ```text
-   =       1       2       3       4       5      SYS                                                        SYS      6       7       8       9       0       -
-  Tab      Q       W       E       R       T      Caps                                                       Rept     Y       U       I       O       P       \
-  Esc     A/G     S/A     D/C     F/S      G      Alt             Ctrl    Cmd    |   Cmd     Ctrl            Alt      H      J/S     K/C     L/A     ;/G      '
-  Shft     Z       X       C       V       B                              NAV    |   SYM                              N       M       ,       .       /      Shft
-   `       [       ]       (       )                      Bspc    Del     NUM    |  GLOBAL   Ent     Spc                      <-      v       ^       ->     SYS
+    =        1        2        3        4        5       SYS                                                               SYS       6        7        8        9        0        -
+   Tab       Q        W        E        R        T       Caps                                                              Rept      Y        U        I        O        P        \
+   Esc      A/G      S/A      D/C      F/S       G       Alt               Ctrl     Cmd    |    Cmd      Ctrl              Alt       H       J/S      K/C      L/A      ;/G       '
+   Shft      Z        X        C        V        B                                  NAV    |    SYM                                  N        M        ,        .        /       Shft
+    `        [        ]        (        )                         Bspc   Del/NAV    NUM    |   GLOBAL  Ent/SYM    Spc                         <-       v        ^        ->      SYS
 ```
 
 **WIN**
