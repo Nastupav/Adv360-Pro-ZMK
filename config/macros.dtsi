@@ -1,6 +1,18 @@
 /*
- * Text macros for the MACRO layer (hold both middle thumbs) and for the nine
- * operator keys on SYM's bottom row.
+ * Text macros for the MACRO layer (hold both middle thumbs), for the operator
+ * keys on SYM's bottom row, and for "0x" on NUM.
+ *
+ * What earns a slot: a token that is symbol-dense AND has no autocomplete
+ * behind it. All-caps SQL keywords qualify - every character is shifted, and
+ * `PARTITION BY ` is thirteen shifted keystrokes for one key. Quote-and-paren
+ * wrappers qualify - `("")` is the shape of nearly every PySpark call.
+ * Language keywords do not: Pylance finishes `def`, `class` and `return` after
+ * two letters, so a macro there saves nothing and costs a slot.
+ *
+ * PowerShell deliberately has no macros. `-` is unshifted on the base number
+ * row, so `-match`, `-replace`, `-split` and `-join` are plain typing with no
+ * layer hop, and every PowerShell symbol already sits on SYM: `$` `_` `@` `{}`
+ * `()` `|` `~`. `$_` and `@{}` are a single SYM hold.
  *
  * Every macro is a plain tap sequence: no held modifiers spanning the macro,
  * no layer changes, nothing that can leave a modifier stuck. Sequences that
@@ -9,6 +21,11 @@
  * Timing is deliberately uniform. 5 ms is fast enough to feel instant and slow
  * enough to survive BLE HID on Windows; raise both numbers together if a host
  * ever drops characters.
+ *
+ * LENGTH CAP: keep sequences at or under 15 taps. Each tap is two HID reports,
+ * and CONFIG_ZMK_BLE_KEYBOARD_REPORT_QUEUE_SIZE (40, set in adv360.conf) is
+ * the ceiling. This is why `spark.sql("""""")`, `F.when().otherwise()` and
+ * `if __name__ == "__main__":` are not here - editors snippet them better.
  */
 
 #define TEXT_MACRO(nm, ...)                                                    \
@@ -22,7 +39,7 @@
 
 / {
     macros {
-        /* ---- SQL keywords ------------------------------------------- */
+        /* ---- SQL: core clauses --------------------------------------- */
         TEXT_MACRO(m_select,   &kp LS(S) &kp LS(E) &kp LS(L) &kp LS(E) &kp LS(C) &kp LS(T) &kp SPACE)
         TEXT_MACRO(m_from,     &kp LS(F) &kp LS(R) &kp LS(O) &kp LS(M) &kp SPACE)
         TEXT_MACRO(m_where,    &kp LS(W) &kp LS(H) &kp LS(E) &kp LS(R) &kp LS(E) &kp SPACE)
@@ -36,23 +53,60 @@
         TEXT_MACRO(m_notnull,  &kp LS(I) &kp LS(S) &kp SPACE &kp LS(N) &kp LS(O) &kp LS(T) &kp SPACE &kp LS(N) &kp LS(U) &kp LS(L) &kp LS(L))
         TEXT_MACRO(m_countall, &kp LS(C) &kp LS(O) &kp LS(U) &kp LS(N) &kp LS(T) &kp LPAR &kp ASTRK &kp RPAR)
 
-        /* ---- Python -------------------------------------------------- */
-        TEXT_MACRO(m_def,      &kp D &kp E &kp F &kp SPACE)
-        TEXT_MACRO(m_class,    &kp C &kp L &kp A &kp S &kp S &kp SPACE)
-        TEXT_MACRO(m_import,   &kp I &kp M &kp P &kp O &kp R &kp T &kp SPACE)
-        TEXT_MACRO(m_pyfrom,   &kp F &kp R &kp O &kp M &kp SPACE)
-        TEXT_MACRO(m_return,   &kp R &kp E &kp T &kp U &kp R &kp N &kp SPACE)
+        /* ---- SQL: CTEs and conditional logic ------------------------- */
+        TEXT_MACRO(m_with,     &kp LS(W) &kp LS(I) &kp LS(T) &kp LS(H) &kp SPACE)
+        TEXT_MACRO(m_case,     &kp LS(C) &kp LS(A) &kp LS(S) &kp LS(E) &kp SPACE &kp LS(W) &kp LS(H) &kp LS(E) &kp LS(N) &kp SPACE)
+        TEXT_MACRO(m_when,     &kp LS(W) &kp LS(H) &kp LS(E) &kp LS(N) &kp SPACE)
+        TEXT_MACRO(m_then,     &kp LS(T) &kp LS(H) &kp LS(E) &kp LS(N) &kp SPACE)
+        TEXT_MACRO(m_else,     &kp LS(E) &kp LS(L) &kp LS(S) &kp LS(E) &kp SPACE)
+        TEXT_MACRO(m_end,      &kp LS(E) &kp LS(N) &kp LS(D))
+        TEXT_MACRO(m_distinct, &kp LS(D) &kp LS(I) &kp LS(S) &kp LS(T) &kp LS(I) &kp LS(N) &kp LS(C) &kp LS(T) &kp SPACE)
+
+        /* ---- SQL: null handling and casting -------------------------- */
+        TEXT_MACRO(m_coalesce, &kp LS(C) &kp LS(O) &kp LS(A) &kp LS(L) &kp LS(E) &kp LS(S) &kp LS(C) &kp LS(E) &kp LPAR &kp RPAR &kp LEFT)
+        TEXT_MACRO(m_nullif,   &kp LS(N) &kp LS(U) &kp LS(L) &kp LS(L) &kp LS(I) &kp LS(F) &kp LPAR &kp RPAR &kp LEFT)
+        TEXT_MACRO(m_cast,     &kp LS(C) &kp LS(A) &kp LS(S) &kp LS(T) &kp LPAR)
+        TEXT_MACRO(m_trycast,  &kp LS(T) &kp LS(R) &kp LS(Y) &kp UNDER &kp LS(C) &kp LS(A) &kp LS(S) &kp LS(T) &kp LPAR)
+        TEXT_MACRO(m_datetrunc, &kp LS(D) &kp LS(A) &kp LS(T) &kp LS(E) &kp UNDER &kp LS(T) &kp LS(R) &kp LS(U) &kp LS(N) &kp LS(C) &kp LPAR &kp RPAR &kp LEFT)
+
+        /* ---- SQL: window functions ----------------------------------- */
+        TEXT_MACRO(m_rownum,   &kp LS(R) &kp LS(O) &kp LS(W) &kp UNDER &kp LS(N) &kp LS(U) &kp LS(M) &kp LS(B) &kp LS(E) &kp LS(R) &kp LPAR &kp RPAR)
+        TEXT_MACRO(m_over,     &kp LS(O) &kp LS(V) &kp LS(E) &kp LS(R) &kp SPACE &kp LPAR &kp RPAR &kp LEFT)
+        TEXT_MACRO(m_partition, &kp LS(P) &kp LS(A) &kp LS(R) &kp LS(T) &kp LS(I) &kp LS(T) &kp LS(I) &kp LS(O) &kp LS(N) &kp SPACE &kp LS(B) &kp LS(Y) &kp SPACE)
+        TEXT_MACRO(m_qualify,  &kp LS(Q) &kp LS(U) &kp LS(A) &kp LS(L) &kp LS(I) &kp LS(F) &kp LS(Y) &kp SPACE)
+
+        /* ---- SQL: joins, set operations, filters --------------------- */
+        TEXT_MACRO(m_innerjoin, &kp LS(I) &kp LS(N) &kp LS(N) &kp LS(E) &kp LS(R) &kp SPACE &kp LS(J) &kp LS(O) &kp LS(I) &kp LS(N) &kp SPACE)
+        TEXT_MACRO(m_unionall, &kp LS(U) &kp LS(N) &kp LS(I) &kp LS(O) &kp LS(N) &kp SPACE &kp LS(A) &kp LS(L) &kp LS(L) &kp SPACE)
+        TEXT_MACRO(m_having,   &kp LS(H) &kp LS(A) &kp LS(V) &kp LS(I) &kp LS(N) &kp LS(G) &kp SPACE)
+        TEXT_MACRO(m_merge,    &kp LS(M) &kp LS(E) &kp LS(R) &kp LS(G) &kp LS(E) &kp SPACE &kp LS(I) &kp LS(N) &kp LS(T) &kp LS(O) &kp SPACE)
+        TEXT_MACRO(m_using,    &kp LS(U) &kp LS(S) &kp LS(I) &kp LS(N) &kp LS(G) &kp SPACE)
+        TEXT_MACRO(m_limit,    &kp LS(L) &kp LS(I) &kp LS(M) &kp LS(I) &kp LS(T) &kp SPACE)
+
+        /* ---- Quoting patterns ----------------------------------------
+         * The highest-leverage macros here. `("")` is the shape of nearly
+         * every PySpark call - F.col, .option, .format, .alias, .mode,
+         * spark.read - and `[""]` is pandas column access and dict keys.
+         * Both land the caret between the quotes.
+         */
+        TEXT_MACRO(m_qarg,     &kp LPAR &kp DQT &kp DQT &kp RPAR &kp LEFT &kp LEFT)
+        TEXT_MACRO(m_qkey,     &kp LBKT &kp DQT &kp DQT &kp RBKT &kp LEFT &kp LEFT)
+
+        /* ---- Python and PySpark -------------------------------------- */
         TEXT_MACRO(m_self,     &kp S &kp E &kp L &kp F &kp DOT)
         TEXT_MACRO(m_print,    &kp P &kp R &kp I &kp N &kp T &kp LPAR &kp RPAR &kp LEFT)
         TEXT_MACRO(m_fstring,  &kp F &kp DQT &kp DQT &kp LEFT)
-        TEXT_MACRO(m_lambda,   &kp L &kp A &kp M &kp B &kp D &kp A &kp SPACE)
-        TEXT_MACRO(m_none,     &kp LS(N) &kp O &kp N &kp E)
-        TEXT_MACRO(m_true,     &kp LS(T) &kp R &kp U &kp E)
-        TEXT_MACRO(m_false,    &kp LS(F) &kp A &kp L &kp S &kp E)
+        TEXT_MACRO(m_fcol,     &kp LS(F) &kp DOT &kp C &kp O &kp L &kp LPAR &kp DQT &kp DQT &kp RPAR &kp LEFT &kp LEFT)
 
-        /* ---- Operators ----------------------------------------------- */
+        /* ---- Databricks ---------------------------------------------- */
+        TEXT_MACRO(m_display,  &kp D &kp I &kp S &kp P &kp L &kp A &kp Y &kp LPAR &kp RPAR &kp LEFT)
+        TEXT_MACRO(m_dbutils,  &kp D &kp B &kp U &kp T &kp I &kp L &kp S &kp DOT)
+        TEXT_MACRO(m_sqlmagic, &kp PRCNT &kp S &kp Q &kp L)
+        TEXT_MACRO(m_mdmagic,  &kp PRCNT &kp M &kp D)
+        TEXT_MACRO(m_pymagic,  &kp PRCNT &kp P &kp Y &kp T &kp H &kp O &kp N)
+
+        /* ---- Operators (SYM bottom row, NUM) ------------------------- */
         TEXT_MACRO(m_arrow,    &kp MINUS &kp GT)
-        TEXT_MACRO(m_fatarrow, &kp EQUAL &kp GT)
         TEXT_MACRO(m_ne,       &kp EXCL  &kp EQUAL)
         TEXT_MACRO(m_eq,       &kp EQUAL &kp EQUAL)
         TEXT_MACRO(m_walrus,   &kp COLON &kp EQUAL)
@@ -62,18 +116,7 @@
         TEXT_MACRO(m_scope,    &kp COLON &kp COLON)
         TEXT_MACRO(m_dunder,   &kp UNDER &kp UNDER)
         TEXT_MACRO(m_pow,      &kp ASTRK &kp ASTRK)
-
-        /* ---- PowerShell and shell ------------------------------------ */
-        TEXT_MACRO(m_psvar,    &kp DLLR &kp UNDER)
-        TEXT_MACRO(m_subexp,   &kp DLLR &kp LPAR &kp RPAR &kp LEFT)
-        TEXT_MACRO(m_psarray,  &kp AT &kp LPAR &kp RPAR &kp LEFT)
-        TEXT_MACRO(m_pshash,   &kp AT &kp LBRC &kp RBRC &kp LEFT)
-        TEXT_MACRO(m_pipe,     &kp PIPE &kp SPACE)
-        TEXT_MACRO(m_eqop,     &kp MINUS &kp E &kp Q &kp SPACE)
-        TEXT_MACRO(m_neop,     &kp MINUS &kp N &kp E &kp SPACE)
-        TEXT_MACRO(m_updir,    &kp DOT &kp DOT &kp FSLH)
-        TEXT_MACRO(m_homedir,  &kp TILDE &kp FSLH)
-        TEXT_MACRO(m_redirect, &kp N2 &kp GT &kp AMPS &kp N1)
+        TEXT_MACRO(m_concat,   &kp PIPE  &kp PIPE)
         TEXT_MACRO(m_hex,      &kp N0 &kp X)
 
         /* ---- Comments and wrappers ----------------------------------- */

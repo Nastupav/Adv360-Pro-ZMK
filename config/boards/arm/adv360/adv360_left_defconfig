@@ -49,14 +49,33 @@ CONFIG_ZMK_BACKLIGHT_AUTO_OFF_IDLE=y
 #BT configuration
 CONFIG_BT_CTLR_TX_PWR_PLUS_8=y
 CONFIG_BT_DIS_MANUF="Kinesis Corporation"
-CONFIG_BT_BAS=n
+
+# Battery reporting. This is the central half, so it owns the host-facing
+# battery service; with it off the host sees no charge level for either half.
+# FETCHING pulls the right half's level over the split link, PROXY republishes
+# it to the host as a second battery instance.
+CONFIG_BT_BAS=y
+CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING=y
+CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_PROXY=y
+
+# Windows drops GATT battery notifications unless subscription enforcement is
+# relaxed. Harmless on macOS and Linux.
+CONFIG_BT_GATT_ENFORCE_SUBSCRIPTION=n
+
+# SYS exposes five BLE profiles (BT_SEL 0-4) and the central also holds the
+# split link to the right half, so six connections are needed. ZMK defaults
+# both to 5, which would starve the last profile. Per ZMK's split guidance
+# these are set on the central only, and must match each other.
+CONFIG_BT_MAX_CONN=6
+CONFIG_BT_MAX_PAIRED=6
 
 #Misc configuration
 CONFIG_USB_DEVICE_VID=0x29EA
 CONFIG_USB_DEVICE_PID=0x0362
 CONFIG_USB_DEVICE_MANUFACTURER="Kinesis Corporation"
 CONFIG_ZMK_HID_REPORT_TYPE_NKRO=y
-CONFIG_ZMK_HID_KEYBOARD_NKRO_EXTENDED_REPORT=n  # overridden to y by adv360.conf for F13-F24
+# HID report shape (extended NKRO report, full consumer usage range) is set in
+# config/adv360.conf, which is applied after this file.
 CONFIG_ZMK_HID_CONSUMER_REPORT_USAGES_BASIC=y
 CONFIG_BUILD_OUTPUT_UF2=y
 

@@ -47,8 +47,11 @@ ctrl-f17 = 'workspace prev'
 ctrl-f18 = 'workspace next'
 
 # Ctrl+Shift+F17/F18 -> move window to previous/next workspace
-ctrl-shift-f17 = 'move-workspace-to-monitor --wrap-around prev'
-ctrl-shift-f18 = 'move-workspace-to-monitor --wrap-around next'
+# These used to run move-workspace-to-monitor, which moved the whole workspace
+# to another display instead of moving the window to the adjacent workspace.
+# Linux and Windows both implemented the documented behaviour; macOS did not.
+ctrl-shift-f17 = 'move-node-to-workspace --wrap-around prev'
+ctrl-shift-f18 = 'move-node-to-workspace --wrap-around next'
 
 # Ctrl+Alt+F13-F16 -> resize left/down/up/right
 ctrl-alt-f13 = 'resize width -50'
@@ -73,6 +76,9 @@ alt-shift-f13 = '''exec-and-forget screencapture -i -c'''
 alt-shift-f14 = '''exec-and-forget screencapture -i -w -c'''
 alt-shift-f15 = '''exec-and-forget open raycast://extensions/raycast/clipboard-history/clipboard-history'''
 alt-shift-f16 = '''exec-and-forget open -a "Digital Color Meter"'''
+
+# Alt+Shift+F17 -> Neovim in a terminal
+alt-shift-f17 = '''exec-and-forget open -na "Ghostty" --args -e nvim'''
 
 # Ctrl+F19 fullscreen, Ctrl+Shift+F19 close window
 ctrl-f19 = 'fullscreen'

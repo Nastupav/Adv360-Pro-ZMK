@@ -1,8 +1,9 @@
 # Advantage360 Pro developer keymap
 
-Source-controlled ZMK firmware for a Kinesis Advantage360 Pro, tuned for
-Python, SQL, PowerShell and Vim-shaped editing across macOS, Windows and
-Linux.
+Source-controlled ZMK firmware for a Kinesis Advantage360 Pro, tuned for Python
+and data engineering — SQL, PySpark, Databricks — with Vim-shaped editing.
+macOS and Linux are the primary hosts; Windows is supported and kept working.
+PowerShell is served by the symbol layout rather than by macros.
 
 Two ideas carry the whole layout:
 
@@ -26,8 +27,8 @@ Two ideas carry the whole layout:
 | `NUM` | Hold left bottom thumb | Numpad and F1-F12 |
 | `GLOBAL` | Hold right bottom thumb | Host-neutral window-manager protocol |
 | `SYS` | Hold either inner top key, or bottom-right | Bluetooth, output, lighting, maintenance |
-| `NAV_WIN` | Automatic (`WIN` + `NAV`) | Windows-flavoured overrides for `NAV` |
-| `MACRO` | Hold **both** middle thumbs | Text macros: SQL, Python, operators, shell, comments |
+| `NAV_WIN` | Automatic (`WIN` + `NAV`) | Ctrl-flavoured overrides for `NAV` — used by Linux *and* Windows |
+| `MACRO` | Hold **both** middle thumbs | Text macros: SQL, Python, PySpark, Databricks, comments |
 
 Two of these are conditional layers you never select directly.
 
@@ -41,7 +42,7 @@ systems.
 That costs no dedicated key, and the two thumbs are already the ones your
 hands rest against, so the whole macro bank is one chord away. The one habit
 this rules out is resting a thumb on `NAV` while working on `SYM`: that is the
-macro chord, so you would get `->` where you wanted `[`.
+macro chord, so you would get `f""` where you wanted `[`.
 
 Every position on every layer is bound. `&trans` is content, not emptiness: it
 exposes the layer underneath, which is exactly what makes `WIN` a thin overlay
@@ -79,8 +80,24 @@ behaviors at the top of `config/adv360.keymap`. Raise `require-prior-idle-ms`
 toward 200 if you still get accidental mods; lower `tapping-term-ms` toward 200
 if holds feel sluggish.
 
-The outer pinky `Shift` keys remain real Shifts. They are the ones to use for
-shift-clicking and for Shift-modified `GLOBAL` signals.
+### Smart shift on the outer pinkies
+
+`require-prior-idle-ms` has one real cost: a capital *mid-word* is impossible
+from the home row, because the hold starts inside the 150 ms window and gets
+abandoned. That costs nothing in `snake_case`, but it shows up constantly in
+PascalCase and after a hyphen — `Get-ChildItem` would come out `Get-childitem`.
+
+The two outer `Shift` keys therefore run `&sms`:
+
+| Action | Result |
+|---|---|
+| **Hold** | real `Shift` — Shift+click, Shift+arrow selection, Shift-modified `GLOBAL` signals |
+| **Tap** | sticky `Shift` — the next character is capitalised, with no timing window to hit |
+
+`hold-preferred` flavour means any other key pressed during the term resolves
+the hold, so held-Shift behaviour is byte-for-byte what it was before. Only a
+tap with nothing else pressed produces the sticky. For a whole run of capitals,
+`Caps Word` is still on the inner top-left key.
 
 ## Thumbs
 
@@ -108,12 +125,23 @@ same as both middle thumbs.
 
 ## Symbols
 
+> **Every host must be set to a US keyboard layout.** The keyboard sends HID
+> usages, not characters; the host layout decides what each usage prints. On a
+> Czech, Polish or other non-US layout the entire `SYM` layer and every text
+> macro produce the wrong characters — `[` becomes `ú`, `:` becomes `"`, and
+> so on. This is a host setting, not something the firmware can compensate for.
+> Use a US layout on every profile and get national characters from a host-side
+> compose key or input switcher.
+
 The `SYM` home row is an enclosure ladder, mirrored around the centre, with the
 two highest-frequency Python/SQL characters on the index stretches:
 
 ```text
-   <   {   [   (   :   |   _   )   ]   }   >   =
+   <   {   [   (   :   │   _   )   ]   }   >   =
 ```
+
+The `│` is the mirror axis, not a key — it marks the gap where the thumb
+cluster sits. `|` itself lives on the upper row and again on the fourth row.
 
 The number row keeps the familiar US shifted-number symbols, the upper row
 carries `~ \` \ | ;` and `" ' ? / \`, and the fourth row carries the
@@ -124,21 +152,66 @@ available without a layer at all.
 
 ## Macros
 
-The nine multi-character operators you reach for hourly sit on `SYM`'s bottom
-row, one thumb away:
+The multi-character operators you reach for hourly sit on `SYM`'s bottom row,
+one thumb away:
 
 ```text
-   <>  ->  =>  !=  ==    |    <=  >=  ::  __
+   <>  ->  ||  !=  ==    │    <=  >=  ::  __
 ```
 
-with `**` and `:=` just above them. The full bank — SQL keywords, Python
-keywords, PowerShell fragments, comment openers and comment tags — lives on
-`MACRO`, reached by holding both middle thumbs.
+with `**` and `:=` just above them. `||` is SQL string concatenation; it
+replaced `=>`, which nothing in Python, SQL or PowerShell uses.
 
-Macros are plain tap sequences defined in `config/macros.dtsi`. None of them
-hold a modifier across the sequence, so none can leave a modifier stuck. The
-ones that wrap a cursor position — `print()`, `f""`, `$()`, `@()`, `@{}`,
-`/*  */` — end with `Left` taps so the caret lands inside.
+The full bank lives on `MACRO`, reached by holding both middle thumbs. It is
+aimed at Python and data engineering — SQL, PySpark, Databricks.
+
+### What earns a slot
+
+A token qualifies when it is **symbol-dense and has no autocomplete behind
+it**. All-caps SQL keywords qualify: every character is shifted, and
+`PARTITION BY ` is thirteen shifted keystrokes for one key. Quote-and-paren
+wrappers qualify: `("")` is the shape of nearly every PySpark call.
+
+Language keywords do not. Pylance finishes `def`, `class` and `return` after
+two letters, so a macro there saves nothing and costs a slot. Method names —
+`.select(`, `.groupBy(`, `.agg(`, `.withColumn(` — complete after the dot in
+both VS Code and Databricks; the symbol-dense wrapper is the part worth
+binding.
+
+### No PowerShell macros
+
+PowerShell is fast without them. `-` is unshifted on the base number row, so
+`-match`, `-replace`, `-split` and `-join` are plain typing with no layer hop.
+Every PowerShell symbol already sits on `SYM` — `$` `_` `@` `{}` `()` `|` `~` —
+so `$_`, `$()`, `@()` and `@{}` are a single `SYM` hold. Only `2>&1` needs two
+`SYM` transitions, and it is rare enough not to earn a key.
+
+### Layout
+
+| Row | Contents |
+|---|---|
+| Number | `SELECT FROM WHERE GROUP BY ORDER BY JOIN` · `LEFT JOIN ON AS IS NULL IS NOT NULL COUNT(*)` |
+| Upper | `WITH CASE WHEN THEN ELSE END DISTINCT` · `COALESCE() CAST( DATE_TRUNC() ROW_NUMBER() OVER () PARTITION BY` |
+| Home | `self. print() f"" ("") [""]` · `F.col("") display() dbutils. %sql %md %python` |
+| Lower | `INNER JOIN UNION ALL HAVING QUALIFY MERGE INTO` · `WHEN USING TRY_CAST( NULLIF() LIMIT` |
+| Bottom | `# ` `-- ` `/*  */` `"""` `...` · `TODO: FIXME: NOTE: HACK:` |
+
+Two things worth knowing. On the upper row the last three right-hand keys read
+`ROW_NUMBER()`, `OVER ()`, `PARTITION BY ` in that order, so the dedup idiom
+types left to right. And the home row puts `("")` and `[""]` on the index
+fingers, because those two get used more than anything else on the layer.
+
+### Rules
+
+Macros are plain tap sequences defined in `config/macros.dtsi`. None hold a
+modifier across the sequence, so none can leave a modifier stuck. The ones that
+wrap a cursor position — `print()`, `f""`, `("")`, `[""]`, `F.col("")`,
+`COALESCE()`, `/*  */` — end with `Left` taps so the caret lands inside.
+
+**Keep sequences at or under 15 taps.** Each tap is two HID reports and
+`CONFIG_ZMK_BLE_KEYBOARD_REPORT_QUEUE_SIZE` is 40. This is why
+`spark.sql("""""")`, `F.when().otherwise()` and `if __name__ == "__main__":`
+are not here — editors snippet them better than a keyboard can.
 
 To add one, copy a `TEXT_MACRO(...)` line and bind it somewhere. `make
 validate` fails on a macro that is defined but never used, and on one that is
@@ -165,10 +238,42 @@ modifiers, and each host translates:
 | `Ctrl+Alt+F19` | Balance / reset layout |
 | `Ctrl+Alt+F20` | Pin (sticky) window |
 | `Alt+Shift+F13`-`F16` | Screenshot region, screenshot window, clipboard history, colour picker |
+| `Alt+Shift+F17` | Neovim in a terminal |
 | `Alt+F13`-`F20` | Terminal, browser, code, files, launcher, chat, notes, git |
 
 The pattern is consistent: adding `Shift` to a "go there" signal turns it into
 "take the window there".
+
+### Moving between displays
+
+Display work is one cluster on the right hand. The home row is focus, the row
+directly above it is move-window, so the same finger does both and the row
+decides whether the window comes with you:
+
+```text
+upper row    move win  L  D  U  R  │  move win to prev monitor / next monitor
+home row     focus     L  D  U  R  │  focus       prev monitor / next monitor
+```
+
+The monitor keys sit immediately right of the `HJKL` focus cluster, so "throw
+this window to the other screen, then follow it" is two adjacent keys under one
+hand rather than two corners of the board. The bottom row mirrors focus and
+monitors onto the left hand, so the layer stays usable one-handed.
+
+The number row is workspaces end to end — 1-8, then previous and next.
+
+### Neovim
+
+`Alt+Shift+F17` opens Neovim in the terminal each host already uses for the
+`Alt+F13` terminal slot and the `Alt+F20` lazygit slot, so the three share one
+terminal definition. Change it in one place per host: `$nvim` in
+`hyprland.conf`, the `alt-shift-f17` line in `aerospace.toml`, `NVIM` in
+`adv360-global.ahk`.
+
+Nothing else about Neovim needs firmware support: `Esc` is already left of `A`,
+`Ctrl` is a real key on the thumbs so `Ctrl+D`/`Ctrl+U`/`Ctrl+W` work without
+the home row, `NAV`'s arrows are on `HJKL`, and `Insert` is on `NAV` for
+`Shift+Insert` paste in Linux terminals.
 
 Ready-to-use consumers live in `host/`:
 
@@ -201,7 +306,7 @@ base layer &nbsp;&middot;&nbsp; `>` truncated macro (see the reference below)
     =        1        2        3        4        5       SYS                                                               SYS       6        7        8        9        0        -
    Tab       Q        W        E        R        T       Caps                                                              Rept      Y        U        I        O        P        \
    Esc      A/G      S/A      D/C      F/S       G       Alt               Ctrl     Cmd    |    Cmd      Ctrl              Alt       H       J/S      K/C      L/A      ;/G       '
-   Shft      Z        X        C        V        B                                  NAV    |    SYM                                  N        M        ,        .        /       Shft
+   sms       Z        X        C        V        B                                  NAV    |    SYM                                  N        M        ,        .        /       sms
     `        [        ]        (        )                         Bspc   Del/NAV    NUM    |   GLOBAL  Ent/SYM    Spc                         <-       v        ^        ->      SYS
 ```
 
@@ -222,7 +327,7 @@ base layer &nbsp;&middot;&nbsp; `>` truncated macro (see the reference below)
    ^^     G-A     G-S     G-F    G-S-F    G-P      ^^                                                         ^^     A-<-    PgDn    PgUp    A-->    G-^     G-v
    ^^     G-Z     G-X     G-C     G-V    G-S-Z     ^^              ^^      ^^    |    ^^      ^^              ^^      <-      v       ^       ->     Home    End
    ^^      F2     F12    S-F12     F3     S-F3                             ^^    |    ^^                            A-Bspc  A-Del    Bspc    Del     Ins      ^^
-  G--     G-[     G-]     G-=    G-S-T                     ^^      ^^      ^^    |    ^^      ^^      ^^                      ^^      ^^      ^^      ^^      ^^
+  G--     G-[     G-]     G-=    G-S-T                     ^^      ^^      ^^    |    ^^      ^^      ^^                     G-/     A-v     A-^    G-S-K     ^^
 ```
 
 **SYM**
@@ -232,27 +337,27 @@ base layer &nbsp;&middot;&nbsp; `>` truncated macro (see the reference below)
   ^^    ~     `     \     |     ;     ^^                                           ^^    "     '     ?     /     \     ^^
   ^^    <     {     [     (     :     ^^          ^^    ^^   |   ^^    ^^          ^^    _     )     ]     }     >     =
   ^^    ^     $     -     _     *                       ^^   |   ^^                      &     |     **    :=    !     ^^
-  <>    ->    =>    !=    ==                ^^    ^^    ^^   |   ^^    ^^    ^^                <=    >=    ::    __    ^^
+  <>    ->    ||    !=    ==                ^^    ^^    ^^   |   ^^    ^^    ^^                <=    >=    ::    __    ^^
 ```
 
 **NUM**
 
 ```text
   F1    F2    F3    F4    F5    F6    ^^                                           ^^    ^^    ^^    ^^    ^^    ^^    ^^
-  F7    F8    F9   F10   F11   F12    ^^                                           ^^    #7    #8    #9    #/    #*   Bspc
-  ^^    A     B     C     D     E     ^^          ^^    ^^   |   ^^    ^^          ^^    #4    #5    #6    #-    #+   #Ent
-  ^^    F     0x    =     <     >                       ^^   |   ^^                      #1    #2    #3    #.    ,     ^^
-  %     ^     *     (     )                 ^^    ^^    ^^   |   ^^    ^^    ^^                #0    #.    #=   #Ent   ^^
+  F7    F8    F9   F10   F11   F12    ^^                                           ^^    7     8     9     /     *    Bspc
+  ^^    A     B     C     D     E     ^^          ^^    ^^   |   ^^    ^^          ^^    4     5     6     -     +    Ent
+  ^^    F     0x    =     <     >                       ^^   |   ^^                      1     2     3     .     ,     ^^
+  %     ^     *     (     )                 ^^    ^^    ^^   |   ^^    ^^    ^^                0     .     =    Ent    ^^
 ```
 
 **GLOBAL**
 
 ```text
-  C-S-F17      F13        F14        F15        F16        F17         ^^                                                                              ^^        F18        F19        F20     C-A-S-F17  C-A-S-F18   C-S-F18
-  A-S-F13    C-S-F19     C-F20      A-F16     C-A-F19     A-F13        ^^                                                                              ^^      C-S-F13    C-S-F14    C-S-F15    C-S-F16    C-S-F20    C-A-F20
-     ^^       A-F17      A-F18      A-F19      C-F19      A-F20        ^^                    ^^         ^^     |      ^^         ^^                    ^^       C-F13      C-F14      C-F15      C-F16      C-F17      C-F18
-     ^^      A-S-F14    A-S-F15     A-F15     A-S-F16     A-F14                                         ^^     |      ^^                                       C-A-F13    C-A-F14    C-A-F15    C-A-F16    C-S-F19       ^^
-   C-F19      C-F17      C-F18     C-A-F17    C-A-F18                             ^^         ^^         ^^     |      ^^         ^^         ^^                             C-F13      C-F14      C-F15      C-F16        ^^
+  C-S-F17      F13        F14        F15        F16        F17         ^^                                                                              ^^        F18        F19        F20       C-F17      C-F18     C-S-F18
+  A-S-F13    C-S-F19     C-F20      A-F16     C-A-F19     A-F13     A-S-F17                                                                            ^^      C-S-F13    C-S-F14    C-S-F15    C-S-F16   C-A-S-F17  C-A-S-F18
+     ^^       A-F17      A-F18      A-F19      C-F19      A-F20        ^^                    ^^         ^^     |      ^^         ^^                    ^^       C-F13      C-F14      C-F15      C-F16     C-A-F17    C-A-F18
+     ^^      A-S-F14    A-S-F15     A-F15     A-S-F16     A-F14                                         ^^     |      ^^                                       C-A-F13    C-A-F14    C-A-F15    C-A-F16    C-A-F20       ^^
+  C-S-F20     C-F17      C-F18     C-A-F17    C-A-F18                             ^^         ^^         ^^     |      ^^         ^^         ^^                             C-F13      C-F14      C-F15      C-F16        ^^
 ```
 
 **SYS**
@@ -270,18 +375,18 @@ base layer &nbsp;&middot;&nbsp; `>` truncated macro (see the reference below)
 ```text
  C-Tab    C-1     C-2     C-3     C-4     C-5      ^^                                                         ^^     C-6     C-7     C-8     C-9     C-0     C-W
    ^^     C-A     C-S     C-F    C-S-F    C-P      ^^                                                         ^^     C-<-     ^^      ^^     C-->   C-Home  C-End
-   ^^     C-Z     C-X     C-C     C-V     C-Y      ^^              ^^      ^^    |    ^^      ^^              ^^      ^^      ^^      ^^      ^^      ^^      ^^
+   ^^     C-Z     C-X     C-C     C-V    C-S-Z     ^^              ^^      ^^    |    ^^      ^^              ^^      ^^      ^^      ^^      ^^      ^^      ^^
    ^^      ^^      ^^      ^^      ^^      ^^                              ^^    |    ^^                            C-Bspc  C-Del     ^^      ^^      ^^      ^^
-  C--     A-<-    A-->    C-=    C-S-T                     ^^      ^^      ^^    |    ^^      ^^      ^^                      ^^      ^^      ^^      ^^      ^^
+  C--     A-<-    A-->    C-=    C-S-T                     ^^      ^^      ^^    |    ^^      ^^      ^^                     C-/      ^^      ^^    C-S-K     ^^
 ```
 
 **MACRO**
 
 ```text
   SELECT     FROM     WHERE    GROUP BY  ORDER BY    JOIN       ^^                                                                       ^^     LEFT JO>     ON        AS     IS NULL   IS NOT >  COUNT(*)
-   def      class     import     from     return    self.       ^^                                                                       ^^     print()     f""      lambda     None      True     False
-    ^^        ->        =>        !=        ==        :=        ^^                  ^^        ^^     |     ^^        ^^                  ^^        <=        >=        <>        ::        __        **
-    ^^        $_       $()       @()       @{}        |                                       ^^     |     ^^                                     -eq       -ne       ../        ~/       2>&1       ^^
+   WITH    CASE WH>    THEN      ELSE      END     DISTINCT     ^^                                                                       ^^     COALESC>   CAST(    DATE_TR>  ROW_NUM>  OVER ()   PARTITI>
+    ^^      self.    print()     f""       ("")      [""]       ^^                  ^^        ^^     |     ^^        ^^                  ^^     F.col(">  display>  dbutils.    %sql      %md     %python
+    ^^     INNER J>  UNION A>   HAVING   QUALIFY   MERGE I>                                   ^^     |     ^^                                     WHEN     USING    TRY_CAS>  NULLIF()   LIMIT       ^^
     #         --      /*  */     """       ...                            ^^        ^^        ^^     |     ^^        ^^        ^^                          TODO:     FIXME:    NOTE:     HACK:       ^^
 ```
 
@@ -289,21 +394,37 @@ base layer &nbsp;&middot;&nbsp; `>` truncated macro (see the reference below)
 space is part of the keyword macros. `^` marks where the caret lands
 when the macro repositions it.
 
-*SQL keywords*
+*SQL: core clauses*
 
 `SELECT ` &nbsp;&middot;&nbsp; `FROM ` &nbsp;&middot;&nbsp; `WHERE ` &nbsp;&middot;&nbsp; `GROUP BY ` &nbsp;&middot;&nbsp; `ORDER BY ` &nbsp;&middot;&nbsp; `JOIN ` &nbsp;&middot;&nbsp; `LEFT JOIN ` &nbsp;&middot;&nbsp; `ON ` &nbsp;&middot;&nbsp; `AS ` &nbsp;&middot;&nbsp; `IS NULL` &nbsp;&middot;&nbsp; `IS NOT NULL` &nbsp;&middot;&nbsp; `COUNT(*)`
 
-*Python*
+*SQL: CTEs and conditional logic*
 
-`def ` &nbsp;&middot;&nbsp; `class ` &nbsp;&middot;&nbsp; `import ` &nbsp;&middot;&nbsp; `from ` &nbsp;&middot;&nbsp; `return ` &nbsp;&middot;&nbsp; `self.` &nbsp;&middot;&nbsp; `print()` ^ &nbsp;&middot;&nbsp; `f""` ^ &nbsp;&middot;&nbsp; `lambda ` &nbsp;&middot;&nbsp; `None` &nbsp;&middot;&nbsp; `True` &nbsp;&middot;&nbsp; `False`
+`WITH ` &nbsp;&middot;&nbsp; `CASE WHEN ` &nbsp;&middot;&nbsp; `WHEN ` &nbsp;&middot;&nbsp; `THEN ` &nbsp;&middot;&nbsp; `ELSE ` &nbsp;&middot;&nbsp; `END` &nbsp;&middot;&nbsp; `DISTINCT `
 
-*Operators*
+*SQL: null handling and casting*
 
-`->` &nbsp;&middot;&nbsp; `=>` &nbsp;&middot;&nbsp; `!=` &nbsp;&middot;&nbsp; `==` &nbsp;&middot;&nbsp; `:=` &nbsp;&middot;&nbsp; `<=` &nbsp;&middot;&nbsp; `>=` &nbsp;&middot;&nbsp; `<>` &nbsp;&middot;&nbsp; `::` &nbsp;&middot;&nbsp; `__` &nbsp;&middot;&nbsp; `**`
+`COALESCE()` &nbsp;&middot;&nbsp; `NULLIF()` &nbsp;&middot;&nbsp; `CAST(` &nbsp;&middot;&nbsp; `TRY_CAST(` &nbsp;&middot;&nbsp; `DATE_TRUNC()`
 
-*PowerShell and shell*
+*SQL: window functions*
 
-`$_` &nbsp;&middot;&nbsp; `$()` ^ &nbsp;&middot;&nbsp; `@()` ^ &nbsp;&middot;&nbsp; `@{}` ^ &nbsp;&middot;&nbsp; `| ` &nbsp;&middot;&nbsp; `-eq ` &nbsp;&middot;&nbsp; `-ne ` &nbsp;&middot;&nbsp; `../` &nbsp;&middot;&nbsp; `~/` &nbsp;&middot;&nbsp; `2>&1` &nbsp;&middot;&nbsp; `0x`
+`ROW_NUMBER()` &nbsp;&middot;&nbsp; `OVER ()` &nbsp;&middot;&nbsp; `PARTITION BY ` &nbsp;&middot;&nbsp; `QUALIFY `
+
+*SQL: joins, set operations, filters*
+
+`INNER JOIN ` &nbsp;&middot;&nbsp; `UNION ALL ` &nbsp;&middot;&nbsp; `HAVING ` &nbsp;&middot;&nbsp; `MERGE INTO ` &nbsp;&middot;&nbsp; `USING ` &nbsp;&middot;&nbsp; `LIMIT ` &nbsp;&middot;&nbsp; `("")` &nbsp;&middot;&nbsp; `[""]`
+
+*Python and PySpark*
+
+`self.` &nbsp;&middot;&nbsp; `print()` ^ &nbsp;&middot;&nbsp; `f""` ^ &nbsp;&middot;&nbsp; `F.col("")`
+
+*Databricks*
+
+`display()` &nbsp;&middot;&nbsp; `dbutils.` &nbsp;&middot;&nbsp; `%sql` &nbsp;&middot;&nbsp; `%md` &nbsp;&middot;&nbsp; `%python`
+
+*Operators (SYM bottom row, NUM)*
+
+`->` &nbsp;&middot;&nbsp; `!=` &nbsp;&middot;&nbsp; `==` &nbsp;&middot;&nbsp; `:=` &nbsp;&middot;&nbsp; `<=` &nbsp;&middot;&nbsp; `>=` &nbsp;&middot;&nbsp; `<>` &nbsp;&middot;&nbsp; `::` &nbsp;&middot;&nbsp; `__` &nbsp;&middot;&nbsp; `**` &nbsp;&middot;&nbsp; `||` &nbsp;&middot;&nbsp; `0x`
 
 *Comments and wrappers*
 
@@ -320,6 +441,19 @@ Profiles are assigned consistently:
 3. Profile 2: Linux
 4. Profiles 3-4: spare
 
+**Linux runs on the `WIN` base.** Press `SYS` + `W` after selecting profile 2.
+Linux and Windows both use `Ctrl` where macOS uses `Cmd`, so `WIN` is really
+"the Ctrl base" and `NAV_WIN` is the Ctrl-flavoured editing layer for both. The
+bindings that differ between the two — redo, and the editor cluster — are set
+to the Linux-correct form, which is also what VS Code accepts on Windows.
+
+Four `SYS` keys are Linux-only: calculator, files, search and lock are HID
+consumer usages that GNOME and KDE honour and macOS ignores entirely. `PrtSc`
+and `Menu` are the same. All of them are reachable host-neutrally through
+`GLOBAL`'s app bank instead, which is the layer built for it. `Globe` is
+macOS-only and worth verifying on your machine — macOS often will not accept it
+from a third-party keyboard.
+
 `SYS` exposes explicit USB, BLE and output-toggle keys. Destructive actions are
 combos, and only on `SYS`:
 
@@ -335,8 +469,47 @@ Bluetooth profile keys: chording two adjacent profile selectors is exactly what
 you do when switching hosts, and that must never be able to wipe your bonds.
 `make validate` rejects any destructive combo placed on a single hand.
 
+Five profiles plus the split link to the right half means the central needs six
+BLE connections, so `CONFIG_BT_MAX_CONN` and `CONFIG_BT_MAX_PAIRED` are both
+set to 6 in `adv360_left_defconfig`. ZMK defaults both to 5, which starves the
+last profile. Per ZMK's split guidance they are set on the central only.
+
 Use the physical reset button for the right half when necessary. Runtime ZMK
 Studio/Clique keymap editing is disabled; git is the source of truth.
+
+### HID descriptor changes
+
+`adv360.conf` selects the extended NKRO keyboard report (needed for F13-F24)
+and the full consumer usage range (needed for the `SYS` calculator, files,
+search and lock keys, which live above `0x0FF`). Both alter the HID report
+descriptor. Hosts cache that descriptor per bond, so after changing either
+setting you must remove the keyboard on each host and re-pair, or the host
+keeps using the old descriptor and the new keys appear dead.
+
+The extended keyboard report is known to break Android hosts. No profile here
+is an Android device; if one becomes one, that profile loses F13-F24.
+
+`make validate` fails if the keymap binds a consumer key that the configured
+usage range cannot send.
+
+## Power
+
+The board is wireless, so idle behaviour matters more than it would on a
+tethered keyboard.
+
+| Setting | Value | Why |
+|---|---|---|
+| `CONFIG_ZMK_SLEEP` | `y` | ZMK ships deep sleep **off**. This is the single largest idle drain. |
+| `CONFIG_ZMK_IDLE_TIMEOUT` | 30 s | Lighting and scanning wind down. |
+| `CONFIG_ZMK_IDLE_SLEEP_TIMEOUT` | 15 min | Radio and peripherals off; the first keypress wakes and reconnects. |
+| `CONFIG_ZMK_RGB_UNDERGLOW_ON_START` | `n` | The underglow strip is the largest continuous draw and nothing here binds it to layer state. Available from `SYS` on demand. |
+| `CONFIG_ZMK_BACKLIGHT_ON_START` | `n` | Same reasoning, smaller effect. |
+
+Battery level is reported to the host for both halves: the central owns the
+battery service, and `CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING` plus
+`..._PROXY` pull the right half's level across the split link and republish it.
+Windows needs `CONFIG_BT_GATT_ENFORCE_SUBSCRIPTION=n` to deliver those
+notifications; it is harmless on macOS and Linux.
 
 The base layer is **not** persisted across power cycles — the keyboard always
 boots into `MAC`. If keys behave as though the wrong host is selected, press
@@ -399,7 +572,27 @@ are running: <https://github.com/KinesisCorporation/Adv360-Pro-ZMK#flashing-firm
 - `SYS` + `W` makes Windows shortcuts land correctly, and `NAV` word motion
   changes with it; `SYS` + `A` restores macOS behaviour.
 - All `GLOBAL` signals work in AeroSpace, Hyprland and komorebi.
+- Focus-monitor and move-window-to-monitor sit next to each other; throwing a
+  window to the other display and following it is two adjacent keys.
+- `Ctrl+Shift+F17`/`F18` moves the *window* to the adjacent workspace on all
+  three hosts — macOS used to move the whole workspace to another display.
+- `Alt+Shift+F17` opens Neovim.
 - Caps Word and repeat work; editors handle automatic bracket pairs.
-- Layer indicators are dim, the white backlight starts off, and LEDs stop while
-  idle.
-- USB/BLE output and profiles 0-2 work after the clean reset.
+- Every host is on a US keyboard layout; `SYM` and the macros print the
+  characters they name.
+- Tapping an outer `Shift` capitalises the next character; holding it still
+  Shift+clicks and still extends a selection with the arrows.
+- On Linux, `SYS` + `W` is set, `NUM`'s digits type digits with NumLock **off**,
+  and redo is `Ctrl+Shift+Z`.
+- `MACRO`'s longest sequences complete without dropped characters over BLE on
+  every profile.
+- `NAV` + the arrow cluster toggles a comment, moves a line up and down, and
+  deletes a line, on both bases.
+- `SYS` media keys work, **and** so do calculator, files, search and lock —
+  those four need the full consumer usage range and a re-pair after the HID
+  descriptor change.
+- Both underglow and backlight start off and are reachable from `SYS`.
+- The host shows a battery level for both halves, Windows included.
+- The keyboard wakes from deep sleep on the first keypress and reconnects to
+  the selected profile.
+- USB/BLE output and profiles 0-4 work after the clean reset.

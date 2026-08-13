@@ -114,6 +114,31 @@
             quick-tap-ms = <175>;
             bindings = <&mo>, <&kp>;
         };
+
+        /*
+         * Smart shift, on the two outer Shift keys.
+         *
+         *   hold -> real Shift    tap -> sticky Shift for the next key
+         *
+         * This exists because require-prior-idle-ms on the home-row mods
+         * abandons a hold that starts within 150 ms of the previous keypress,
+         * which makes a mid-word capital impossible from the home row. That
+         * costs nothing in snake_case Python but shows up constantly in
+         * PascalCase and after a hyphen. Tap this once and the next character
+         * is capitalised, with no timing window to hit.
+         *
+         * flavor = "hold-preferred": any other key pressed during the term
+         *   resolves the hold, so Shift+arrow selection and Shift+click keep
+         *   working exactly as before. Only a tap with nothing else pressed
+         *   produces the sticky.
+         */
+        sms: smart_shift {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "hold-preferred";
+            tapping-term-ms = <200>;
+            bindings = <&kp>, <&sk>;
+        };
     };
 
     conditional_layers {
@@ -189,9 +214,9 @@
     &kp LCTRL &kp LGUI                                 &kp RGUI &kp RCTRL
     &kp RALT  &kp H       &hmr RSHFT J  &hmr RCTRL K   &hmr RALT L    &hmr RGUI SEMI  &kp SQT
 
-&kp LSHFT   &kp Z         &kp X         &kp C          &kp V          &kp B
+&sms LSHFT LSHFT &kp Z    &kp X         &kp C          &kp V          &kp B
     &mo NAV                                            &mo SYM
-    &kp N     &kp M       &kp COMMA     &kp DOT        &kp FSLH       &kp RSHFT
+    &kp N     &kp M       &kp COMMA     &kp DOT        &kp FSLH       &sms RSHFT RSHFT
 
 &kp GRAVE   &kp LBKT      &kp RBKT      &kp LPAR       &kp RPAR
     &kp BSPC  &tlt NAV DEL &mo NUM                     &mo GLOBAL  &tlt SYM ENTER &kp SPACE
@@ -243,7 +268,11 @@
          * Home row   = undo/cut/copy/paste/redo, then Vim-shaped arrows.
          * Lower row  = rename/definition/references/find-next/prev, then
          *              word delete, backspace, delete, insert.
-         * Bottom row = zoom out, history back/forward, zoom in, reopen tab.
+         * Bottom row = zoom out, history back/forward, zoom in, reopen tab,
+         *              then the editor cluster on the arrow keys: toggle
+         *              comment, move line down, move line up, delete line.
+         *              The physical down-arrow moves the line down, so the
+         *              cluster is mnemonic rather than memorised.
          */
         layer_nav {
             display-name = "NAV";
@@ -264,7 +293,7 @@
 
 &kp LG(MINUS) &kp LG(LBKT) &kp LG(RBKT) &kp LG(EQUAL)  &kp LG(LS(T))
     &trans    &trans      &trans                       &trans         &trans     &trans
-    &trans    &trans      &trans        &trans         &trans
+    &kp LG(FSLH) &kp LA(DOWN) &kp LA(UP) &kp LG(LS(K)) &trans
             >;
         };
 
@@ -275,8 +304,15 @@
          *     <  {  [  (  :   |   _  )  ]  }  >  =
          * Left index stretch is ':' and right index stretch is '_' - the two
          * highest-frequency punctuation marks in Python and SQL.
-         * Bottom row is the nine multi-character operators you reach for
-         * hourly; the rest of the bank lives on MACRO.
+         * Bottom row is the multi-character operators you reach for hourly;
+         * the rest of the bank lives on MACRO. `||` replaces the old `=>`,
+         * which nothing in Python, SQL or PowerShell uses; `||` is SQL string
+         * concatenation in Spark SQL, Postgres and Snowflake.
+         *
+         * This layer is also what makes PowerShell macro-free: `$` `_` `@`
+         * `{}` `()` `|` `~` are all here, so `$_`, `$()`, `@()` and `@{}` are
+         * a single SYM hold, and `-` is unshifted on the base number row so
+         * `-match`, `-replace`, `-split` and `-join` need no layer at all.
          */
         layer_sym {
             display-name = "SYM";
@@ -295,7 +331,7 @@
     &trans                                             &trans
     &kp AMPS  &kp PIPE    &m_pow        &m_walrus      &kp EXCL       &trans
 
-&m_sqlne    &m_arrow      &m_fatarrow   &m_ne          &m_eq
+&m_sqlne    &m_arrow      &m_concat     &m_ne          &m_eq
     &trans    &trans      &trans                       &trans         &trans     &trans
     &m_le     &m_ge       &m_scope      &m_dunder      &trans
             >;
@@ -306,8 +342,15 @@
          * Left hand is F1-F12 in two aligned rows, then the hex digits A-F in
          * reading order with an "0x" macro under X, comparison operators, and
          * a grouping cluster on the bottom row.
-         * Right hand is a real numpad; the number row falls through so 6-0
-         * stay available while entering data.
+         * Right hand is a numpad in numpad shape; the number row falls through
+         * so 6-0 stay available while entering data.
+         *
+         * These are plain digit usages (N1-N0), not keypad usages (KP_N1-...).
+         * Under X11 and Wayland a keypad usage with NumLock off sends the
+         * navigation function instead of the digit - KP_N1 arrives as End -
+         * so a KP-based numpad is dead on Linux until NumLock is found. Plain
+         * digits work on every host in every state, and nothing in Python or
+         * SQL needs true keypad usages.
          */
         layer_num {
             display-name = "NUM";
@@ -316,19 +359,19 @@
     &trans  &trans        &trans        &trans         &trans         &trans     &trans
 
 &kp F7      &kp F8        &kp F9        &kp F10        &kp F11        &kp F12    &trans
-    &trans  &kp KP_N7     &kp KP_N8     &kp KP_N9      &kp KP_DIVIDE  &kp KP_MULTIPLY &kp BSPC
+    &trans  &kp N7        &kp N8        &kp N9         &kp FSLH       &kp ASTRK  &kp BSPC
 
 &trans      &kp A         &kp B         &kp C          &kp D          &kp E      &trans
     &trans    &trans                                   &trans   &trans
-    &trans    &kp KP_N4   &kp KP_N5     &kp KP_N6      &kp KP_MINUS   &kp KP_PLUS &kp KP_ENTER
+    &trans    &kp N4      &kp N5        &kp N6         &kp MINUS      &kp PLUS   &kp ENTER
 
 &trans      &kp F         &m_hex        &kp EQUAL      &kp LT         &kp GT
     &trans                                             &trans
-    &kp KP_N1 &kp KP_N2   &kp KP_N3     &kp KP_DOT     &kp COMMA      &trans
+    &kp N1    &kp N2      &kp N3        &kp DOT        &kp COMMA      &trans
 
 &kp PRCNT   &kp CARET     &kp ASTRK     &kp LPAR       &kp RPAR
     &trans    &trans      &trans                       &trans         &trans     &trans
-    &kp KP_N0 &kp KP_DOT  &kp KP_EQUAL  &kp KP_ENTER   &trans
+    &kp N0    &kp DOT     &kp EQUAL     &kp ENTER      &trans
             >;
         };
 
@@ -350,29 +393,46 @@
          *         Ctrl+Alt+F20          pin (sticky) window
          * Bank 3  Alt+Shift+F13..F16    screenshot region, screenshot window,
          *                               clipboard history, colour picker
+         *         Alt+Shift+F17         Neovim in a terminal
          * Apps    Alt+F13..F20          terminal, browser, code, files,
          *                               launcher, chat, notes, git
          *
-         * Arrow cluster mirrors HJKL focus so the layer is usable one-handed.
+         * Display movement is one cluster on the right hand. The home row is
+         * focus and the row above it is move-window, so the same finger does
+         * both and the row chooses whether the window comes with you:
+         *
+         *     upper row   move win L  D  U  R  | move win to prev/next monitor
+         *     home row    focus     L  D  U  R | focus     prev/next monitor
+         *
+         * Monitor keys sit immediately right of the HJKL cluster, so "throw
+         * this window to the other screen and follow it" is two adjacent keys
+         * on one hand rather than two corners of the board.
+         *
+         * The number row is workspaces end to end: 1-8, then prev and next.
+         * Neovim sits next to the terminal launcher, because that is what it
+         * opens in.
+         *
+         * Bottom row mirrors focus and monitors onto the left hand so the
+         * layer stays usable one-handed.
          */
         layer_global {
             display-name = "GLOBAL";
             bindings = <
 &kp LC(LS(F17)) &kp F13   &kp F14       &kp F15        &kp F16        &kp F17    &trans
-    &trans  &kp F18       &kp F19       &kp F20        &kp LC(LA(LS(F17))) &kp LC(LA(LS(F18))) &kp LC(LS(F18))
+    &trans  &kp F18       &kp F19       &kp F20        &kp LC(F17)    &kp LC(F18) &kp LC(LS(F18))
 
-&kp LA(LS(F13)) &kp LC(LS(F19)) &kp LC(F20) &kp LA(F16) &kp LC(LA(F19)) &kp LA(F13) &trans
-    &trans  &kp LC(LS(F13)) &kp LC(LS(F14)) &kp LC(LS(F15)) &kp LC(LS(F16)) &kp LC(LS(F20)) &kp LC(LA(F20))
+&kp LA(LS(F13)) &kp LC(LS(F19)) &kp LC(F20) &kp LA(F16) &kp LC(LA(F19)) &kp LA(F13) &kp LA(LS(F17))
+    &trans  &kp LC(LS(F13)) &kp LC(LS(F14)) &kp LC(LS(F15)) &kp LC(LS(F16)) &kp LC(LA(LS(F17))) &kp LC(LA(LS(F18)))
 
 &trans      &kp LA(F17)   &kp LA(F18)   &kp LA(F19)    &kp LC(F19)    &kp LA(F20) &trans
     &trans    &trans                                   &trans   &trans
-    &trans    &kp LC(F13) &kp LC(F14)   &kp LC(F15)    &kp LC(F16)    &kp LC(F17) &kp LC(F18)
+    &trans    &kp LC(F13) &kp LC(F14)   &kp LC(F15)    &kp LC(F16)    &kp LC(LA(F17)) &kp LC(LA(F18))
 
 &trans      &kp LA(LS(F14)) &kp LA(LS(F15)) &kp LA(F15) &kp LA(LS(F16)) &kp LA(F14)
     &trans                                             &trans
-    &kp LC(LA(F13)) &kp LC(LA(F14)) &kp LC(LA(F15)) &kp LC(LA(F16)) &kp LC(LS(F19)) &trans
+    &kp LC(LA(F13)) &kp LC(LA(F14)) &kp LC(LA(F15)) &kp LC(LA(F16)) &kp LC(LA(F20)) &trans
 
-&kp LC(F19) &kp LC(F17)   &kp LC(F18)   &kp LC(LA(F17)) &kp LC(LA(F18))
+&kp LC(LS(F20)) &kp LC(F17) &kp LC(F18)  &kp LC(LA(F17)) &kp LC(LA(F18))
     &trans    &trans      &trans                       &trans         &trans     &trans
     &kp LC(F13) &kp LC(F14) &kp LC(F15) &kp LC(F16)    &trans
             >;
@@ -391,8 +451,10 @@
          * Bottom row: stop, eject, calculator, files, search, mute, NumLock,
          *             keyboard-layout, lock screen.
          *
-         * Combos (SYS only): 1+2 clear BT bonds, 4+5 soft reset,
-         *                    inner-top pair enter bootloader.
+         * Combos (SYS only): = + - (outer ends of the number row) clear BT
+         *                    bonds, both outer Shift keys soft reset, the
+         *                    inner top pair enters the bootloader. None sit
+         *                    on the BT profile keys.
          */
         layer_sys {
             display-name = "SYS";
@@ -419,10 +481,24 @@
 
         /*
          * NAV_WIN - automatic when WIN base is active and NAV is held.
+         *
+         * This is the layer Linux runs on, not just Windows: Linux and Windows
+         * both use Ctrl where macOS uses Cmd, so "WIN" here means "the Ctrl
+         * base". Press SYS + W on a Linux host.
+         *
          * Rewrites only the macOS-specific bindings from NAV: Cmd becomes
          * Ctrl, Option word-motion becomes Ctrl word-motion, document
          * start/end become Ctrl+Home / Ctrl+End, and browser history moves to
          * Alt+Left / Alt+Right. Everything else falls through to NAV.
+         *
+         * Redo is Ctrl+Shift+Z, not Ctrl+Y. Ctrl+Y is redo only in
+         * Windows-native apps; on Linux (GTK, Qt, VS Code, JetBrains) redo is
+         * Ctrl+Shift+Z, and in Vim Ctrl+Y scrolls. Ctrl+Shift+Z is also bound
+         * in VS Code on Windows, so this is correct on every host that matters
+         * here and mirrors NAV's macOS Cmd+Shift+Z.
+         *
+         * Move-line up/down stay &trans: Alt+Up / Alt+Down are identical on
+         * macOS, Linux and Windows, so NAV's bindings are already right.
          */
         layer_nav_win {
             display-name = "NAVWIN";
@@ -433,7 +509,7 @@
 &trans      &kp LC(A)     &kp LC(S)     &kp LC(F)      &kp LC(LS(F))  &kp LC(P)  &trans
     &trans  &kp LC(LEFT)  &trans        &trans         &kp LC(RIGHT)  &kp LC(HOME) &kp LC(END)
 
-&trans      &kp LC(Z)     &kp LC(X)     &kp LC(C)      &kp LC(V)      &kp LC(Y)  &trans
+&trans      &kp LC(Z)     &kp LC(X)     &kp LC(C)      &kp LC(V)      &kp LC(LS(Z)) &trans
     &trans    &trans                                   &trans   &trans
     &trans    &trans      &trans        &trans         &trans         &trans     &trans
 
@@ -443,17 +519,25 @@
 
 &kp LC(MINUS) &kp LA(LEFT) &kp LA(RIGHT) &kp LC(EQUAL) &kp LC(LS(T))
     &trans    &trans      &trans                       &trans         &trans     &trans
-    &trans    &trans      &trans        &trans         &trans
+    &kp LC(FSLH) &trans   &trans        &kp LC(LS(K))  &trans
             >;
         };
 
         /*
          * MACRO - automatic while both middle thumbs are held (NAV + SYM).
          *
-         * Number row: SQL keywords.
-         * Upper row:  Python keywords and wrappers.
-         * Home row:   the multi-character operators.
-         * Lower row:  PowerShell and shell fragments.
+         * Aimed at Python and data engineering: SQL, PySpark, Databricks.
+         * There are no PowerShell macros - SYM and the base number row already
+         * make every PowerShell token fast (see the SYM comment).
+         *
+         * Number row: SQL core clauses, left to right in query order.
+         * Upper row:  SQL CTEs and CASE on the left, null handling, casting
+         *             and window functions on the right. 25-26-27 read
+         *             ROW_NUMBER() OVER (PARTITION BY in order.
+         * Home row:   the quoting patterns and Python/PySpark, on the
+         *             strongest fingers. The old operator block moved out -
+         *             it duplicated SYM's bottom row, which is one thumb away.
+         * Lower row:  joins, set operations and the MERGE vocabulary.
          * Bottom row: comment openers and comment tags.
          *
          * Every entry is a plain tap sequence defined in macros.dtsi.
@@ -464,16 +548,16 @@
 &m_select   &m_from       &m_where      &m_groupby     &m_orderby     &m_join    &trans
     &trans  &m_leftjoin   &m_on         &m_as          &m_isnull      &m_notnull &m_countall
 
-&m_def      &m_class      &m_import     &m_pyfrom      &m_return      &m_self    &trans
-    &trans  &m_print      &m_fstring    &m_lambda      &m_none        &m_true    &m_false
+&m_with     &m_case       &m_then       &m_else        &m_end         &m_distinct &trans
+    &trans  &m_coalesce   &m_cast       &m_datetrunc   &m_rownum      &m_over    &m_partition
 
-&trans      &m_arrow      &m_fatarrow   &m_ne          &m_eq          &m_walrus  &trans
+&trans      &m_self       &m_print      &m_fstring     &m_qarg        &m_qkey    &trans
     &trans    &trans                                   &trans   &trans
-    &trans    &m_le       &m_ge         &m_sqlne       &m_scope       &m_dunder  &m_pow
+    &trans    &m_fcol     &m_display    &m_dbutils     &m_sqlmagic    &m_mdmagic &m_pymagic
 
-&trans      &m_psvar      &m_subexp     &m_psarray     &m_pshash      &m_pipe
+&trans      &m_innerjoin  &m_unionall   &m_having      &m_qualify     &m_merge
     &trans                                             &trans
-    &m_eqop   &m_neop     &m_updir      &m_homedir     &m_redirect    &trans
+    &m_when   &m_using    &m_trycast    &m_nullif      &m_limit       &trans
 
 &m_hashcmt  &m_sqlcmt     &m_blockcmt   &m_docstr      &m_ellipsis
     &trans    &trans      &trans                       &trans         &trans     &trans

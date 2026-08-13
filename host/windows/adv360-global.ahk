@@ -29,6 +29,9 @@ APPS := Map(
     "F20", "lazygit"                                          ; git
 )
 
+; Neovim, launched by Alt+Shift+F17 inside the terminal above.
+NVIM := "wt.exe nvim"
+
 ; ---------------------------------------------------------------------------
 ; Helpers
 ; ---------------------------------------------------------------------------
@@ -167,6 +170,9 @@ F20:: Workspace(8)
 !+F14:: Send("!{PrintScreen}") ; active window to clipboard
 !+F15:: Send("#v")             ; clipboard history
 !+F16:: Run("ms-screenclip:")  ; nearest built-in colour/screen tool
+
+; Alt+Shift+F17 -> Neovim in a terminal
+!+F17:: Run(NVIM)
 
 ; Ctrl+F19 fullscreen, Ctrl+Shift+F19 close window
 ^F19:: Kmb("toggle-monocle")

@@ -37,7 +37,9 @@ CONFIG_ZMK_RGB_UNDERGLOW=y
 CONFIG_ZMK_RGB_UNDERGLOW_EXT_POWER=y
 CONFIG_ZMK_RGB_UNDERGLOW_ON_START=y
 CONFIG_ZMK_RGB_UNDERGLOW_EFF_START=4
-CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE=n  # right=peripheral, save battery (left=central keeps RGB on)
+# Idle auto-off is set to y for both halves in config/adv360.conf, which is
+# applied after this file. Nothing here needs to differ between the sides.
+CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE=y
 
 #Backlighting configuration
 CONFIG_PWM=y
@@ -55,7 +57,12 @@ CONFIG_ZMK_HID_REPORT_TYPE_NKRO=y
 CONFIG_ZMK_HID_CONSUMER_REPORT_USAGES_BASIC=y
 CONFIG_BUILD_OUTPUT_UF2=y
 
+# EXPERIMENTAL_FEATURES pulls in EXPERIMENTAL_SEC, which turns on passkey
+# entry. This half is the peripheral and never pairs with a host, so it is
+# inert here, but it is pinned off to match the left half rather than leaving
+# the two sides silently different.
 CONFIG_ZMK_BLE_EXPERIMENTAL_FEATURES=y
+CONFIG_ZMK_BLE_PASSKEY_ENTRY=n
 
 CONFIG_ZMK_BLE=y
 CONFIG_ZMK_USB=y

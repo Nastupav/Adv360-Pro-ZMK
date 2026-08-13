@@ -10,6 +10,10 @@ Checks that are cheap here and expensive on the keyboard:
   5. Combo key-positions are in range.
   6. Runtime keymap editing (studio_unlock) is not exposed.
   7. Braces and angle brackets balance.
+  8. Every text macro is defined and every defined macro is used.
+  9. No dead &none keys.
+ 10. Every consumer key the keymap binds is actually sendable under the
+     consumer usage range selected in adv360.conf.
 """
 
 from __future__ import annotations
@@ -200,8 +204,8 @@ if [name for name, _ in found] != [node for node, _, _ in EXPECTED_LAYERS]:
 ARITY = {
     "trans": 0, "none": 0, "caps_word": 0, "key_repeat": 0,
     "bootloader": 0, "sys_reset": 0,
-    "kp": 1, "mo": 1, "to": 1, "tog": 1, "sl": 1, "out": 1,
-    "hml": 2, "hmr": 2, "tlt": 2,
+    "kp": 1, "mo": 1, "to": 1, "tog": 1, "sl": 1, "sk": 1, "out": 1,
+    "hml": 2, "hmr": 2, "tlt": 2, "sms": 2,
 }
 
 # Text macros take no parameters. Collect their labels so a typo in a macro
@@ -250,6 +254,44 @@ for name, positions in dead.items():
         fail(
             f"layer {name} has {len(positions)} dead &none key(s) at "
             f"{positions}; bind them or use &trans"
+        )
+
+# --- 10. consumer usages are sendable --------------------------------------
+# ZMK's basic consumer report can only carry usages 0x00-0xFF. A key bound to
+# a higher usage under CONFIG_ZMK_HID_CONSUMER_REPORT_USAGES_BASIC does not
+# error anywhere - it just silently does nothing on the host, which is the one
+# failure mode this repo's validators exist to catch.
+#
+# Usages are from USB HID Usage Tables, Consumer Page (0x0C). Any C_* used in
+# the keymap must appear here; add the usage when you bind a new one.
+CONSUMER_USAGE = {
+    "C_BRI_UP": 0x06F, "C_BRI_DN": 0x070,
+    "C_NEXT": 0x0B5, "C_PREV": 0x0B6, "C_STOP": 0x0B7, "C_EJECT": 0x0B8,
+    "C_PP": 0x0CD, "C_MUTE": 0x0E2, "C_VOL_UP": 0x0E9, "C_VOL_DN": 0x0EA,
+    "C_AL_CALC": 0x192, "C_AL_FILES": 0x194, "C_AL_LOCK": 0x19E,
+    "C_AC_SEARCH": 0x221,
+}
+BASIC_MAX_USAGE = 0xFF
+
+conf = (ROOT / "config" / "adv360.conf")
+conf_text = conf.read_text() if conf.exists() else ""
+full_range = re.search(
+    r"^CONFIG_ZMK_HID_CONSUMER_REPORT_USAGES_FULL=y\s*$", conf_text, flags=re.M
+) is not None
+
+for name in sorted(set(re.findall(r"&kp\s+(C_\w+)", keymap))):
+    usage = CONSUMER_USAGE.get(name)
+    if usage is None:
+        fail(
+            f"&kp {name} has no usage recorded in validate_keymap.py; add it "
+            f"to CONSUMER_USAGE so the report-range check can cover it"
+        )
+    elif usage > BASIC_MAX_USAGE and not full_range:
+        fail(
+            f"&kp {name} is consumer usage 0x{usage:03X}, above the basic "
+            f"range limit of 0x{BASIC_MAX_USAGE:02X}; set "
+            f"CONFIG_ZMK_HID_CONSUMER_REPORT_USAGES_FULL=y in adv360.conf or "
+            f"the key will silently do nothing"
         )
 
 if errors:
