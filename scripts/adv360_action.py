@@ -57,8 +57,6 @@ def merged_config(host: str) -> dict[str, Any]:
 
 def resolve_action(action: str, host: str) -> Tuple[list[str], Optional[str]]:
     entry = merged_config(host).get(action)
-    if entry is None and action == "launcher" and host == "macos":
-        raise ActionError("launcher is owned by the Hammerspoon chooser on macOS")
     if not isinstance(entry, dict):
         raise ActionError(f"missing action configuration: {host}.{action}")
     command = entry.get("command")

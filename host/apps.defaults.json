@@ -1,8 +1,9 @@
 {
   "schema": 1,
   "macos": {
+    "launcher": { "command": ["/usr/bin/open", "-a", "Spotlight"] },
     "terminal": { "command": ["/usr/bin/open", "-a", "Ghostty"] },
-    "browser": { "command": ["/usr/bin/open", "-a", "Safari"] },
+    "browser": { "command": ["/usr/bin/open", "-a", "Google Chrome"] },
     "files": { "command": ["/usr/bin/open", "-a", "Finder"] },
     "editor": { "command": ["/usr/bin/open", "-a", "Visual Studio Code"] },
     "project": { "command": ["/Applications/Ghostty.app/Contents/MacOS/ghostty", "-e", "{repo}/scripts/project_picker.sh"] },

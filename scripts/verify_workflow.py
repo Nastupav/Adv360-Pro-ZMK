@@ -197,6 +197,63 @@ def active_lines(path: Path, marker: str) -> list[str]:
     return [line.split(marker, 1)[0].strip() for line in path.read_text().splitlines() if line.split(marker, 1)[0].strip()]
 
 
+def aerospace_bindings(text: str, label: str) -> dict[str, str]:
+    try:
+        section = text.split("[mode.main.binding]", 1)[1]
+    except IndexError as error:
+        raise AssertionError(f"{label}: missing mode.main.binding") from error
+    section = section.split("\n[", 1)[0]
+    bindings: dict[str, str] = {}
+    for raw in section.splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if not line:
+            continue
+        match = re.fullmatch(r"([a-z0-9-]+)\s*=\s*(['\"])(.*?)\2", line)
+        require(match is not None, f"{label}: cannot parse binding line: {raw}")
+        assert match is not None
+        key, value = match.group(1), match.group(3)
+        require(key not in bindings, f"{label}: duplicate binding {key}")
+        bindings[key] = value
+    return bindings
+
+
+def check_aerospace(path: Path, label: str) -> None:
+    text = path.read_text()
+    require("F13-F24" not in text and not re.search(r"\bF2[1-4]\b", text, re.I), f"{label}: retired F21-F24 carrier remains")
+    for token in (
+        "start-at-login = true",
+        "auto-reload-config = true",
+        "automatically-unhide-macos-hidden-apps = true",
+        "[workspace-to-monitor-force-assignment]",
+        "PG32UCDM",
+        "P34WD-40",
+    ):
+        require(token in text, f"{label}: missing {token}")
+
+    bindings = aerospace_bindings(text, label)
+
+    expected: dict[str, str] = {}
+    for slot in range(1, 9):
+        key = 12 + slot
+        expected[f"f{key}"] = f"workspace {slot}"
+        expected[f"shift-f{key}"] = f"move-node-to-workspace --focus-follows-window {slot}"
+    for slot, direction in enumerate(("left", "down", "up", "right"), start=13):
+        expected[f"ctrl-f{slot}"] = f"focus {direction}"
+        expected[f"ctrl-shift-f{slot}"] = f"move {direction}"
+    expected.update({
+        "ctrl-f17": "workspace --wrap-around prev",
+        "ctrl-f18": "workspace --wrap-around next",
+        "ctrl-f19": "fullscreen",
+        "ctrl-f20": "layout floating tiling",
+        "ctrl-shift-f19": "close",
+        "ctrl-shift-f20": "layout h_tiles v_tiles",
+    })
+    action_path = "__ADV360_ACTION__" if "__ADV360_ACTION__" in text else str(Path.home() / ".local/bin/adv360-action")
+    for slot, action in enumerate(ACTIONS, start=13):
+        expected[f"alt-f{slot}"] = f"exec-and-forget {action_path} {action}"
+    require(bindings == expected, f"{label}: binding contract mismatch")
+
+
 def check_hyprland() -> None:
     lua = (ROOT / "host/hyprland-adv360.lua").read_text()
     required_lua = [
@@ -246,52 +303,13 @@ def check_nvim(path: Path, label: str) -> None:
     require(not any("C-S-" in lhs for _, lhs in mappings), f"{label}: unreliable Ctrl+Shift letter mapping remains")
 
 
-def karabiner_rule(data: dict[str, Any]) -> dict[str, Any]:
-    rules = data.get("rules")
-    if not isinstance(rules, list):
-        profiles = data.get("profiles")
-        require(isinstance(profiles, list), "Karabiner data has no rules or profiles")
-        rules = []
-        for profile in profiles:
-            rules.extend(profile.get("complex_modifications", {}).get("rules", []))
-    matches = [rule for rule in rules if rule.get("description") == "ADV360 normalize F14/F15 for Hammerspoon"]
-    require(len(matches) == 1, "expected one active ADV360 F14/F15 normalization rule")
-    return matches[0]
-
-
-def check_karabiner(data: dict[str, Any], label: str) -> None:
-    rule = karabiner_rule(data)
-    manipulators = rule.get("manipulators")
-    require(isinstance(manipulators, list) and len(manipulators) == 10, f"{label}: expected ten exact F14/F15 variants")
-    sources = Counter(item.get("from", {}).get("key_code") for item in manipulators)
-    require(sources == {"f14": 5, "f15": 5}, f"{label}: source variants mismatch")
-    for item in manipulators:
-        identifiers = item.get("conditions", [{}])[0].get("identifiers", [{}])[0]
-        require(identifiers.get("vendor_id") == 7504 and identifiers.get("product_id") == 24926, f"{label}: rule is not device scoped")
-        output = item.get("to", [{}])[0]
-        require(output.get("key_code") == item.get("from", {}).get("key_code"), f"{label}: carrier key changed")
-        require("left_command" in output.get("modifiers", []), f"{label}: normalization tag missing")
-
-
-def check_hammerspoon(path: Path) -> None:
-    text = path.read_text()
-    for token in (
-        "local function bindCarrier", "duplicate Advantage360 hotkey", "hs.spaces.moveWindowToSpace",
-        "create 8 user Spaces", 'local actions = { "launcher", "terminal", "browser", "files", "editor", "project", "git", "ai" }',
-        '_G.ADV360_STATUS = { ready = true, bindings = 38, protocol = "F13-F20/v1" }',
-    ):
-        require(token in text, f"Hammerspoon adapter missing: {token}")
-    require(not re.search(r"\bf2[1-4]\b", text, re.I), "Hammerspoon adapter must not use F21-F24")
-
-
 def check_apps() -> None:
     defaults = read_json(ROOT / "host/apps.defaults.json")
     require(defaults.get("schema") == 1, "app defaults schema must be 1")
     for host in ("macos", "linux"):
         entries = defaults.get(host)
         require(isinstance(entries, dict), f"missing {host} app defaults")
-        required = ACTIONS if host == "linux" else ACTIONS[1:]
-        for action in required:
+        for action in ACTIONS:
             command = entries.get(action, {}).get("command")
             require(isinstance(command, list) and command and all(isinstance(arg, str) for arg in command), f"{host}.{action} command invalid")
 
@@ -299,7 +317,7 @@ def check_apps() -> None:
 def check_lua_syntax() -> None:
     nvim = shutil.which("nvim")
     luac = shutil.which("luac5.4") or shutil.which("luac")
-    paths = (ROOT / "host/hammerspoon-adv360.lua", ROOT / "host/hyprland-adv360.lua", ROOT / "host/nvim-adv360.lua")
+    paths = (ROOT / "host/hyprland-adv360.lua", ROOT / "host/nvim-adv360.lua")
     if nvim:
         for path in paths:
             expression = f"assert(loadfile({json.dumps(str(path))}))"
@@ -343,8 +361,13 @@ def check_build_and_docs() -> None:
     protocol = (ROOT / "host/PROTOCOL.md").read_text()
     agent_contract = (ROOT / "AGENTS.md").read_text()
     optimization_log = (ROOT / "docs/optimization-log.md").read_text()
-    for token in ("Hammerspoon", "Alt+F13", "Alt+F20", "scroll", "Bluetooth", "seven"):
+    for token in ("AeroSpace", "Alt+F13", "Alt+F20", "scroll", "Bluetooth", "seven"):
         require(token.lower() in (readme + protocol).lower(), f"documentation missing {token}")
+    require("AeroSpace owns macOS" in readme and "AeroSpace owns macOS" in protocol,
+            "documentation does not declare AeroSpace as the macOS owner")
+    require((ROOT / "host/macos/aerospace.toml").exists(), "repository AeroSpace adapter missing")
+    require(not (ROOT / "host/hammerspoon-adv360.lua").exists() and not (ROOT / "host/karabiner-adv360.json").exists(),
+            "retired macOS protocol adapters remain in the supported host tree")
     for token in ("ASDF", "JKL;", "G", "H", "hold-preferred", "170 ms", "20/20 ms", "make verify", "make"):
         require(token in agent_contract, f"agent contract missing {token}")
     for token in ("speed-profile candidate", "independent spec re-review passed", "macro output errors", "accept / revert / iterate"):
@@ -361,32 +384,90 @@ def check_repository() -> None:
     require(sys.version_info >= (3, 9), "Python 3.9 or newer is required")
     check_protocol()
     check_keymap()
-    check_hammerspoon(ROOT / "host/hammerspoon-adv360.lua")
+    check_aerospace(ROOT / "host/macos/aerospace.toml", "repository AeroSpace")
     check_hyprland()
     check_nvim(ROOT / "host/nvim-adv360.lua", "repository Neovim")
-    check_karabiner(read_json(ROOT / "host/karabiner-adv360.json"), "repository Karabiner")
     check_apps()
     check_lua_syntax()
     check_build_and_docs()
-    print("PASS protocol, Hammerspoon, Hyprland, Neovim, Karabiner, apps, build, and docs")
+    print("PASS protocol, AeroSpace, Hyprland, Neovim, apps, build, and docs")
 
 
 def check_active_macos() -> None:
-    hammerspoon = Path.home() / ".hammerspoon/init.lua"
-    nvim = Path.home() / ".config/nvim/init.lua"
-    karabiner = Path.home() / ".config/karabiner/karabiner.json"
-    require(hammerspoon.exists() and "hammerspoon-adv360.lua" in hammerspoon.read_text(), "active Hammerspoon does not load the Advantage360 adapter")
-    require(nvim.exists() and "nvim-adv360.lua" in nvim.read_text(), "active Neovim does not load the Advantage360 module")
-    require(karabiner.exists(), "active Karabiner configuration missing")
-    check_karabiner(read_json(karabiner), "active Karabiner")
+    home = Path.home()
+    aerospace_config = home / ".config/aerospace/aerospace.toml"
+    nvim = home / ".config/nvim/init.lua"
+    hammerspoon = home / ".hammerspoon/init.lua"
+    karabiner = home / ".config/karabiner/karabiner.json"
+    action_link = home / ".local/bin/adv360-action"
 
-    hs = shutil.which("hs")
-    require(hs is not None, "Hammerspoon CLI 'hs' is unavailable")
-    status = subprocess.run([hs, "-c", "return ADV360_STATUS and ADV360_STATUS.ready and ADV360_STATUS.protocol or 'missing'"], capture_output=True, text=True)
-    require(status.returncode == 0 and "F13-F20/v1" in status.stdout, f"Hammerspoon runtime adapter inactive: {status.stderr or status.stdout}")
-    aerospace = subprocess.run([hs, "-c", "return hs.application.get('AeroSpace') == nil"], capture_output=True, text=True)
-    require(aerospace.returncode == 0 and "true" in aerospace.stdout.lower(), "AeroSpace is running alongside Hammerspoon")
-    print("PASS active Hammerspoon, Karabiner, Neovim, and exclusive window-manager ownership")
+    require(not (home / ".aerospace.toml").exists(), "legacy ~/.aerospace.toml would create config ambiguity")
+    require(aerospace_config.exists(), "active AeroSpace configuration missing")
+    expected = (ROOT / "host/macos/aerospace.toml").read_text().replace("__ADV360_ACTION__", str(action_link))
+    require(aerospace_config.read_text() == expected, "active AeroSpace config differs from repository source")
+    check_aerospace(aerospace_config, "active AeroSpace")
+    require(action_link.is_symlink() and action_link.resolve() == (ROOT / "scripts/adv360_action.py").resolve(), "active adv360-action link is missing or stale")
+    require(nvim.exists() and "nvim-adv360.lua" in nvim.read_text(), "active Neovim does not load the Advantage360 module")
+
+    if hammerspoon.exists():
+        hammer_text = hammerspoon.read_text()
+        require("ADV360 HOST ADAPTER" not in hammer_text and "hammerspoon-adv360.lua" not in hammer_text,
+                "Hammerspoon still loads the retired Advantage360 adapter")
+    if karabiner.exists():
+        raw = karabiner.read_text()
+        require("ADV360 normalize F14/F15 for Hammerspoon" not in raw and "ADV360 WM F21-F24" not in raw,
+                "Karabiner still contains a retired Advantage360 protocol rule")
+
+    hammerspoon_process = subprocess.run(["/usr/bin/pgrep", "-x", "Hammerspoon"], capture_output=True, text=True)
+    if hammerspoon_process.returncode == 0:
+        hs = shutil.which("hs")
+        require(hs is not None, "Hammerspoon is running but its CLI is unavailable for ownership verification")
+        assert hs is not None
+        try:
+            status = subprocess.run([hs, "-c", "return ADV360_STATUS == nil"], capture_output=True, text=True, timeout=5)
+        except subprocess.TimeoutExpired as error:
+            raise AssertionError("Hammerspoon runtime ownership check timed out") from error
+        require(status.returncode == 0 and "true" in status.stdout.lower(),
+                "running Hammerspoon still owns the Advantage360 protocol; reload Hammerspoon")
+
+    aerospace = shutil.which("aerospace")
+    require(aerospace is not None, "AeroSpace CLI is unavailable")
+    assert aerospace is not None
+
+    def run_aerospace(*arguments: str) -> str:
+        result = subprocess.run([aerospace, *arguments], capture_output=True, text=True)
+        require(result.returncode == 0, f"AeroSpace runtime check failed ({' '.join(arguments)}): {result.stderr or result.stdout}")
+        return result.stdout
+
+    loaded_config_path = Path(run_aerospace("config", "--config-path").strip()).resolve(strict=False)
+    require(loaded_config_path == aerospace_config.resolve(strict=False),
+            f"AeroSpace server loaded unexpected config path: {loaded_config_path}")
+    run_aerospace("reload-config", "--dry-run")
+    run_aerospace("reload-config")
+    loaded_bindings = json.loads(run_aerospace("config", "--get", "mode.main.binding", "--json"))
+    require(isinstance(loaded_bindings, dict), "AeroSpace loaded binding table is not an object")
+    require(all(isinstance(key, str) and isinstance(value, str) for key, value in loaded_bindings.items()),
+            "AeroSpace loaded binding table contains non-string entries")
+    expected_bindings = aerospace_bindings(aerospace_config.read_text(), "active AeroSpace")
+    normalized_loaded = {key: " ".join(value.split()) for key, value in loaded_bindings.items()}
+    normalized_expected = {key: " ".join(value.split()) for key, value in expected_bindings.items()}
+    require(normalized_loaded == normalized_expected, "AeroSpace runtime bindings differ from the installed repository config")
+
+    workspaces = run_aerospace("list-workspaces", "--all").split()
+    require(workspaces == [str(number) for number in range(1, 11)], f"unexpected active workspaces: {workspaces}")
+
+    monitor_lines = run_aerospace("list-monitors").splitlines()
+    monitor_ids: dict[str, str] = {}
+    for line in monitor_lines:
+        parts = [part.strip() for part in line.split("|", 1)]
+        if len(parts) == 2:
+            monitor_ids[parts[1]] = parts[0]
+    require("PG32UCDM" in monitor_ids and "P34WD-40" in monitor_ids, f"expected monitors not active: {monitor_lines}")
+    primary = run_aerospace("list-workspaces", "--monitor", monitor_ids["PG32UCDM"]).split()
+    secondary = run_aerospace("list-workspaces", "--monitor", monitor_ids["P34WD-40"]).split()
+    require(primary == ["1", "2", "3", "4", "5"], f"PG32UCDM workspace assignment mismatch: {primary}")
+    require(secondary == ["6", "7", "8", "9", "10"], f"P34WD-40 workspace assignment mismatch: {secondary}")
+    print("PASS active AeroSpace reload/runtime bindings, repository parity, exclusive ownership, monitor assignment, and Neovim include")
 
 
 def check_active_linux() -> None:

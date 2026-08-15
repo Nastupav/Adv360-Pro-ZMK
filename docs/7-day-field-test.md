@@ -18,7 +18,7 @@ marked unmeasured, so they cannot satisfy the current strict gate.
 
 ## Daily workload
 
-1. macOS prose and browser editing; exercise Hammerspoon Spaces, sticky Command, NAV selection, scrolling, and all three clicks.
+1. macOS prose and browser editing; exercise AeroSpace workspaces, window movement/state, all eight developer actions, sticky Command, NAV selection, scrolling, and all three clicks.
 2. Neovim coding; test hold-preferred thumb rolls, pane focus, leader-based pane movement, and symbols.
 3. Linux terminal and Neovim; test Ctrl composition, Hyprland workspaces, and all eight developer actions.
 4. Python/PySpark: decorators, type hints, comparisons, `:=`, `**`, `//`, method chains, containers, and f-strings.

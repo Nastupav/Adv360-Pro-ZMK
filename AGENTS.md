@@ -20,6 +20,7 @@ This repository is an evidence-driven, speed-focused Kinesis Advantage360 Pro co
 - Four thumb-only hold-taps use `hold-preferred` at 170 ms.
 - SYM contains 21 literal language macros at 20/20 ms for Python, PowerShell, SQL, shell, and PySpark.
 - F13-F20 plus modifiers form the host protocol. Do not change firmware carriers without updating and testing every host adapter.
+- AeroSpace owns macOS. Keep `host/macos/aerospace.toml`, the installer, active verifier, and protocol docs synchronized; Hammerspoon and Karabiner must not translate or bind these carriers.
 
 The exact macro sequences and positions are enforced by `tests/test_workflow.py` and `scripts/verify_workflow.py`. Update code, tests, README, and this contract together when intentionally changing the design.
 

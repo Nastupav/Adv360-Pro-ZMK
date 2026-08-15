@@ -1,7 +1,7 @@
 # Advantage360 modified F13-F20 protocol
 
-Firmware emits one versioned, host-neutral protocol. Hammerspoon owns macOS;
-Hyprland owns Linux. `protocol.json` is the machine-readable contract.
+Firmware emits one versioned, host-neutral protocol. AeroSpace owns macOS;
+Hyprland owns Linux. `protocol.json` is the machine-readable signal contract.
 
 ## Window namespaces
 
@@ -10,14 +10,14 @@ Hyprland owns Linux. `protocol.json` is the machine-readable contract.
 | F13-F20 | GLOBAL + 1-8 | Workspace 1-8 |
 | Shift+F13-F20 | Shift + GLOBAL + 1-8 | Move to workspace 1-8 and follow |
 | Ctrl+F13-F16 | GLOBAL + J/K/L/; | Focus left/down/up/right |
-| Ctrl+Shift+F13-F16 | Shift + GLOBAL + J/K/L/; | Move/place left/down/up/right |
-| Ctrl+F17/F18 | GLOBAL + [/ ] | Previous/next workspace |
-| Ctrl+F19/F20 | GLOBAL + F/D | Fullscreen-or-maximize / floating-or-restored |
-| Ctrl+Shift+F19/F20 | GLOBAL + A/S | Close / toggle split |
+| Ctrl+Shift+F13-F16 | Shift + GLOBAL + J/K/L/; | Move left/down/up/right |
+| Ctrl+F17/F18 | GLOBAL + [/ ] | Previous/next workspace, wrapping at boundaries |
+| Ctrl+F19/F20 | GLOBAL + F/D | Fullscreen / floating-or-tiling |
+| Ctrl+Shift+F19/F20 | GLOBAL + A/S | Close / toggle split orientation |
 
-Hammerspoon maps directional movement to screen halves, maximize to a saved
-frame toggle, floating to centered 80% with restore, and split to horizontal or
-vertical placement. Hyprland uses its native tiling dispatchers.
+AeroSpace uses native tiling commands. Hyprland uses its native dispatchers; any
+host-specific boundary or layout difference must be documented and tested rather
+than hidden behind a shared action name.
 
 ## Developer namespace
 
@@ -32,20 +32,20 @@ vertical placement. Hyprland uses its native tiling dispatchers.
 | Alt+F19 | GLOBAL+U | Git UI |
 | Alt+F20 | GLOBAL+I | AI chat |
 
-macOS Karabiner tags F14 and F15 with Command, for every protocol modifier
-variant, before Hammerspoon consumes them. All other carriers remain direct.
-The rule is restricted to vendor `7504`, product `24926`.
+All hosts dispatch these names through `scripts/adv360_action.py`. Defaults live
+in `host/apps.defaults.json`; optional overrides live in
+`~/.config/adv360/apps.json`. Commands are argv arrays and never shell strings.
 
 ## Integration
 
-- macOS: load `host/hammerspoon-adv360.lua` and install the device-scoped
-  Karabiner rule from `host/karabiner-adv360.json`.
+- macOS: install `host/macos/aerospace.toml` with
+  `python3 scripts/manage_host.py install`. No Karabiner translation is required.
+  Hammerspoon must not load an Advantage360 adapter.
 - Hyprland 0.55+: `dofile("/absolute/path/host/hyprland-adv360.lua")`.
 - Hyprland 0.54 and older: install `adv360-action`, then source
   `host/hyprland-adv360.conf`.
 - Neovim: `dofile("/absolute/path/host/nvim-adv360.lua")`.
-- Optional app overrides: `~/.config/adv360/apps.json`, using the same shape as
-  `host/apps.defaults.json`.
 
-F21-F24 are deliberately absent. Extended NKRO reports and pointing remain
+F21-F24 are deliberately absent from the firmware protocol because the selected
+AeroSpace binding path supports F1-F20. Extended NKRO reports and pointing remain
 enabled in `config/adv360.conf`.

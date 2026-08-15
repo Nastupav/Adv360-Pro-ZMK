@@ -11,6 +11,7 @@ import platform
 import re
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -31,23 +32,30 @@ class InstallError(ValueError):
 
 
 def upsert_block(text: str, start: str, end: str, body: str) -> str:
+    starts = text.count(start)
+    ends = text.count(end)
+    if starts != ends or starts > 1:
+        raise InstallError(f"unbalanced or duplicate managed block: {start}")
     block = f"{start}\n{body.rstrip()}\n{end}"
     pattern = re.compile(rf"{re.escape(start)}.*?{re.escape(end)}", re.S)
-    if pattern.search(text):
+    if starts == 1:
         return pattern.sub(block, text, count=1)
     suffix = "" if text.endswith("\n") else "\n"
     return text + suffix + "\n" + block + "\n"
 
 
-def hammerspoon_block() -> str:
-    adapter = json.dumps(str(ROOT / "host/hammerspoon-adv360.lua"))
-    return "\n".join([
-        'require("hs.ipc")',
-        f"local adv360Adapter = dofile({adapter})",
-        "local adv360Options = {}",
-        "if chooser then adv360Options.chooser = function() chooser:show() end end",
-        "adv360Adapter.setup(adv360Options)",
-    ])
+def remove_block(text: str, start: str, end: str) -> str:
+    starts = text.count(start)
+    ends = text.count(end)
+    if starts == 0 and ends == 0:
+        return text
+    if starts != 1 or ends != 1:
+        raise InstallError(f"unbalanced or duplicate managed block: {start}")
+    pattern = re.compile(rf"(?m)^\s*{re.escape(start)}.*?^\s*{re.escape(end)}\s*\n?", re.S)
+    result, count = pattern.subn("", text, count=1)
+    if count != 1:
+        raise InstallError(f"cannot remove managed block: {start}")
+    return result
 
 
 def nvim_block() -> str:
@@ -58,36 +66,50 @@ def hypr_block() -> str:
     return f"dofile({json.dumps(str(ROOT / 'host/hyprland-adv360.lua'))})"
 
 
-def merged_karabiner(data: dict[str, Any]) -> dict[str, Any]:
+def rendered_aerospace() -> str:
+    source = (ROOT / "host/macos/aerospace.toml").read_text()
+    token = "__ADV360_ACTION__"
+    if source.count(token) != 8:
+        raise InstallError("AeroSpace source must contain eight action-link placeholders")
+    return source.replace(token, str(ACTION_LINK))
+
+
+def cleaned_karabiner(data: dict[str, Any]) -> dict[str, Any]:
     profiles = data.get("profiles")
     if not isinstance(profiles, list) or not profiles:
         raise InstallError("Karabiner configuration has no profile")
-    selected = next((profile for profile in profiles if profile.get("selected")), profiles[0])
-    modifications = selected.setdefault("complex_modifications", {})
-    rules = modifications.setdefault("rules", [])
-    if not isinstance(rules, list):
-        raise InstallError("Karabiner complex_modifications.rules is not an array")
-    asset = json.loads((ROOT / "host/karabiner-adv360.json").read_text())
-    replacement = asset["rules"][0]
-    obsolete = ("ADV360 WM F21-F24", replacement["description"])
-    modifications["rules"] = [replacement] + [
-        rule for rule in rules
-        if not any(rule.get("description", "").startswith(prefix) for prefix in obsolete)
-    ]
+    obsolete = ("ADV360 WM F21-F24", "ADV360 normalize F14/F15 for Hammerspoon")
+    for profile in profiles:
+        modifications = profile.setdefault("complex_modifications", {})
+        rules = modifications.setdefault("rules", [])
+        if not isinstance(rules, list):
+            raise InstallError("Karabiner complex_modifications.rules is not an array")
+        modifications["rules"] = [
+            rule for rule in rules
+            if not any(rule.get("description", "").startswith(prefix) for prefix in obsolete)
+        ]
     return data
-
-
-def disabled_aerospace(text: str) -> str:
-    if re.search(r"(?m)^start-at-login\s*=", text):
-        return re.sub(r"(?m)^start-at-login\s*=.*$", "start-at-login = false", text, count=1)
-    return "start-at-login = false\n" + text
 
 
 def atomic_write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(path.name + ".adv360.tmp")
-    temporary.write_text(text)
-    os.replace(temporary, path)
+    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.adv360.", dir=path.parent)
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w") as handle:
+            handle.write(text)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+        directory = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    except BaseException:
+        if temporary.exists() and not temporary.is_symlink():
+            temporary.unlink()
+        raise
 
 
 def managed_file_paths() -> set[Path]:
@@ -123,20 +145,21 @@ def proposed_files() -> dict[Path, str]:
 
     system = platform.system()
     if system == "Darwin":
+        legacy_aerospace = home / ".aerospace.toml"
+        if legacy_aerospace.exists():
+            raise InstallError("ambiguous AeroSpace configuration: archive ~/.aerospace.toml before installation")
+
         hammerspoon = home / ".hammerspoon/init.lua"
-        if not hammerspoon.exists():
-            raise InstallError("~/.hammerspoon/init.lua is required")
-        result[hammerspoon] = upsert_block(hammerspoon.read_text(), HAMMER_START, HAMMER_END, hammerspoon_block())
+        if hammerspoon.exists():
+            result[hammerspoon] = remove_block(hammerspoon.read_text(), HAMMER_START, HAMMER_END)
 
         karabiner = home / ".config/karabiner/karabiner.json"
-        if not karabiner.exists():
-            raise InstallError("Karabiner configuration is required")
-        data = merged_karabiner(json.loads(karabiner.read_text()))
-        result[karabiner] = json.dumps(data, indent=2) + "\n"
+        if karabiner.exists():
+            data = cleaned_karabiner(json.loads(karabiner.read_text()))
+            result[karabiner] = json.dumps(data, indent=2) + "\n"
 
         aerospace = home / ".config/aerospace/aerospace.toml"
-        if aerospace.exists():
-            result[aerospace] = disabled_aerospace(aerospace.read_text())
+        result[aerospace] = rendered_aerospace()
     elif system == "Linux":
         hyprland = home / ".config/hypr/hyprland.lua"
         hypr_text = hyprland.read_text() if hyprland.exists() else ""
@@ -148,8 +171,18 @@ def proposed_files() -> dict[Path, str]:
 
 def install(dry_run: bool) -> int:
     files = proposed_files()
+    allowed_files = managed_file_paths()
+    for path in files:
+        normalized = Path(os.path.abspath(path))
+        if normalized not in allowed_files:
+            raise InstallError(f"refusing to update unmanaged path: {normalized}")
+        require_managed_containment(normalized)
+        if normalized.is_symlink():
+            raise InstallError(f"refusing to replace managed symlink: {normalized}")
     changed = {path: text for path, text in files.items() if not path.exists() or path.read_text() != text}
+
     link_source = ROOT / "scripts/adv360_action.py"
+    require_managed_containment(ACTION_LINK)
     link_changed = not ACTION_LINK.is_symlink() or ACTION_LINK.resolve() != link_source.resolve()
     if ACTION_LINK.exists() and not ACTION_LINK.is_symlink():
         raise InstallError(f"refusing to replace non-symlink {ACTION_LINK}")
@@ -249,6 +282,8 @@ def rollback(identifier: str) -> int:
         require_managed_containment(path)
         if path.is_symlink():
             raise InstallError(f"refusing to restore through symlink: {path}")
+        if path.exists() and not path.is_file():
+            raise InstallError(f"rollback target is not a regular file: {path}")
         backup: Path | None = None
         if entry["existed"]:
             if not isinstance(entry.get("backup"), str):
@@ -280,7 +315,7 @@ def rollback(identifier: str) -> int:
     for path, existed, backup in prepared_files:
         if existed:
             assert backup is not None
-            shutil.copy2(backup, path)
+            atomic_write(path, backup.read_text())
         elif path.exists():
             path.unlink()
         print(f"RESTORE {path}")

@@ -178,13 +178,14 @@ class WorkflowVerifierTests(unittest.TestCase):
             self.assertIn("tapping-term-ms = <170>", body)
 
     def test_host_adapters(self) -> None:
-        verify_workflow.check_hammerspoon(ROOT / "host/hammerspoon-adv360.lua")
+        verify_workflow.check_aerospace(ROOT / "host/macos/aerospace.toml", "repository AeroSpace")
         verify_workflow.check_hyprland()
         verify_workflow.check_nvim(ROOT / "host/nvim-adv360.lua", "test Neovim")
         hyprland = (ROOT / "host/hyprland-adv360.lua").read_text()
         self.assertIn("local function shellQuote", hyprland)
         self.assertNotIn("%q", hyprland)
-        self.assertFalse((ROOT / "host/aerospace.toml").exists(), "stale F21-F24 AeroSpace reference must not remain")
+        self.assertFalse((ROOT / "host/hammerspoon-adv360.lua").exists(), "Hammerspoon must not remain a supported macOS owner")
+        self.assertFalse((ROOT / "host/karabiner-adv360.json").exists(), "Hammerspoon-only Karabiner normalization must be retired")
 
     def test_ci_requires_a_real_lua_syntax_parser(self) -> None:
         with (
@@ -194,8 +195,63 @@ class WorkflowVerifierTests(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError, "Lua syntax parser"):
                 verify_workflow.check_lua_syntax()
 
-    def test_karabiner_rule_is_device_scoped_and_complete(self) -> None:
-        verify_workflow.check_karabiner(json.loads((ROOT / "host/karabiner-adv360.json").read_text()), "test")
+    def test_active_macos_verifier_requires_aerospace_ownership(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            hammerspoon = home / ".hammerspoon/init.lua"
+            karabiner = home / ".config/karabiner/karabiner.json"
+            aerospace = home / ".config/aerospace/aerospace.toml"
+            nvim = home / ".config/nvim/init.lua"
+            action_link = home / ".local/bin/adv360-action"
+            for path in (hammerspoon, karabiner, aerospace, nvim, action_link):
+                path.parent.mkdir(parents=True, exist_ok=True)
+            hammerspoon.write_text("-- unrelated Hammerspoon config\n")
+            karabiner.write_text(json.dumps({"profiles": [{"selected": True, "complex_modifications": {"rules": [{"description": "keep me"}]}}]}))
+            source = (ROOT / "host/macos/aerospace.toml").read_text()
+            aerospace.write_text(source.replace("__ADV360_ACTION__", str(action_link)))
+            nvim.write_text("dofile('" + str(ROOT / "host/nvim-adv360.lua") + "')\n")
+            action_link.symlink_to(ROOT / "scripts/adv360_action.py")
+            calls: list[list[str]] = []
+
+            def fake_run(command: list[str], **_: object) -> subprocess.CompletedProcess:
+                calls.append(command)
+                if command == ["/usr/bin/pgrep", "-x", "Hammerspoon"]:
+                    return subprocess.CompletedProcess(command, 0, stdout="123\n", stderr="")
+                if command[0] == "/opt/homebrew/bin/hs":
+                    return subprocess.CompletedProcess(command, 0, stdout="true\n", stderr="")
+                if command[1:] == ["list-workspaces", "--all"]:
+                    output = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n"
+                elif command[1:] == ["list-monitors"]:
+                    output = "1 | PG32UCDM\n2 | P34WD-40\n"
+                elif command[1:] == ["list-workspaces", "--monitor", "1"]:
+                    output = "1\n2\n3\n4\n5\n"
+                elif command[1:] == ["list-workspaces", "--monitor", "2"]:
+                    output = "6\n7\n8\n9\n10\n"
+                elif command[1:] == ["config", "--get", "mode.main.binding", "--json"]:
+                    loaded = verify_workflow.aerospace_bindings(aerospace.read_text(), "test active")
+                    loaded = {key: value.replace("exec-and-forget ", "exec-and-forget  ") for key, value in loaded.items()}
+                    output = json.dumps(loaded)
+                elif command[1:] == ["config", "--config-path"]:
+                    output = str(aerospace) + "\n"
+                else:
+                    output = "ok\n"
+                return subprocess.CompletedProcess(command, 0, stdout=output, stderr="")
+
+            def fake_which(command: str):
+                return {"aerospace": "/opt/homebrew/bin/aerospace", "hs": "/opt/homebrew/bin/hs"}.get(command)
+
+            with (
+                mock.patch.object(verify_workflow.Path, "home", return_value=home),
+                mock.patch.object(verify_workflow.shutil, "which", side_effect=fake_which),
+                mock.patch.object(verify_workflow.subprocess, "run", side_effect=fake_run),
+            ):
+                verify_workflow.check_active_macos()
+            self.assertIn(["/opt/homebrew/bin/aerospace", "reload-config"], calls)
+            self.assertIn(["/opt/homebrew/bin/aerospace", "config", "--config-path"], calls)
+            self.assertIn(["/opt/homebrew/bin/aerospace", "config", "--get", "mode.main.binding", "--json"], calls)
+            self.assertIn(["/opt/homebrew/bin/aerospace", "list-workspaces", "--monitor", "1"], calls)
+            self.assertIn(["/opt/homebrew/bin/aerospace", "list-workspaces", "--monitor", "2"], calls)
+            self.assertIn(["/opt/homebrew/bin/hs", "-c", "return ADV360_STATUS == nil"], calls)
 
     def test_action_resolution_is_argv_not_shell(self) -> None:
         host = adv360_action.host_name()
@@ -204,10 +260,23 @@ class WorkflowVerifierTests(unittest.TestCase):
         self.assertTrue(command)
         self.assertNotIn(";", command[0])
 
+    def test_macos_launcher_is_host_neutral_argv(self) -> None:
+        command, fallback = adv360_action.resolve_action("launcher", "macos")
+        self.assertEqual(command, ["/usr/bin/open", "-a", "Spotlight"])
+        self.assertIsNone(fallback)
+
     def test_build_inputs_are_pinned(self) -> None:
         verify_workflow.check_build_and_docs()
         left_defconfig = (ROOT / "config/boards/arm/adv360/adv360_left_defconfig").read_text()
         self.assertNotIn("F13-F24", left_defconfig)
+        readme = (ROOT / "README.md").read_text()
+        protocol = (ROOT / "host/PROTOCOL.md").read_text()
+        agent_contract = (ROOT / "AGENTS.md").read_text()
+        field_test = (ROOT / "docs/7-day-field-test.md").read_text()
+        self.assertIn("AeroSpace owns macOS", readme)
+        self.assertIn("AeroSpace owns macOS", protocol)
+        self.assertIn("AeroSpace", agent_contract)
+        self.assertNotIn("exercise Hammerspoon", field_test)
 
     def test_zmk_studio_left_half_contract(self) -> None:
         keymap = (ROOT / "config/adv360.keymap").read_text()
@@ -278,19 +347,90 @@ class WorkflowVerifierTests(unittest.TestCase):
         second = manage_host.upsert_block(first, "-- BEGIN", "-- END", "value")
         self.assertEqual(first, second)
 
-    def test_host_installer_replaces_obsolete_karabiner_rule(self) -> None:
+    def test_host_marker_install_rejects_duplicate_or_unbalanced_markers(self) -> None:
+        with self.assertRaises(manage_host.InstallError):
+            manage_host.upsert_block("-- BEGIN\na\n-- BEGIN\nb\n-- END\n", "-- BEGIN", "-- END", "value")
+        with self.assertRaises(manage_host.InstallError):
+            manage_host.upsert_block("-- BEGIN\na\n", "-- BEGIN", "-- END", "value")
+
+    def test_host_installer_removes_hammerspoon_adapter_block(self) -> None:
+        text = "before\n-- BEGIN ADV360 HOST ADAPTER\nold\n-- END ADV360 HOST ADAPTER\nafter\n"
+        result = manage_host.remove_block(text, manage_host.HAMMER_START, manage_host.HAMMER_END)
+        self.assertEqual(result, "before\nafter\n")
+
+    def test_host_installer_renders_aerospace_action_path(self) -> None:
+        rendered = manage_host.rendered_aerospace()
+        self.assertNotIn("__ADV360_ACTION__", rendered)
+        self.assertEqual(rendered.count(str(manage_host.ACTION_LINK)), 8)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "aerospace.toml"
+            path.write_text(rendered)
+            verify_workflow.check_aerospace(path, "rendered AeroSpace")
+
+    def test_darwin_host_proposal_installs_aerospace_and_retires_conflicts(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            hammerspoon = home / ".hammerspoon/init.lua"
+            karabiner = home / ".config/karabiner/karabiner.json"
+            aerospace = home / ".config/aerospace/aerospace.toml"
+            nvim = home / ".config/nvim/init.lua"
+            for path in (hammerspoon, karabiner, aerospace, nvim):
+                path.parent.mkdir(parents=True, exist_ok=True)
+            hammerspoon.write_text("before\n-- BEGIN ADV360 HOST ADAPTER\nold\n-- END ADV360 HOST ADAPTER\nafter\n")
+            karabiner.write_text(json.dumps({"profiles": [{"selected": True, "complex_modifications": {"rules": [
+                {"description": "ADV360 normalize F14/F15 for Hammerspoon"},
+                {"description": "keep me"},
+            ]}}]}))
+            aerospace.write_text("start-at-login = false\n")
+            nvim.write_text("")
+            with (
+                mock.patch.object(manage_host.Path, "home", return_value=home),
+                mock.patch.object(manage_host.platform, "system", return_value="Darwin"),
+            ):
+                proposed = manage_host.proposed_files()
+            self.assertNotIn("ADV360 HOST ADAPTER", proposed[hammerspoon])
+            self.assertNotIn("normalize F14/F15", proposed[karabiner])
+            self.assertEqual(proposed[aerospace], manage_host.rendered_aerospace())
+            self.assertIn("nvim-adv360.lua", proposed[nvim])
+
+    def test_darwin_host_proposal_rejects_legacy_aerospace_config(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            legacy = home / ".aerospace.toml"
+            legacy.write_text("config-version = 2\n")
+            with (
+                mock.patch.object(manage_host.Path, "home", return_value=home),
+                mock.patch.object(manage_host.platform, "system", return_value="Darwin"),
+            ):
+                with self.assertRaisesRegex(manage_host.InstallError, "ambiguous"):
+                    manage_host.proposed_files()
+
+    def test_host_installer_removes_obsolete_karabiner_protocol_rules(self) -> None:
         data = {
-            "profiles": [{
-                "selected": True,
-                "complex_modifications": {"rules": [
-                    {"description": "ADV360 WM F21-F24 bridge for AeroSpace"},
-                    {"description": "keep me"},
-                ]},
-            }],
+            "profiles": [
+                {
+                    "selected": True,
+                    "complex_modifications": {"rules": [
+                        {"description": "ADV360 WM F21-F24 bridge for AeroSpace"},
+                        {"description": "ADV360 normalize F14/F15 for Hammerspoon"},
+                        {"description": "keep me"},
+                    ]},
+                },
+                {
+                    "selected": False,
+                    "complex_modifications": {"rules": [
+                        {"description": "ADV360 normalize F14/F15 for Hammerspoon"},
+                        {"description": "keep inactive profile rule"},
+                    ]},
+                },
+            ],
         }
-        result = manage_host.merged_karabiner(data)
-        descriptions = [rule["description"] for rule in result["profiles"][0]["complex_modifications"]["rules"]]
-        self.assertEqual(descriptions, ["ADV360 normalize F14/F15 for Hammerspoon", "keep me"])
+        result = manage_host.cleaned_karabiner(data)
+        descriptions = [
+            [rule["description"] for rule in profile["complex_modifications"]["rules"]]
+            for profile in result["profiles"]
+        ]
+        self.assertEqual(descriptions, [["keep me"], ["keep inactive profile rule"]])
 
     def test_host_rollback_rejects_backup_path_traversal(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -355,6 +495,41 @@ class WorkflowVerifierTests(unittest.TestCase):
                     manage_host.rollback(state.name)
             self.assertEqual(target.read_text(), "must-survive")
 
+    def test_host_rollback_rejects_special_target_before_any_restore(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            state_root = parent / "state"
+            state = state_root / "20260731T120000+0200"
+            state.mkdir(parents=True)
+            first = parent / "first.lua"
+            first.write_text("current-first")
+            special = parent / "special-target"
+            special.mkdir()
+            first_backup = state / "file-0.backup"
+            second_backup = state / "file-1.backup"
+            first_backup.write_text("old-first")
+            second_backup.write_text("old-second")
+            manifest = {
+                "schema": 1,
+                "root": str(ROOT),
+                "files": [
+                    {"path": str(first), "existed": True, "backup": str(first_backup)},
+                    {"path": str(special), "existed": True, "backup": str(second_backup)},
+                ],
+                "links": [],
+            }
+            (state / "manifest.json").write_text(json.dumps(manifest))
+            with (
+                mock.patch.object(manage_host, "STATE_ROOT", state_root),
+                mock.patch.object(manage_host, "managed_file_paths", return_value={first, special}),
+                mock.patch.object(manage_host, "managed_root", return_value=parent.resolve()),
+            ):
+                with self.assertRaisesRegex(manage_host.InstallError, "regular file"):
+                    manage_host.rollback(state.name)
+            self.assertEqual(first.read_text(), "current-first")
+            self.assertTrue(special.is_dir())
+            self.assertEqual(list(special.iterdir()), [])
+
     def test_host_rollback_restores_validated_managed_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             parent = Path(directory)
@@ -379,6 +554,40 @@ class WorkflowVerifierTests(unittest.TestCase):
             ):
                 self.assertEqual(manage_host.rollback(state.name), 0)
             self.assertEqual(target.read_text(), "old")
+
+    def test_atomic_write_ignores_predictable_temp_symlink(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            target = parent / "managed.toml"
+            victim = parent / "victim"
+            victim.write_text("must-survive")
+            predictable = target.with_name(target.name + ".adv360.tmp")
+            predictable.symlink_to(victim)
+            manage_host.atomic_write(target, "new-config")
+            self.assertEqual(target.read_text(), "new-config")
+            self.assertEqual(victim.read_text(), "must-survive")
+            self.assertTrue(predictable.is_symlink())
+
+    def test_host_install_rejects_symlinked_managed_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            state_root = parent / "state"
+            action_link = parent / "bin/adv360-action"
+            outside = parent / "outside.toml"
+            outside.write_text("new")
+            target = parent / "aerospace.toml"
+            target.symlink_to(outside)
+            with (
+                mock.patch.object(manage_host, "STATE_ROOT", state_root),
+                mock.patch.object(manage_host, "ACTION_LINK", action_link),
+                mock.patch.object(manage_host, "proposed_files", return_value={target: "new"}),
+                mock.patch.object(manage_host, "managed_file_paths", return_value={target}),
+                mock.patch.object(manage_host, "managed_root", return_value=parent.resolve()),
+            ):
+                with self.assertRaisesRegex(manage_host.InstallError, "symlink"):
+                    manage_host.install(dry_run=False)
+            self.assertTrue(target.is_symlink())
+            self.assertEqual(outside.read_text(), "new")
 
     def test_host_install_rolls_back_partial_write_failure(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

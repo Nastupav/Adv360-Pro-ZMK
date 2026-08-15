@@ -1,0 +1,139 @@
+# Advantage360 F13-F20 protocol for AeroSpace on macOS.
+# This file is the source of truth installed by scripts/manage_host.py.
+
+config-version = 2
+start-at-login = true
+auto-reload-config = true
+after-startup-command = []
+
+key-mapping.preset = 'qwerty'
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+accordion-padding = 30
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'auto'
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+automatically-unhide-macos-hidden-apps = true
+focus-follows-mouse.enabled = false
+persistent-workspaces = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+
+[gaps]
+inner.horizontal = 8
+inner.vertical = 8
+outer.top = 8
+outer.bottom = 8
+outer.left = 8
+outer.right = 8
+
+[[on-window-detected]]
+if.app-id = 'md.obsidian'
+run = ['move-node-to-workspace 8']
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.VSCode'
+run = ['move-node-to-workspace 4']
+
+[[on-window-detected]]
+if.app-id = 'com.github.wez.wezterm'
+run = ['move-node-to-workspace 5']
+
+[[on-window-detected]]
+if.app-id = 'com.mitchellh.ghostty'
+run = ['move-node-to-workspace 5']
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Terminal'
+run = ['move-node-to-workspace 5']
+
+[[on-window-detected]]
+if.app-id = 'com.google.Chrome'
+run = ['move-node-to-workspace 7']
+
+[[on-window-detected]]
+if.app-id = 'org.mozilla.firefox'
+run = ['move-node-to-workspace 7']
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Safari'
+run = ['move-node-to-workspace 7']
+
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgap'
+run = ['move-node-to-workspace 9']
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.Outlook'
+run = ['move-node-to-workspace 9']
+
+[[on-window-detected]]
+if.app-id = 'us.zoom.xos'
+run = ['move-node-to-workspace 9']
+
+[[on-window-detected]]
+if.window-title-regex-substring = '(?i)(open file|save as|find and replace|choose a file|select folder)'
+run = ['layout floating']
+
+[workspace-to-monitor-force-assignment]
+1 = 'PG32UCDM'
+2 = 'PG32UCDM'
+3 = 'PG32UCDM'
+4 = 'PG32UCDM'
+5 = 'PG32UCDM'
+6 = 'P34WD-40'
+7 = 'P34WD-40'
+8 = 'P34WD-40'
+9 = 'P34WD-40'
+10 = 'P34WD-40'
+
+[mode.main.binding]
+# F13-F20 select workspaces 1-8.
+f13 = 'workspace 1'
+f14 = 'workspace 2'
+f15 = 'workspace 3'
+f16 = 'workspace 4'
+f17 = 'workspace 5'
+f18 = 'workspace 6'
+f19 = 'workspace 7'
+f20 = 'workspace 8'
+
+# Shift+F13-F20 move the focused window and follow it.
+shift-f13 = 'move-node-to-workspace --focus-follows-window 1'
+shift-f14 = 'move-node-to-workspace --focus-follows-window 2'
+shift-f15 = 'move-node-to-workspace --focus-follows-window 3'
+shift-f16 = 'move-node-to-workspace --focus-follows-window 4'
+shift-f17 = 'move-node-to-workspace --focus-follows-window 5'
+shift-f18 = 'move-node-to-workspace --focus-follows-window 6'
+shift-f19 = 'move-node-to-workspace --focus-follows-window 7'
+shift-f20 = 'move-node-to-workspace --focus-follows-window 8'
+
+# Ctrl+F13-F16 focus left/down/up/right.
+ctrl-f13 = 'focus left'
+ctrl-f14 = 'focus down'
+ctrl-f15 = 'focus up'
+ctrl-f16 = 'focus right'
+
+# Ctrl+Shift+F13-F16 move left/down/up/right.
+ctrl-shift-f13 = 'move left'
+ctrl-shift-f14 = 'move down'
+ctrl-shift-f15 = 'move up'
+ctrl-shift-f16 = 'move right'
+
+# Workspace cycling wraps at boundaries.
+ctrl-f17 = 'workspace --wrap-around prev'
+ctrl-f18 = 'workspace --wrap-around next'
+
+# Window state and commands.
+ctrl-f19 = 'fullscreen'
+ctrl-f20 = 'layout floating tiling'
+ctrl-shift-f19 = 'close'
+ctrl-shift-f20 = 'layout h_tiles v_tiles'
+
+# Alt+F13-F20 developer namespace, in protocol slot order.
+alt-f13 = 'exec-and-forget __ADV360_ACTION__ launcher'
+alt-f14 = 'exec-and-forget __ADV360_ACTION__ terminal'
+alt-f15 = 'exec-and-forget __ADV360_ACTION__ browser'
+alt-f16 = 'exec-and-forget __ADV360_ACTION__ files'
+alt-f17 = 'exec-and-forget __ADV360_ACTION__ editor'
+alt-f18 = 'exec-and-forget __ADV360_ACTION__ project'
+alt-f19 = 'exec-and-forget __ADV360_ACTION__ git'
+alt-f20 = 'exec-and-forget __ADV360_ACTION__ ai'

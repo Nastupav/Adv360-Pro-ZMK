@@ -49,6 +49,30 @@ Next decision rule:
 - A token reported awkward at least three times: use recorded frequency and reach evidence to swap positions, then update tests and restart.
 - No additional macro should be added until an existing empty position and a measured high-frequency token justify it.
 
+## 2026-08-15 — AeroSpace macOS owner migration
+
+Status: repository, live host, and both-half build gates passed; no firmware behavior changed.
+
+Evidence:
+
+- `make test`: 36/36 tests passed.
+- `make verify` and `make verify-active`: passed.
+- AeroSpace dry-run/reload passed with workspaces 1-5 on `PG32UCDM` and 6-10 on `P34WD-40`.
+- All 38 F13-F20 protocol bindings are repository-verified; all eight developer actions resolve to argv commands.
+- Both firmware halves built with fingerprint `f6edf08e82b5`; manifest records `left=true` and `right=true`.
+- `shasum -a 256 -c SHA256SUMS`: both artifacts passed.
+- Dirty and prior clean UF2 hashes are byte-identical because this migration changed host integration only.
+
+Changed host architecture:
+
+- AeroSpace became the sole macOS protocol owner.
+- The repository gained `host/macos/aerospace.toml` and active config-parity/runtime verification.
+- The Hammerspoon adapter and Hammerspoon-only Karabiner normalization were retired.
+- macOS launcher became a normal host-neutral `adv360-action` entry.
+- Installer safety now rejects ambiguous AeroSpace configs, duplicate/unbalanced managed blocks, symlinked managed targets, and special-file rollback targets; writes/restores use randomized fsynced atomic files.
+
+Physical acceptance: existing firmware trial requirements are unchanged; this host-only migration still requires normal real-workflow shortcut observation, but it does not restart the firmware timing trial.
+
 ## Template for the next iteration
 
 Date:

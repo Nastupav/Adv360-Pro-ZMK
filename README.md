@@ -2,7 +2,7 @@
 
 Source-controlled ZMK firmware and host adapters for a Kinesis Advantage360 Pro.
 The layout is deterministic US QWERTY and speed-focused for Python, PowerShell,
-SQL, shell, and PySpark work, with Hammerspoon on macOS and Hyprland on Linux.
+SQL, shell, and PySpark work, with AeroSpace on macOS and Hyprland on Linux.
 
 Normal letters never wait on timing. There are no home-row mods or typing
 combos; only four dedicated thumb keys are dual-role.
@@ -110,25 +110,27 @@ python3 scripts/manage_host.py rollback latest
 ```
 
 Installation is idempotent. Before changing a live file it stores a timestamped
-copy and manifest under `~/.local/state/adv360-host-backups/`.
+copy and manifest under `~/.local/state/adv360-host-backups/`. After every macOS
+installation, run `make verify-active`; it performs the real AeroSpace reload,
+compares the loaded runtime binding table with the repository, checks that a
+running Hammerspoon does not retain the old adapter, and verifies monitor
+assignment. A dry-run parse alone is not an activation check.
 
 ### macOS
 
-Hammerspoon owns workspaces, window placement, the launcher, and application
-actions. It requires Accessibility permission and eight existing user Spaces on
-each display where the protocol is used. The adapter reports an error instead
-of creating or deleting Spaces automatically.
+AeroSpace owns macOS workspaces, window movement, window state, and all eight
+developer actions. `host/macos/aerospace.toml` is the source-controlled adapter;
+`scripts/manage_host.py install` renders the stable `adv360-action` path and
+installs it as the sole active AeroSpace config.
 
-Karabiner applies only to the Advantage360 device (`7504:24926`) and tags F14
-and F15 with Command so macOS does not consume those carriers. Hammerspoon
-removes this implementation detail when decoding the protocol.
+The installer also removes the retired Advantage360 block from Hammerspoon and
+the old F14/F15 Hammerspoon normalization from Karabiner. Hammerspoon may remain
+installed for unrelated automation, but it must not bind the Advantage360
+protocol. Karabiner is not required for the current raw F13-F20 carriers.
 
-```lua
-local adv360 = dofile('/absolute/path/host/hammerspoon-adv360.lua')
-adv360.setup({ chooser = function() chooser:show() end })
-```
-
-AeroSpace is unsupported in this profile and must not run alongside Hammerspoon.
+Workspaces 1-5 are assigned to `PG32UCDM`; 6-10 are assigned to `P34WD-40`.
+Previous/next workspace actions wrap at boundaries. AeroSpace starts at login
+and auto-reloads config changes.
 
 ### Linux
 
@@ -158,7 +160,7 @@ runtimes are installed.
 ```sh
 make test            # unit tests
 make verify          # semantic, protocol, host, syntax, and provenance checks
-make verify-active   # additionally verify live Hammerspoon/Karabiner/Neovim
+make verify-active   # additionally verify live AeroSpace/config/Neovim
 make                 # build both firmware halves
 make left            # build only the left half
 ```
