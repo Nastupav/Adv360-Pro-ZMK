@@ -55,7 +55,7 @@ Status: repository, live host, and both-half build gates passed; no firmware beh
 
 Evidence:
 
-- `make test`: 36/36 tests passed.
+- `make test`: 39/39 tests passed.
 - `make verify` and `make verify-active`: passed.
 - AeroSpace dry-run/reload passed with workspaces 1-5 on `PG32UCDM` and 6-10 on `P34WD-40`.
 - All 38 F13-F20 protocol bindings are repository-verified; all eight developer actions resolve to argv commands.
@@ -69,7 +69,8 @@ Changed host architecture:
 - The repository gained `host/macos/aerospace.toml` and active config-parity/runtime verification.
 - The Hammerspoon adapter and Hammerspoon-only Karabiner normalization were retired.
 - macOS launcher became a normal host-neutral `adv360-action` entry.
-- Installer safety now rejects ambiguous AeroSpace configs, duplicate/unbalanced managed blocks, symlinked managed targets, and special-file rollback targets; writes/restores use randomized fsynced atomic files.
+- Installer safety now rejects ambiguous AeroSpace configs, duplicate/unbalanced managed blocks, symlinked managed targets, and special-file rollback targets; writes/restores use randomized fsynced atomic files while preserving existing mode/ownership.
+- Active ownership verification structurally rejects selected-profile Karabiner F13-F20 rewrites and inspects Hammerspoon's live hotkey registry independent of adapter filenames or sentinels.
 
 Physical acceptance: existing firmware trial requirements are unchanged; this host-only migration still requires normal real-workflow shortcut observation, but it does not restart the firmware timing trial.
 

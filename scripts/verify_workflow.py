@@ -20,6 +20,7 @@ KEYMAP = ROOT / "config/adv360.keymap"
 EXPECTED_SHAPE = [14, 14, 18, 14, 16]
 HOME_INDEX = {"A": 1, "S": 2, "D": 3, "F": 4, "G": 5, "H": 12, "J": 13, "K": 14, "L": 15, ";": 16}
 ACTIONS = ["launcher", "terminal", "browser", "files", "editor", "project", "git", "ai"]
+HAMMERSPOON_CARRIER_QUERY = "local c={}; for _,h in ipairs(hs.hotkey.getHotkeys()) do local m=string.lower(tostring(h.idx or '')..' '..tostring(h.msg or '')); if string.match(m,'f1[3-9]') or string.match(m,'f20') then table.insert(c,m) end end; return hs.json.encode(c)"
 PINNED_ZMK = "86114880a03d3e219a1fa534d7c98d4786b1dfac"
 PINNED_IMAGE = "sha256:edb1c953438c6f720ddb79c3762f3972013b7fbbaf4fff3592fc869983e7afc5"
 
@@ -314,6 +315,50 @@ def check_apps() -> None:
             require(isinstance(command, list) and command and all(isinstance(arg, str) for arg in command), f"{host}.{action} command invalid")
 
 
+def check_hammerspoon_runtime(hs: str) -> None:
+    try:
+        result = subprocess.run([hs, "-c", HAMMERSPOON_CARRIER_QUERY], capture_output=True, text=True, timeout=5)
+    except subprocess.TimeoutExpired as error:
+        raise AssertionError("Hammerspoon runtime carrier-registry check timed out") from error
+    require(result.returncode == 0, f"Hammerspoon runtime carrier-registry check failed: {result.stderr or result.stdout}")
+    try:
+        conflicts = json.loads(result.stdout)
+    except json.JSONDecodeError as error:
+        raise AssertionError("Hammerspoon runtime carrier registry returned invalid JSON") from error
+    require(isinstance(conflicts, list) and all(isinstance(item, str) for item in conflicts),
+            "Hammerspoon runtime carrier registry has invalid shape")
+    require(not conflicts, f"Hammerspoon still registers F13-F20 hotkeys: {conflicts}")
+
+
+def check_karabiner_carrier_conflicts(data: dict[str, Any], label: str) -> None:
+    profiles = data.get("profiles")
+    require(isinstance(profiles, list) and len(profiles) > 0, f"{label}: no profiles")
+    assert isinstance(profiles, list) and profiles
+    active = [profile for profile in profiles if isinstance(profile, dict) and profile.get("selected")]
+    if not active:
+        require(isinstance(profiles[0], dict), f"{label}: fallback profile is not an object")
+        assert isinstance(profiles[0], dict)
+        active = [profiles[0]]
+    conflicts: list[str] = []
+    carriers = {f"f{number}" for number in range(13, 21)}
+
+    def collect_carriers(value: Any, path: str) -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                child_path = f"{path}.{key}"
+                if key == "key_code" and isinstance(child, str) and child.lower() in carriers:
+                    conflicts.append(f"{child_path}={child.lower()}")
+                collect_carriers(child, child_path)
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                collect_carriers(child, f"{path}[{index}]")
+
+    for index, profile in enumerate(active):
+        require(isinstance(profile, dict), f"{label}: active profile is not an object")
+        collect_carriers(profile, f"active_profile[{index}]")
+    require(not conflicts, f"{label}: Karabiner active profile rewrites F13-F20: {conflicts}")
+
+
 def check_lua_syntax() -> None:
     nvim = shutil.which("nvim")
     luac = shutil.which("luac5.4") or shutil.which("luac")
@@ -417,18 +462,14 @@ def check_active_macos() -> None:
         raw = karabiner.read_text()
         require("ADV360 normalize F14/F15 for Hammerspoon" not in raw and "ADV360 WM F21-F24" not in raw,
                 "Karabiner still contains a retired Advantage360 protocol rule")
+        check_karabiner_carrier_conflicts(read_json(karabiner), "active Karabiner")
 
     hammerspoon_process = subprocess.run(["/usr/bin/pgrep", "-x", "Hammerspoon"], capture_output=True, text=True)
     if hammerspoon_process.returncode == 0:
         hs = shutil.which("hs")
         require(hs is not None, "Hammerspoon is running but its CLI is unavailable for ownership verification")
         assert hs is not None
-        try:
-            status = subprocess.run([hs, "-c", "return ADV360_STATUS == nil"], capture_output=True, text=True, timeout=5)
-        except subprocess.TimeoutExpired as error:
-            raise AssertionError("Hammerspoon runtime ownership check timed out") from error
-        require(status.returncode == 0 and "true" in status.stdout.lower(),
-                "running Hammerspoon still owns the Advantage360 protocol; reload Hammerspoon")
+        check_hammerspoon_runtime(hs)
 
     aerospace = shutil.which("aerospace")
     require(aerospace is not None, "AeroSpace CLI is unavailable")

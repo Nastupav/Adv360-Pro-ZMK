@@ -10,6 +10,7 @@ import os
 import platform
 import re
 import shutil
+import stat
 import sys
 import tempfile
 from pathlib import Path
@@ -93,12 +94,25 @@ def cleaned_karabiner(data: dict[str, Any]) -> dict[str, Any]:
 
 def atomic_write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    mode = 0o600
+    owner: tuple[int, int] | None = None
+    if path.is_symlink():
+        raise InstallError(f"refusing atomic replacement through symlink: {path}")
+    if path.exists():
+        metadata = os.lstat(path)
+        if not stat.S_ISREG(metadata.st_mode):
+            raise InstallError(f"atomic-write target is not a regular file: {path}")
+        mode = stat.S_IMODE(metadata.st_mode)
+        owner = (metadata.st_uid, metadata.st_gid)
     descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.adv360.", dir=path.parent)
     temporary = Path(temporary_name)
     try:
+        if owner is not None:
+            os.fchown(descriptor, *owner)
         with os.fdopen(descriptor, "w") as handle:
             handle.write(text)
             handle.flush()
+            os.fchmod(handle.fileno(), mode)
             os.fsync(handle.fileno())
         os.replace(temporary, path)
         directory = os.open(path.parent, os.O_RDONLY)

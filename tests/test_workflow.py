@@ -218,7 +218,7 @@ class WorkflowVerifierTests(unittest.TestCase):
                 if command == ["/usr/bin/pgrep", "-x", "Hammerspoon"]:
                     return subprocess.CompletedProcess(command, 0, stdout="123\n", stderr="")
                 if command[0] == "/opt/homebrew/bin/hs":
-                    return subprocess.CompletedProcess(command, 0, stdout="true\n", stderr="")
+                    return subprocess.CompletedProcess(command, 0, stdout="[]\n", stderr="")
                 if command[1:] == ["list-workspaces", "--all"]:
                     output = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n"
                 elif command[1:] == ["list-monitors"]:
@@ -251,7 +251,32 @@ class WorkflowVerifierTests(unittest.TestCase):
             self.assertIn(["/opt/homebrew/bin/aerospace", "config", "--get", "mode.main.binding", "--json"], calls)
             self.assertIn(["/opt/homebrew/bin/aerospace", "list-workspaces", "--monitor", "1"], calls)
             self.assertIn(["/opt/homebrew/bin/aerospace", "list-workspaces", "--monitor", "2"], calls)
-            self.assertIn(["/opt/homebrew/bin/hs", "-c", "return ADV360_STATUS == nil"], calls)
+            self.assertIn(["/opt/homebrew/bin/hs", "-c", verify_workflow.HAMMERSPOON_CARRIER_QUERY], calls)
+
+    def test_hammerspoon_runtime_registry_rejects_f13_f20(self) -> None:
+        self.assertIn("h.idx", verify_workflow.HAMMERSPOON_CARRIER_QUERY)
+        result = subprocess.CompletedProcess(["hs"], 0, stdout=json.dumps(["⌘F13", "⌃⇧F20"]), stderr="")
+        with mock.patch.object(verify_workflow.subprocess, "run", return_value=result):
+            with self.assertRaisesRegex(AssertionError, "F13-F20"):
+                verify_workflow.check_hammerspoon_runtime("/opt/homebrew/bin/hs")
+
+    def test_selected_karabiner_profile_rejects_unknown_carrier_rewrite(self) -> None:
+        data = {
+            "profiles": [{
+                "selected": True,
+                "simple_modifications": [{"from": {"key_code": "f15"}, "to": [{"key_code": "a"}]}],
+                "complex_modifications": {"rules": [{
+                    "description": "custom unrelated-looking rule",
+                    "manipulators": [{
+                        "type": "basic",
+                        "from": {"simultaneous": [{"key_code": "f16"}, {"key_code": "j"}]},
+                        "to": [{"key_code": "k"}],
+                    }],
+                }]},
+            }],
+        }
+        with self.assertRaisesRegex(AssertionError, "Karabiner.*F13-F20"):
+            verify_workflow.check_karabiner_carrier_conflicts(data, "test Karabiner")
 
     def test_action_resolution_is_argv_not_shell(self) -> None:
         host = adv360_action.host_name()
@@ -567,6 +592,21 @@ class WorkflowVerifierTests(unittest.TestCase):
             self.assertEqual(target.read_text(), "new-config")
             self.assertEqual(victim.read_text(), "must-survive")
             self.assertTrue(predictable.is_symlink())
+
+    def test_atomic_write_preserves_existing_permissions(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "private-config"
+            target.write_text("old")
+            target.chmod(0o6750)
+            before = target.stat()
+            manage_host.atomic_write(target, "new")
+            after = target.stat()
+            self.assertEqual(target.read_text(), "new")
+            self.assertEqual(after.st_mode & 0o7777, 0o6750)
+            self.assertEqual((after.st_uid, after.st_gid), (before.st_uid, before.st_gid))
+            created = Path(directory) / "new-private-config"
+            manage_host.atomic_write(created, "created")
+            self.assertEqual(created.stat().st_mode & 0o777, 0o600)
 
     def test_host_install_rejects_symlinked_managed_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

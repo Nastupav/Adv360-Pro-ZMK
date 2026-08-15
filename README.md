@@ -112,9 +112,9 @@ python3 scripts/manage_host.py rollback latest
 Installation is idempotent. Before changing a live file it stores a timestamped
 copy and manifest under `~/.local/state/adv360-host-backups/`. After every macOS
 installation, run `make verify-active`; it performs the real AeroSpace reload,
-compares the loaded runtime binding table with the repository, checks that a
-running Hammerspoon does not retain the old adapter, and verifies monitor
-assignment. A dry-run parse alone is not an activation check.
+compares the loaded runtime binding table with the repository, checks that no
+running Hammerspoon hotkey or selected Karabiner rewrite claims F13-F20, and
+verifies monitor assignment. A dry-run parse alone is not an activation check.
 
 ### macOS
 
