@@ -11,7 +11,7 @@ Hyprland owns Linux. `protocol.json` is the machine-readable signal contract.
 | Shift+F13-F20 | Shift + GLOBAL + 1-8 | Move to workspace 1-8 and follow |
 | Ctrl+F13-F16 | GLOBAL + J/K/L/; | Focus left/down/up/right |
 | Ctrl+Shift+F13-F16 | Shift + GLOBAL + J/K/L/; | Move left/down/up/right |
-| Ctrl+F17/F18 | GLOBAL + [/ ] | Previous/next workspace, wrapping at boundaries |
+| Ctrl+F17/F18 | GLOBAL + [ / ] | Previous/next workspace, wrapping at boundaries |
 | Ctrl+F19/F20 | GLOBAL + F/D | Fullscreen / floating-or-tiling |
 | Ctrl+Shift+F19/F20 | GLOBAL + A/S | Close / toggle split orientation |
 

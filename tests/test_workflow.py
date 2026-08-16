@@ -6,6 +6,7 @@ import csv
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -37,6 +38,7 @@ class FieldTestTests(unittest.TestCase):
         return {
             "timestamp": f"2026-07-{day:02d}T12:00:00+02:00", "os": os_name, "minutes": str(minutes),
             "thumb_misfires": "0", "layer_errors": "0", "shortcut_mismatches": "0", "macro_output_errors": "0", "macro_output_measured": "yes",
+            "home_row_misfires": "0", "combo_misfires": "0", "aggressive_input_measured": "yes",
             "awkward_symbols": awkward, "planned_corrections": planned, "notes": "test",
         }
 
@@ -80,21 +82,110 @@ class FieldTestTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("PENDING: zero macro output errors", result.stdout)
 
+    def test_aggressive_input_measurement_fields_exist(self) -> None:
+        for field in ("home_row_misfires", "combo_misfires", "aggressive_input_measured"):
+            self.assertIn(field, field_test.FIELDS)
+
+    def test_combo_misfire_blocks_strict_acceptance(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "log.csv"
+            rows = [self.row(day, os_name="linux" if day % 2 == 0 else "macos") for day in range(1, 8)]
+            rows[0]["combo_misfires"] = "1"
+            field_test.write_rows(path, rows)
+            result = self.run_report(path)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("PENDING: zero combo misfires", result.stdout)
+
+    def test_home_row_misfire_rate_blocks_strict_acceptance(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "log.csv"
+            rows = [self.row(day, os_name="linux" if day % 2 == 0 else "macos") for day in range(1, 8)]
+            rows[0]["home_row_misfires"] = "4"
+            field_test.write_rows(path, rows)
+            result = self.run_report(path)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("PENDING: home-row mod misfires <= 0.5/hour", result.stdout)
+
     def test_previous_field_log_migrates_macro_errors_to_zero(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "log.csv"
             row = self.row(1)
             row.pop("macro_output_errors")
             row.pop("macro_output_measured")
+            row.pop("home_row_misfires")
+            row.pop("combo_misfires")
+            row.pop("aggressive_input_measured")
             with path.open("w", newline="") as handle:
                 writer = csv.DictWriter(handle, fieldnames=field_test.PRE_MACRO_FIELDS)
                 writer.writeheader()
                 writer.writerow(row)
+            original = path.read_text()
             field_test.ensure_log(path)
             migrated = field_test.read_rows(path)
             self.assertEqual(migrated[0]["macro_output_errors"], "0")
             self.assertEqual(migrated[0]["macro_output_measured"], "no")
+            self.assertEqual(migrated[0]["home_row_misfires"], "0")
+            self.assertEqual(migrated[0]["combo_misfires"], "0")
+            self.assertEqual(migrated[0]["aggressive_input_measured"], "no")
             self.assertEqual(path.read_text().splitlines()[0].split(","), field_test.FIELDS)
+            backup = path.with_name(path.name + ".pre-migration.bak")
+            self.assertEqual(backup.read_text(), original)
+
+    def test_invalid_legacy_log_is_not_modified_during_migration(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "log.csv"
+            row = self.row(1)
+            for field in ("home_row_misfires", "combo_misfires", "aggressive_input_measured"):
+                row.pop(field)
+            row["minutes"] = "invalid"
+            with path.open("w", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=field_test.PRE_AGGRESSIVE_FIELDS)
+                writer.writeheader()
+                writer.writerow(row)
+            original = path.read_text()
+            with self.assertRaises(field_test.LogError):
+                field_test.ensure_log(path)
+            self.assertEqual(path.read_text(), original)
+            self.assertFalse(path.with_name(path.name + ".pre-migration.bak").exists())
+
+    def test_migration_does_not_reuse_or_overwrite_stale_backup(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "log.csv"
+            row = self.row(1)
+            for field in ("home_row_misfires", "combo_misfires", "aggressive_input_measured"):
+                row.pop(field)
+            with path.open("w", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=field_test.PRE_AGGRESSIVE_FIELDS)
+                writer.writeheader()
+                writer.writerow(row)
+            original = path.read_bytes()
+            stale = path.with_name(path.name + ".pre-migration.bak")
+            stale.write_bytes(b"stale-backup")
+            field_test.ensure_log(path)
+            self.assertEqual(stale.read_bytes(), b"stale-backup")
+            numbered = path.with_name(path.name + ".pre-migration.bak.1")
+            self.assertEqual(numbered.read_bytes(), original)
+
+    def test_migration_skips_symlinked_backup_name(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "log.csv"
+            row = self.row(1)
+            for field in ("home_row_misfires", "combo_misfires", "aggressive_input_measured"):
+                row.pop(field)
+            with path.open("w", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=field_test.PRE_AGGRESSIVE_FIELDS)
+                writer.writeheader()
+                writer.writerow(row)
+            original = path.read_bytes()
+            victim = root / "victim"
+            victim.write_bytes(b"must-survive")
+            occupied = path.with_name(path.name + ".pre-migration.bak")
+            occupied.symlink_to(victim)
+            field_test.ensure_log(path)
+            self.assertTrue(occupied.is_symlink())
+            self.assertEqual(victim.read_bytes(), b"must-survive")
+            self.assertEqual(path.with_name(path.name + ".pre-migration.bak.1").read_bytes(), original)
 
     def test_pre_macro_field_sessions_cannot_pass_strict_acceptance(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -104,6 +195,9 @@ class FieldTestTests(unittest.TestCase):
                 row = self.row(day, os_name="linux" if day % 2 == 0 else "macos")
                 row.pop("macro_output_errors")
                 row.pop("macro_output_measured")
+                row.pop("home_row_misfires")
+                row.pop("combo_misfires")
+                row.pop("aggressive_input_measured")
                 rows.append(row)
             with path.open("w", newline="") as handle:
                 writer = csv.DictWriter(handle, fieldnames=field_test.PRE_MACRO_FIELDS)
@@ -112,6 +206,23 @@ class FieldTestTests(unittest.TestCase):
             result = self.run_report(path)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("PENDING: macro output measured in every session", result.stdout)
+
+    def test_pre_aggressive_sessions_cannot_pass_strict_acceptance(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "log.csv"
+            rows = []
+            for day in range(1, 8):
+                row = self.row(day, os_name="linux" if day % 2 == 0 else "macos")
+                for field in ("home_row_misfires", "combo_misfires", "aggressive_input_measured"):
+                    row.pop(field)
+                rows.append(row)
+            with path.open("w", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=field_test.PRE_AGGRESSIVE_FIELDS)
+                writer.writeheader()
+                writer.writerows(rows)
+            result = self.run_report(path)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("PENDING: aggressive input measured in every session", result.stdout)
 
     def test_log_option_works_after_subcommand(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -127,8 +238,88 @@ class WorkflowVerifierTests(unittest.TestCase):
         self.assertEqual([action["name"] for action in protocol["actions"]], verify_workflow.ACTIONS)
         self.assertEqual(protocol["actions"][-1]["signal"], "Alt+F20")
 
+    def test_global_brackets_match_documented_workspace_cycle(self) -> None:
+        keymap = (ROOT / "config/adv360.keymap").read_text()
+        global_layer = verify_workflow.layer_rows(keymap, "layer_global")
+        self.assertEqual(global_layer[4][1], "&kp LC(F17)", "GLOBAL + [ must select previous workspace")
+        self.assertEqual(global_layer[4][2], "&kp LC(F18)", "GLOBAL + ] must select next workspace")
+        protocol = (ROOT / "host/PROTOCOL.md").read_text()
+        self.assertIn("GLOBAL + [ / ]", protocol)
+
     def test_keymap_semantics(self) -> None:
         verify_workflow.check_keymap()
+
+    def test_six_layer_no_dead_key_architecture(self) -> None:
+        text = (ROOT / "config/adv360.keymap").read_text()
+        expected = {
+            "BASE": "default_layer",
+            "NAV": "layer_nav",
+            "SYM": "layer_sym",
+            "NUM": "layer_num",
+            "GLOBAL": "layer_global",
+            "SYS": "layer_sys",
+        }
+        for index, (name, node) in enumerate(expected.items()):
+            self.assertIn(f"#define {name}", text)
+            self.assertRegex(text, rf"#define\s+{name}\s+{index}\b")
+            rows = verify_workflow.layer_rows(text, node)
+            bindings = [binding for row in rows for binding in row]
+            self.assertEqual(len(bindings), 76, name)
+            self.assertNotIn("&none", bindings, f"{name} contains a dead key")
+        for removed in ("CODE", "EDIT", "MOUSE", "MEDIA"):
+            self.assertNotRegex(text, rf"(?m)^#define\s+{removed}\b")
+
+    def test_production_home_row_and_thumb_contract(self) -> None:
+        text = (ROOT / "config/adv360.keymap").read_text()
+        base = verify_workflow.layer_rows(text, "default_layer")
+        self.assertEqual(
+            base[2],
+            [
+                "&kp ESC", "&hml LGUI A", "&hml LALT S", "&hml LCTRL D", "&hml LSHFT F", "&kp G",
+                "&kp LALT", "&kp LCTRL", "&kp LGUI", "&kp RGUI", "&kp RCTRL", "&kp RALT",
+                "&kp H", "&hmr RSHFT J", "&hmr RCTRL K", "&hmr RALT L", "&hmr RGUI SEMI", "&kp SQT",
+            ],
+        )
+        base_flat = [binding for row in base for binding in row]
+        for binding in (
+            "&tlt_fast NAV ESC", "&tlt_fast SYM TAB", "&num_caps NUM 0",
+            "&tlt_fast GLOBAL LA(F13)",
+        ):
+            self.assertEqual(base_flat.count(binding), 1, binding)
+        for binding in ("&kp BSPC", "&kp DEL", "&kp ENTER", "&kp SPACE"):
+            self.assertEqual(base_flat.count(binding), 1, binding)
+        self.assertNotIn("&tlt_safe", text)
+
+        own_layer_activation_positions = {
+            "layer_nav": (3, 6), "layer_sym": (3, 7),
+            "layer_num": (4, 7), "layer_global": (4, 8),
+        }
+        for node, (row, column) in own_layer_activation_positions.items():
+            self.assertEqual(verify_workflow.layer_rows(text, node)[row][column], "&trans", node)
+
+        for behavior in ("hml", "hmr"):
+            body = verify_workflow.node_body(text, behavior)
+            for token in (
+                'flavor = "balanced"', "tapping-term-ms = <180>", "quick-tap-ms = <150>",
+                "require-prior-idle-ms = <120>", "hold-trigger-on-release",
+            ):
+                self.assertIn(token, body, f"{behavior}: {token}")
+
+        clean = verify_workflow.uncomment(text)
+        combo_nodes = re.findall(r"\b(combo_[a-z0-9_]+)\s*\{(.*?)\};", clean, re.S)
+        typing_combos = [(name, body) for name, body in combo_nodes if name not in {"combo_bt_clear", "combo_bootloader"}]
+        self.assertEqual(len(typing_combos), 1)
+        combo_map = dict(typing_combos)
+        self.assertIn("key-positions = <15 16>", combo_map["combo_esc"], "Esc must avoid the frequent A+S bigram")
+        self.assertIn("require-prior-idle-ms = <80>", combo_map["combo_esc"])
+        for name, body in typing_combos:
+            self.assertIn("timeout-ms = <35>", body, name)
+            self.assertIn("layers = <BASE>", body, name)
+            self.assertNotRegex(body, r"bindings\s*=.*\b(?:LG|LC|LA)\(", f"{name} is OS-specific")
+
+        config = (ROOT / "config/adv360.conf").read_text()
+        self.assertNotIn("CONFIG_ZMK_COMBO_MAX_COMBOS_PER_KEY", config)
+        self.assertNotIn("&tog", text)
 
     def test_speed_profile_contract(self) -> None:
         text = (ROOT / "config/adv360.keymap").read_text()
@@ -157,25 +348,32 @@ class WorkflowVerifierTests(unittest.TestCase):
             "ps_current": ["&kp DLLR", "&kp UNDER"],
             "op_comment": ["&kp MINUS", "&kp MINUS"],
         }
+        clean = verify_workflow.uncomment(text)
         for name, sequence in expected_macros.items():
             self.assertEqual(verify_workflow.macro_bindings(text, name), sequence, name)
             body = verify_workflow.node_body(text, name)
             self.assertIn("wait-ms = <20>", body, name)
             self.assertIn("tap-ms = <20>", body, name)
+            self.assertEqual(len(re.findall(rf"&{name}\b", clean)), 1, name)
 
         self.assertEqual(
             sym[1],
-            ["&trans", "&op_eqeq", "&op_neq", "&op_lte", "&op_gte", "&op_arrow", "&trans", "&trans", "&op_fatarrow", "&op_and", "&op_or", "&op_walrus", "&op_pow", "&op_floordiv"],
+            ["&op_eqeq", "&op_neq", "&op_lte", "&op_gte", "&op_arrow", "&op_fatarrow", "&trans", "&trans", "&op_and", "&op_or", "&op_walrus", "&op_pow", "&op_floordiv", "&op_scope"],
         )
         self.assertEqual(
             sym[3],
-            ["&trans", "&ps_eq", "&ps_ne", "&ps_lt", "&ps_le", "&ps_gt", "&trans", "&trans", "&ps_ge", "&op_sql_ne", "&op_scope", "&ps_current", "&op_comment", "&trans"],
+            ["&kp LSHFT", "&ps_eq", "&ps_ne", "&ps_lt", "&ps_le", "&ps_gt", "&trans", "&trans", "&ps_ge", "&op_sql_ne", "&ps_current", "&op_comment", "&kp LT", "&kp RSHFT"],
         )
 
-        for behavior in ("tlt", "num_caps"):
-            body = verify_workflow.node_body(text, behavior)
-            self.assertIn('flavor = "hold-preferred"', body)
-            self.assertIn("tapping-term-ms = <170>", body)
+        fast = verify_workflow.node_body(text, "tlt_fast")
+        self.assertIn('flavor = "hold-preferred"', fast)
+        self.assertIn("tapping-term-ms = <170>", fast)
+        self.assertNotIn("tlt_safe:", text)
+
+    def test_num_layer_has_vscode_debug_cluster_and_numpad(self) -> None:
+        num = verify_workflow.layer_rows((ROOT / "config/adv360.keymap").read_text(), "layer_num")
+        self.assertEqual(num[2][1:6], ["&kp F5", "&kp F9", "&kp F10", "&kp F11", "&kp F12"])
+        self.assertEqual(num[2][12:18], ["&kp KP_MINUS", "&kp KP_N4", "&kp KP_N5", "&kp KP_N6", "&kp KP_PLUS", "&kp KP_MULTIPLY"])
 
     def test_host_adapters(self) -> None:
         verify_workflow.check_aerospace(ROOT / "host/macos/aerospace.toml", "repository AeroSpace")
@@ -285,9 +483,13 @@ class WorkflowVerifierTests(unittest.TestCase):
         self.assertTrue(command)
         self.assertNotIn(";", command[0])
 
-    def test_macos_launcher_is_host_neutral_argv(self) -> None:
+    def test_macos_launcher_uses_working_spotlight_shortcut_argv(self) -> None:
         command, fallback = adv360_action.resolve_action("launcher", "macos")
-        self.assertEqual(command, ["/usr/bin/open", "-a", "Spotlight"])
+        self.assertEqual(command, [
+            "/usr/bin/osascript",
+            "-e",
+            'tell application "System Events" to key code 49 using {command down}',
+        ])
         self.assertIsNone(fallback)
 
     def test_build_inputs_are_pinned(self) -> None:
@@ -302,6 +504,27 @@ class WorkflowVerifierTests(unittest.TestCase):
         self.assertIn("AeroSpace owns macOS", protocol)
         self.assertIn("AeroSpace", agent_contract)
         self.assertNotIn("exercise Hammerspoon", field_test)
+        self.assertTrue((ROOT / "scripts/manage_host.py").is_file())
+        self.assertIn("python3 scripts/manage_host.py plan", readme)
+        self.assertIn("python3 scripts/manage_host.py install", readme)
+        self.assertNotIn("scripts/propose_host_changes.py", readme)
+        self.assertNotIn("scripts/apply_host_changes.py", readme)
+
+    def test_production_redesign_documentation_contract(self) -> None:
+        readme = (ROOT / "README.md").read_text()
+        agent_contract = (ROOT / "AGENTS.md").read_text()
+        field_test = (ROOT / "docs/7-day-field-test.md").read_text()
+        optimization_log = (ROOT / "docs/optimization-log.md").read_text()
+        for token in (
+            "Six-layer architecture", "only BASE typing combo", "35 ms", "home-row modifiers",
+            "Backspace, Delete, Enter, and Space remain plain", "no `&none`",
+        ):
+            self.assertIn(token, readme)
+        for token in ("six layers", "G and H are active", "one BASE typing combo", "zero combo misfires"):
+            self.assertIn(token, agent_contract)
+        for token in ("--home-row-misfires", "--combo-misfires", "zero combo misfires"):
+            self.assertIn(token, field_test)
+        self.assertIn("six-layer production candidate", optimization_log)
 
     def test_zmk_studio_left_half_contract(self) -> None:
         keymap = (ROOT / "config/adv360.keymap").read_text()
@@ -310,6 +533,8 @@ class WorkflowVerifierTests(unittest.TestCase):
         workflow = (ROOT / ".github/workflows/build.yml").read_text()
         board = (ROOT / "config/boards/arm/adv360/adv360.dtsi").read_text()
         layouts = (ROOT / "config/boards/arm/adv360/adv360-layouts.dtsi").read_text()
+        left_defconfig = (ROOT / "config/boards/arm/adv360/adv360_left_defconfig").read_text()
+        right_defconfig = (ROOT / "config/boards/arm/adv360/adv360_right_defconfig").read_text()
         readme = (ROOT / "README.md").read_text()
         agent_contract = (ROOT / "AGENTS.md").read_text()
 
@@ -323,6 +548,10 @@ class WorkflowVerifierTests(unittest.TestCase):
         self.assertIn("zmk,physical-layout = &physical_layout0", board)
         self.assertIn('compatible = "zmk,physical-layout"', layouts)
         self.assertIn("keys", layouts)
+        self.assertIn("CONFIG_ZMK_USB=y", left_defconfig)
+        self.assertNotIn("CONFIG_ZMK_USB=y", right_defconfig, "split peripheral must not request unsupported USB")
+        self.assertIn("CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE=y", right_defconfig)
+        self.assertNotIn("CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE=n", right_defconfig)
         self.assertIn("ZMK Studio", readme)
         self.assertIn("SYS + U", readme)
         self.assertIn("Studio edits", agent_contract)

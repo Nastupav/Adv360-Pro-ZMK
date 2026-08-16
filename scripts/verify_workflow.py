@@ -81,52 +81,121 @@ def check_unique(name: str, rows: list[list[str]]) -> None:
 def check_keymap() -> None:
     text = KEYMAP.read_text()
     clean = uncomment(text)
-    layers = {
-        "BASE": layer_rows(text, "default_layer"),
-        "NAV": layer_rows(text, "layer_nav"),
-        "SYM": layer_rows(text, "layer_sym"),
-        "NUM": layer_rows(text, "layer_num"),
-        "GLOBAL": layer_rows(text, "layer_global"),
-        "SYS": layer_rows(text, "layer_sys"),
+    layer_nodes = {
+        "BASE": "default_layer",
+        "NAV": "layer_nav",
+        "SYM": "layer_sym",
+        "NUM": "layer_num",
+        "GLOBAL": "layer_global",
+        "SYS": "layer_sys",
     }
+    layers = {name: layer_rows(text, node) for name, node in layer_nodes.items()}
+    expected_defines = [(name, str(index)) for index, name in enumerate(layer_nodes)]
+    actual_defines = re.findall(r"^#define\s+([A-Z][A-Z0-9_]*)\s+(\d+)\s*$", text, re.M)
+    require(actual_defines == expected_defines,
+            f"layer define inventory mismatch: expected {expected_defines}, got {actual_defines}")
+    display_names = re.findall(r'display-name\s*=\s*"([A-Z][A-Z0-9_]*)"\s*;', clean)
+    require(display_names == list(layer_nodes),
+            f"keymap layer-node inventory mismatch: expected {list(layer_nodes)}, got {display_names}")
+
+    for index, name in enumerate(layer_nodes):
+        require(re.search(rf"^#define\s+{name}\s+{index}\s*$", text, re.M) is not None,
+                f"{name}: expected layer index {index}")
+        bindings = [binding for row in layers[name] for binding in row]
+        require(len(bindings) == 76, f"{name}: expected 76 bindings")
+        require("&none" not in bindings, f"{name}: dead &none binding remains")
+
     require("#include <behaviors/studio_unlock.dtsi>" in text, "ZMK Studio unlock behavior is not included")
     require(layers["SYS"][1][9] == "&studio_unlock", "SYS+U must provide ZMK Studio unlock")
 
-    for name in ("NAV", "SYM", "NUM", "GLOBAL", "SYS"):
-        home = layers[name][2]
-        require(home[HOME_INDEX["G"]] == "&none", f"{name}: G must be inactive")
-        require(home[HOME_INDEX["H"]] == "&none", f"{name}: H must be inactive")
+    expected_base_home = [
+        "&kp ESC", "&hml LGUI A", "&hml LALT S", "&hml LCTRL D", "&hml LSHFT F", "&kp G",
+        "&kp LALT", "&kp LCTRL", "&kp LGUI", "&kp RGUI", "&kp RCTRL", "&kp RALT",
+        "&kp H", "&hmr RSHFT J", "&hmr RCTRL K", "&hmr RALT L", "&hmr RGUI SEMI", "&kp SQT",
+    ]
+    require(layers["BASE"][2] == expected_base_home, "BASE bilateral home-row-mod contract changed")
 
     expected_home = {
-        "NAV": {"A": "&kp HOME", "S": "&kp PG_DN", "D": "&kp PG_UP", "F": "&kp END", "J": "&kp LEFT", "K": "&kp DOWN", "L": "&kp UP", ";": "&kp RIGHT"},
-        "SYM": {"A": "&kp UNDER", "S": "&kp COLON", "D": "&kp EXCL", "F": "&kp QMARK", "J": "&kp PLUS", "K": "&kp ASTRK", "L": "&kp AMPS", ";": "&kp PIPE"},
-        "GLOBAL": {"A": "&kp LC(LS(F19))", "S": "&kp LC(LS(F20))", "D": "&kp LC(F20)", "F": "&kp LC(F19)", "J": "&kp LC(F13)", "K": "&kp LC(F14)", "L": "&kp LC(F15)", ";": "&kp LC(F16)"},
+        "NAV": {
+            "A": "&kp HOME", "S": "&kp PG_DN", "D": "&kp PG_UP", "F": "&kp END",
+            "G": "&kp LA(LEFT)", "H": "&kp LA(RIGHT)",
+            "J": "&kp LEFT", "K": "&kp DOWN", "L": "&kp UP", ";": "&kp RIGHT",
+        },
+        "GLOBAL": {
+            "A": "&kp LC(LS(F19))", "S": "&kp LC(LS(F20))", "D": "&kp LC(F20)", "F": "&kp LC(F19)",
+            "G": "&kp LC(F17)", "H": "&kp LC(F18)",
+            "J": "&kp LC(F13)", "K": "&kp LC(F14)", "L": "&kp LC(F15)", ";": "&kp LC(F16)",
+        },
     }
     for name, expected in expected_home.items():
         for key, binding in expected.items():
             actual = layers[name][2][HOME_INDEX[key]]
             require(actual == binding, f"{name} {key}: expected {binding}, got {actual}")
 
-    for name in ("NAV", "SYM", "GLOBAL"):
-        check_unique(name, layers[name])
-
     global_top = layers["GLOBAL"][0]
     require(global_top[1:6] + global_top[8:11] == [f"&kp F{number}" for number in range(13, 21)], "GLOBAL workspace carriers differ from F13-F20")
+    require(layers["GLOBAL"][4][1:3] == ["&kp LC(F17)", "&kp LC(F18)"],
+            "GLOBAL + [ / ] must emit previous/next workspace carriers")
     require(not re.search(r"\bF2[1-4]\b", clean), "active firmware must not emit F21-F24")
 
-    base = " ".join(binding for row in layers["BASE"] for binding in row)
-    expected_thumbs = ("&tlt NAV ESC", "&tlt SYM TAB", "&num_caps NUM 0", "&tlt GLOBAL LA(F13)")
+    base_bindings = [binding for row in layers["BASE"] for binding in row]
+    base = " ".join(base_bindings)
+    expected_thumbs = (
+        "&tlt_fast NAV ESC", "&tlt_fast SYM TAB", "&num_caps NUM 0",
+        "&tlt_fast GLOBAL LA(F13)",
+    )
     for binding in expected_thumbs:
         require(base.count(binding) == 1, f"BASE: expected exactly one {binding}")
-    require(len(re.findall(r"&(tlt|num_caps)\b", base)) == 4, "dual-role behavior must be limited to four thumb keys")
+    require(len(re.findall(r"&(tlt_fast|num_caps)\b", base)) == 4,
+            "BASE must expose exactly four timed thumb layer-taps")
+    for binding in ("&kp BSPC", "&kp DEL", "&kp ENTER", "&kp SPACE"):
+        require(base_bindings.count(binding) == 1, f"BASE frequent thumb must remain plain: {binding}")
+    require("&tlt_safe" not in clean, "frequent thumbs must not use a timed safe hold-tap")
+    own_layer_activation_positions = {
+        "NAV": (3, 6), "SYM": (3, 7), "NUM": (4, 7), "GLOBAL": (4, 8),
+    }
+    for name, (row, column) in own_layer_activation_positions.items():
+        require(layers[name][row][column] == "&trans",
+                f"{name}: own activation thumb must remain transparent/reachable")
     require(base.count("&sk_lazy LGUI") == 1 and base.count("&sk_lazy LCTRL") == 1, "lazy sticky GUI/Ctrl missing")
 
-    for behavior in ("tlt", "num_caps"):
+    for behavior in ("hml", "hmr"):
         body = node_body(text, behavior)
-        require('flavor = "hold-preferred"' in body and "tapping-term-ms = <170>" in body, f"{behavior}: expected hold-preferred 170 ms")
+        for token in ('flavor = "balanced"', "tapping-term-ms = <180>", "quick-tap-ms = <150>",
+                      "require-prior-idle-ms = <120>", "hold-trigger-on-release"):
+            require(token in body, f"{behavior}: missing {token}")
+    for behavior in ("tlt_fast", "num_caps"):
+        body = node_body(text, behavior)
+        require('flavor = "hold-preferred"' in body and "tapping-term-ms = <170>" in body,
+                f"{behavior}: expected hold-preferred 170 ms")
     sticky = node_body(text, "sk_lazy")
     for token in ("release-after-ms = <1000>", "quick-release", "lazy", "bindings = <&kp>"):
         require(token in sticky, f"lazy sticky behavior missing {token}")
+
+    combo_nodes = re.findall(r"\b(combo_[a-z0-9_]+)\s*\{(.*?)\};", clean, re.S)
+    require(len(combo_nodes) == 3, f"expected 1 typing and 2 maintenance combos, got {len(combo_nodes)}")
+    typing_combos = [(name, body) for name, body in combo_nodes if name not in {"combo_bt_clear", "combo_bootloader"}]
+    require(len(typing_combos) == 1, "typing combo inventory mismatch")
+    combo_map = dict(typing_combos)
+    require("key-positions = <15 16>" in combo_map.get("combo_esc", ""),
+            "Esc combo must use low-frequency Q+W, not a common home-row bigram")
+    require("require-prior-idle-ms = <80>" in combo_map["combo_esc"],
+            "Esc combo must require 80 ms prior idle")
+    positions: set[tuple[int, ...]] = set()
+    fanout: Counter[int] = Counter()
+    for name, body in typing_combos:
+        require("timeout-ms = <35>" in body, f"{name}: typing combo term must be 35 ms")
+        require("layers = <BASE>" in body, f"{name}: typing combo must be BASE-only")
+        require(re.search(r"bindings\s*=.*\b(?:LG|LC|LA)\(", body) is None,
+                f"{name}: BASE typing combo must remain OS-neutral")
+        match = re.search(r"key-positions\s*=\s*<([0-9 ]+)>", body)
+        require(match is not None, f"{name}: key positions missing")
+        assert match is not None
+        pair = tuple(int(value) for value in match.group(1).split())
+        require(len(pair) == 2 and pair not in positions, f"{name}: invalid or duplicate key positions {pair}")
+        positions.add(pair)
+        fanout.update(pair)
+    require(max(fanout.values()) == 1, f"typing combo fan-out changed: {dict(fanout)}")
 
     speed_macros = {
         "op_eqeq": ["&kp EQUAL", "&kp EQUAL"],
@@ -160,21 +229,26 @@ def check_keymap() -> None:
         require(len(re.findall(rf"&{macro}\b", clean)) == 1, f"{macro}: expected one active use")
 
     expected_sym_rows = {
-        1: ["&trans", "&op_eqeq", "&op_neq", "&op_lte", "&op_gte", "&op_arrow", "&trans", "&trans", "&op_fatarrow", "&op_and", "&op_or", "&op_walrus", "&op_pow", "&op_floordiv"],
-        3: ["&trans", "&ps_eq", "&ps_ne", "&ps_lt", "&ps_le", "&ps_gt", "&trans", "&trans", "&ps_ge", "&op_sql_ne", "&op_scope", "&ps_current", "&op_comment", "&trans"],
+        1: ["&op_eqeq", "&op_neq", "&op_lte", "&op_gte", "&op_arrow", "&op_fatarrow", "&trans", "&trans", "&op_and", "&op_or", "&op_walrus", "&op_pow", "&op_floordiv", "&op_scope"],
+        3: ["&kp LSHFT", "&ps_eq", "&ps_ne", "&ps_lt", "&ps_le", "&ps_gt", "&trans", "&trans", "&ps_ge", "&op_sql_ne", "&ps_current", "&op_comment", "&kp LT", "&kp RSHFT"],
     }
     for row_index, expected in expected_sym_rows.items():
         require(layers["SYM"][row_index] == expected, f"SYM row {row_index + 1}: speed macro placement changed")
 
     nav = " ".join(binding for row in layers["NAV"] for binding in row)
-    for binding in ("&msc SCRL_LEFT", "&msc SCRL_DOWN", "&msc SCRL_UP", "&msc SCRL_RIGHT", "&mkp MCLK", "&mkp LCLK", "&mkp RCLK"):
-        require(nav.count(binding) == 1, f"NAV pointer binding missing or duplicated: {binding}")
-    require("MOVE_" not in nav, "NAV must not include pointer cursor movement")
+    for binding in ("&msc SCRL_LEFT", "&msc SCRL_DOWN", "&msc SCRL_UP", "&msc SCRL_RIGHT",
+                    "&mkp MCLK", "&mkp LCLK", "&mkp RCLK"):
+        require(binding in nav, f"NAV pointer binding missing: {binding}")
+    require("&mmv" not in nav, "production NAV must not include unvalidated pointer movement")
 
     conf = uncomment((ROOT / "config/adv360.conf").read_text(), marker="#")
-    for token in ("CONFIG_ZMK_HID_KEYBOARD_NKRO_EXTENDED_REPORT=y", "CONFIG_ZMK_POINTING=y", "CONFIG_ZMK_STUDIO=n", "CONFIG_ZMK_BACKLIGHT_ON_START=n", "CONFIG_ZMK_RGB_UNDERGLOW_ON_START=n"):
+    for token in ("CONFIG_ZMK_HID_KEYBOARD_NKRO_EXTENDED_REPORT=y", "CONFIG_ZMK_POINTING=y",
+                  "CONFIG_ZMK_STUDIO=n", "CONFIG_ZMK_BACKLIGHT_ON_START=n",
+                  "CONFIG_ZMK_RGB_UNDERGLOW_ON_START=n"):
         require(token in conf, f"adv360.conf missing {token}")
-    print("PASS keymap geometry, thumb timing, macros, Studio unlock, pointer controls, and power defaults")
+    require("CONFIG_ZMK_COMBO_MAX_COMBOS_PER_KEY" not in conf, "single-combo profile must use default fan-out")
+    require("&tog" not in clean, "production layers must be momentary, not toggled")
+    print("PASS six-layer geometry, no-dead-key contract, HRMs, one combo, four timed thumbs, merged macros/pointer controls, Studio, and power defaults")
 
 
 def check_protocol() -> dict[str, Any]:
@@ -398,9 +472,17 @@ def check_build_and_docs() -> None:
 
     board = (ROOT / "config/boards/arm/adv360/adv360.dtsi").read_text()
     layouts = (ROOT / "config/boards/arm/adv360/adv360-layouts.dtsi").read_text()
+    left_defconfig = (ROOT / "config/boards/arm/adv360/adv360_left_defconfig").read_text()
+    right_defconfig = (ROOT / "config/boards/arm/adv360/adv360_right_defconfig").read_text()
     require("zmk,physical-layout = &physical_layout0" in board, "board lacks selected ZMK Studio physical layout")
     require('compatible = "zmk,physical-layout"' in layouts and "keys" in layouts,
             "ZMK Studio physical layout lacks key geometry")
+    require("CONFIG_ZMK_USB=y" in left_defconfig, "central half must keep USB enabled")
+    require("CONFIG_ZMK_USB=y" not in right_defconfig,
+            "split peripheral must not request unsupported ZMK USB")
+    require("CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE=y" in right_defconfig and
+            "CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE=n" not in right_defconfig,
+            "right-half RGB idle policy is stale or battery-hostile")
 
     readme = (ROOT / "README.md").read_text()
     protocol = (ROOT / "host/PROTOCOL.md").read_text()
@@ -413,11 +495,21 @@ def check_build_and_docs() -> None:
     require((ROOT / "host/macos/aerospace.toml").exists(), "repository AeroSpace adapter missing")
     require(not (ROOT / "host/hammerspoon-adv360.lua").exists() and not (ROOT / "host/karabiner-adv360.json").exists(),
             "retired macOS protocol adapters remain in the supported host tree")
-    for token in ("ASDF", "JKL;", "G", "H", "hold-preferred", "170 ms", "20/20 ms", "make verify", "make"):
+    for token in (
+        "ASDF", "JKL;", "G and H are active", "six layers", "one BASE typing combo",
+        "hold-preferred", "170 ms", "35 ms", "20/20 ms", "zero combo misfires", "make verify", "make",
+    ):
         require(token in agent_contract, f"agent contract missing {token}")
-    for token in ("speed-profile candidate", "independent spec re-review passed", "macro output errors", "accept / revert / iterate"):
+    for token in (
+        "speed-profile candidate", "independent spec re-review passed", "macro output errors",
+        "six-layer production candidate", "accept / revert / iterate",
+    ):
         require(token in optimization_log, f"optimization log missing {token}")
-    require("All 21 literal macros use 20/20 ms timing" in readme, "README speed-macro inventory is stale")
+    for token in (
+        "Six-layer architecture", "no `&none`", "only BASE typing combo", "SYM owns all 21",
+        "NAV", "SYS", "35 ms", "20/20 ms",
+    ):
+        require(token in readme, f"README redesign documentation missing {token}")
     require("ZMK Studio" in readme and "SYS + U" in readme and "Restore Stock Settings" in readme,
             "README lacks ZMK Studio connection/unlock/persistence guidance")
     require("SYS + U" in agent_contract and "Studio edits" in agent_contract and "ZMK Studio remains disabled" not in agent_contract,

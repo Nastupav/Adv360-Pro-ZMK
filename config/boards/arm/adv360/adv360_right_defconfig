@@ -37,7 +37,7 @@ CONFIG_ZMK_RGB_UNDERGLOW=y
 CONFIG_ZMK_RGB_UNDERGLOW_EXT_POWER=y
 CONFIG_ZMK_RGB_UNDERGLOW_ON_START=y
 CONFIG_ZMK_RGB_UNDERGLOW_EFF_START=4
-CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE=n  # right=peripheral, save battery (left=central keeps RGB on)
+CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE=y  # peripheral indicators may sleep to preserve battery
 
 #Backlighting configuration
 CONFIG_PWM=y
@@ -57,5 +57,6 @@ CONFIG_BUILD_OUTPUT_UF2=y
 
 CONFIG_ZMK_BLE_EXPERIMENTAL_FEATURES=y
 
+# The right half is a split BLE peripheral. Requesting ZMK USB is invalid for
+# this role and produces a Kconfig dependency warning.
 CONFIG_ZMK_BLE=y
-CONFIG_ZMK_USB=y

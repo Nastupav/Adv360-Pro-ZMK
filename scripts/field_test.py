@@ -7,6 +7,7 @@ import argparse
 import csv
 import os
 import sys
+import tempfile
 from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -17,6 +18,9 @@ FIELDS = [
     "minutes",
     "thumb_misfires",
     "layer_errors",
+    "home_row_misfires",
+    "combo_misfires",
+    "aggressive_input_measured",
     "shortcut_mismatches",
     "macro_output_errors",
     "macro_output_measured",
@@ -24,10 +28,18 @@ FIELDS = [
     "planned_corrections",
     "notes",
 ]
-PREVIOUS_FIELDS = [field for field in FIELDS if field != "macro_output_measured"]
+PRE_AGGRESSIVE_FIELDS = [
+    "timestamp", "os", "minutes", "thumb_misfires", "layer_errors",
+    "shortcut_mismatches", "macro_output_errors", "macro_output_measured",
+    "awkward_symbols", "planned_corrections", "notes",
+]
+PREVIOUS_FIELDS = [field for field in PRE_AGGRESSIVE_FIELDS if field != "macro_output_measured"]
 PRE_MACRO_FIELDS = [field for field in PREVIOUS_FIELDS if field != "macro_output_errors"]
 LEGACY_FIELDS = [field for field in PRE_MACRO_FIELDS if field != "planned_corrections"]
-INTEGER_FIELDS = ("minutes", "thumb_misfires", "layer_errors", "shortcut_mismatches", "macro_output_errors")
+INTEGER_FIELDS = (
+    "minutes", "thumb_misfires", "layer_errors", "home_row_misfires",
+    "combo_misfires", "shortcut_mismatches", "macro_output_errors",
+)
 MIN_SESSION_MINUTES = 30
 MIN_TOTAL_MINUTES = 420
 MIN_OS_MINUTES = 60
@@ -45,10 +57,57 @@ def default_log() -> Path:
 
 def write_rows(path: Path, rows: list[dict[str, str]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=FIELDS)
-        writer.writeheader()
-        writer.writerows(rows)
+    mode = (path.stat().st_mode & 0o7777) if path.exists() else 0o600
+    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    temporary = Path(temporary_name)
+    try:
+        os.fchmod(descriptor, mode)
+        with os.fdopen(descriptor, "w", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=FIELDS)
+            writer.writeheader()
+            writer.writerows(rows)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+        sync_directory(path.parent)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def sync_directory(path: Path) -> None:
+    descriptor = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def backup_before_migration(path: Path) -> Path:
+    """Create a durable backup without overwriting or reusing stale content."""
+    base = path.with_name(path.name + ".pre-migration.bak")
+    data = path.read_bytes()
+    mode = path.stat().st_mode & 0o7777
+    descriptor, temporary_name = tempfile.mkstemp(prefix=f".{base.name}.", dir=path.parent)
+    temporary = Path(temporary_name)
+    try:
+        os.fchmod(descriptor, mode)
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+
+        index = 0
+        while True:
+            backup = base if index == 0 else base.with_name(f"{base.name}.{index}")
+            try:
+                os.link(temporary, backup)
+                break
+            except FileExistsError:
+                index += 1
+        sync_directory(path.parent)
+    finally:
+        temporary.unlink(missing_ok=True)
+    return backup
 
 
 def validate_row(row: dict[str, str], line_number: int) -> dict[str, str]:
@@ -71,8 +130,9 @@ def validate_row(row: dict[str, str], line_number: int) -> dict[str, str]:
         row[field] = str(value)
     if int(row["minutes"]) == 0:
         raise LogError(f"line {line_number}: minutes must be greater than zero")
-    if row["macro_output_measured"] not in {"yes", "no"}:
-        raise LogError(f"line {line_number}: macro_output_measured must be yes or no")
+    for field in ("macro_output_measured", "aggressive_input_measured"):
+        if row[field] not in {"yes", "no"}:
+            raise LogError(f"line {line_number}: {field} must be yes or no")
     return row
 
 
@@ -82,10 +142,15 @@ def read_rows(path: Path, migrate: bool = False) -> list[dict[str, str]]:
     with path.open(newline="") as handle:
         reader = csv.DictReader(handle)
         fieldnames = reader.fieldnames or []
-        if fieldnames not in (FIELDS, PREVIOUS_FIELDS, PRE_MACRO_FIELDS, LEGACY_FIELDS):
+        if fieldnames not in (FIELDS, PRE_AGGRESSIVE_FIELDS, PREVIOUS_FIELDS, PRE_MACRO_FIELDS, LEGACY_FIELDS):
             raise LogError(f"invalid CSV header in {path}: expected {FIELDS}, got {fieldnames}")
         rows = list(reader)
 
+    if fieldnames != FIELDS:
+        for row in rows:
+            row["home_row_misfires"] = "0"
+            row["combo_misfires"] = "0"
+            row["aggressive_input_measured"] = "no"
     if fieldnames == PREVIOUS_FIELDS:
         for row in rows:
             row["macro_output_measured"] = "yes"
@@ -96,11 +161,12 @@ def read_rows(path: Path, migrate: bool = False) -> list[dict[str, str]]:
     if fieldnames == LEGACY_FIELDS:
         for row in rows:
             row["planned_corrections"] = ""
-    if fieldnames != FIELDS:
-        if migrate:
-            write_rows(path, rows)
+    validated = [validate_row(dict(row), line_number) for line_number, row in enumerate(rows, start=2)]
+    if fieldnames != FIELDS and migrate:
+        backup_before_migration(path)
+        write_rows(path, validated)
 
-    return [validate_row(dict(row), line_number) for line_number, row in enumerate(rows, start=2)]
+    return validated
 
 
 def ensure_log(path: Path) -> None:
@@ -126,6 +192,9 @@ def command_log(args: argparse.Namespace) -> int:
         "minutes": str(args.minutes),
         "thumb_misfires": str(args.thumb_misfires),
         "layer_errors": str(args.layer_errors),
+        "home_row_misfires": str(args.home_row_misfires),
+        "combo_misfires": str(args.combo_misfires),
+        "aggressive_input_measured": "yes",
         "shortcut_mismatches": str(args.shortcut_mismatches),
         "macro_output_errors": str(args.macro_output_errors),
         "macro_output_measured": "yes",
@@ -164,6 +233,8 @@ def command_report(args: argparse.Namespace) -> int:
     hours = totals["minutes"] / 60
     thumb_rate = totals["thumb_misfires"] / hours if hours else float("inf")
     layer_rate = totals["layer_errors"] / hours if hours else float("inf")
+    home_row_rate = totals["home_row_misfires"] / hours if hours else float("inf")
+    combo_rate = totals["combo_misfires"] / hours if hours else float("inf")
     recurring = {symbol for symbol, count in awkward.items() if count >= AWKWARD_REPEAT_THRESHOLD}
     recurring_unplanned = sorted(recurring - planned)
 
@@ -174,6 +245,9 @@ def command_report(args: argparse.Namespace) -> int:
         f"macOS and Linux each >= {MIN_OS_MINUTES} minutes": all(operating_systems[name] >= MIN_OS_MINUTES for name in ("macos", "linux")),
         "thumb misfires <= 0.5/hour": thumb_rate <= 0.5,
         "layer errors <= 0.5/hour": layer_rate <= 0.5,
+        "home-row mod misfires <= 0.5/hour": home_row_rate <= 0.5,
+        "zero combo misfires": totals["combo_misfires"] == 0,
+        "aggressive input measured in every session": all(row["aggressive_input_measured"] == "yes" for row in rows),
         "zero shortcut mismatches": totals["shortcut_mismatches"] == 0,
         "macro output measured in every session": all(row["macro_output_measured"] == "yes" for row in rows),
         "zero macro output errors": totals["macro_output_errors"] == 0,
@@ -183,7 +257,8 @@ def command_report(args: argparse.Namespace) -> int:
     print(f"log: {args.log}")
     print(f"sessions={len(rows)} days={len(day_minutes)} minutes={totals['minutes']}")
     print("OS minutes: " + ", ".join(f"{name}={minutes}" for name, minutes in sorted(operating_systems.items())))
-    print(f"thumb_misfires/hour={thumb_rate:.2f} layer_errors/hour={layer_rate:.2f}")
+    print(f"thumb_misfires/hour={thumb_rate:.2f} layer_errors/hour={layer_rate:.2f} "
+          f"home_row_misfires/hour={home_row_rate:.2f} combo_misfires/hour={combo_rate:.2f}")
     print(f"shortcut_mismatches={totals['shortcut_mismatches']} macro_output_errors={totals['macro_output_errors']}")
     if awkward:
         print("awkward symbols: " + ", ".join(f"{symbol}={count}" for symbol, count in awkward.most_common()))
@@ -219,6 +294,8 @@ def parser() -> argparse.ArgumentParser:
     log.add_argument("--minutes", type=int, required=True)
     log.add_argument("--thumb-misfires", type=int, default=0)
     log.add_argument("--layer-errors", type=int, default=0)
+    log.add_argument("--home-row-misfires", type=int, default=0, help="letter/modifier decisions that resolved incorrectly")
+    log.add_argument("--combo-misfires", type=int, default=0, help="missed or unintended home-row combo activations")
     log.add_argument("--shortcut-mismatches", type=int, default=0)
     log.add_argument("--macro-output-errors", type=int, default=0, help="dropped, duplicated, or reordered firmware-macro characters")
     log.add_argument("--awkward-symbols", default="", help="space-separated symbols that felt awkward")

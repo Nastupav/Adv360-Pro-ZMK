@@ -1,63 +1,114 @@
-# Advantage360 agent contract
+# AGENTS.md — Advantage360 repository contract
 
-This repository is an evidence-driven, speed-focused Kinesis Advantage360 Pro configuration. Do not call a layout "optimized" solely because it compiles. Static verification makes it test-ready; the seven-day physical protocol decides whether an iteration is accepted.
+## Scope
 
-## Non-negotiable user contract
+This repository owns the Kinesis Advantage360 Pro firmware, its F13-F20 host
+protocol, macOS AeroSpace integration, Linux Hyprland integration, Neovim
+bindings, and physical acceptance tooling.
 
-- BASE is plain US QWERTY. Letters never use hold-taps, home-row mods, or combos.
-- Non-BASE home-row actions use only physical `ASDF` and `JKL;`.
-- Physical `G` and `H` are inactive on every non-BASE layer.
-- Never use Esc in a combo.
-- Frequent GUI/Cmd and Ctrl paths stay plain or sticky and composable.
-- Firmware macros emit literal tokens only: no cursor movement, trailing spaces, editor commands, or auto-pairs.
-- ZMK Studio is enabled only on the left/central half; preserve the USB RPC
-  snippet, `SYS + U` unlock, and Studio-free right peripheral. Studio edits
-  override Git keymap changes until **Restore Stock Settings** is used.
+## Authoritative production-candidate contract
 
-## Current speed profile
+- The keymap has exactly six layers, in this order:
+  `BASE`, `NAV`, `SYM`, `NUM`, `GLOBAL`, `SYS`.
+- Every layer has physical row counts `[14, 14, 18, 14, 16]`, totaling 76.
+- No layer may contain `&none`; deliberate `&trans` is allowed and required for
+  momentary-layer reachability and modifier composition.
+- BASE isolated taps are plain US QWERTY. G and H are active letters.
+- Home-row mods are bilateral:
+  - `ASDF` = GUI, Alt, Ctrl, Shift
+  - `JKL;` = Shift, Ctrl, Alt, GUI
+- HRMs remain balanced at 180 ms, quick-tap 150 ms, prior-idle 120 ms, with
+  opposite-half triggers and `hold-trigger-on-release`.
+- The only timed layer thumbs are:
+  - Esc/NAV
+  - Tab/SYM
+  - Caps Word/NUM
+  - Alt+F13/GLOBAL
+- These use hold-preferred behavior with a 170 ms tapping term.
+- Backspace, Delete, Enter, and Space are plain keys, never layer-taps.
+- There is one BASE typing combo: Q+W -> Escape. It is BASE-only, 35 ms, and
+  requires 80 ms prior idle.
+- Protected SYS-only Bluetooth-clear and bootloader combos remain separate from
+  the typing-combo inventory.
+- Layers are momentary; do not add `&tog` without explicit user approval and a
+  physical trial.
+- SYM owns exactly 21 literal macros with 20/20 ms timing.
+- NAV owns scroll and mouse-click controls; do not add pointer movement without
+  measured need.
+- NUM owns F1-F12, the right numpad, and VS Code `F5/F9/F10/F11/F12` on ASDFG.
+- GLOBAL preserves the F13-F20 host protocol. `GLOBAL + [` and `GLOBAL + ]`
+  must emit Ctrl+F17 and Ctrl+F18.
+- SYS owns Bluetooth, output selection, ZMK Studio, media, lighting, and guarded
+  maintenance.
 
-- Six layers: BASE, NAV, SYM, NUM, GLOBAL, SYS.
-- Four thumb-only hold-taps use `hold-preferred` at 170 ms.
-- SYM contains 21 literal language macros at 20/20 ms for Python, PowerShell, SQL, shell, and PySpark.
-- F13-F20 plus modifiers form the host protocol. Do not change firmware carriers without updating and testing every host adapter.
-- AeroSpace owns macOS. Keep `host/macos/aerospace.toml`, the installer, active verifier, and protocol docs synchronized; Hammerspoon and Karabiner must not translate or bind these carriers.
+## Host ownership
 
-The exact macro sequences and positions are enforced by `tests/test_workflow.py` and `scripts/verify_workflow.py`. Update code, tests, README, and this contract together when intentionally changing the design.
+AeroSpace is the only macOS owner of F13-F20 carriers. Do not reintroduce a
+Hammerspoon or Karabiner owner. Hyprland owns the Linux side. Firmware emits
+host-neutral carriers; host adapters own application, workspace, and window
+semantics.
 
-## Mandatory iteration loop
+## ZMK Studio
 
-1. Run `git fetch origin --prune`, inspect `git status`, and preserve unrelated worktree changes.
-2. Read `README.md`, this file, `docs/7-day-field-test.md`, and the keymap header before proposing changes.
-3. Change one ergonomic variable per iteration. Add or update a failing test first.
-4. Run `make test` and `make verify`.
-5. Run `git diff --check` and inspect the full diff.
-6. Build both halves with `make`. Require both `Board: adv360_left` and `Board: adv360_right`, linked `zmk.elf`, converted UF2 output, checksums, and a manifest.
-7. Run an independent review against the contract. Fix concrete compiler, geometry, macro-sequence, reachability, protocol, or documentation defects; do not replace the design with reviewer preferences.
-8. Flash only after static gates pass. Complete the physical trial with `python3 scripts/field_test.py report --strict`.
-9. Record the experiment and evidence in `docs/optimization-log.md`. Do not claim improvement without before/after physical evidence.
+- Studio RPC and USB are enabled only on the left/central build.
+- `SYS + U` authorizes Studio only while Studio is requesting authorization.
+- `SYS + A` selects USB output.
+- Studio edits are persistent runtime overrides, not source changes. Instruct
+  users to use Restore Stock Settings before evaluating newly flashed source.
+- The right split peripheral must not request `CONFIG_ZMK_USB=y`.
 
-## Release gates
+## Bluetooth safety
+
+`SYS + 1..5` selects a profile. The SYS-only `1+2` chord clears the currently
+selected profile and is destructive. Never change or invoke it casually. An
+idle-dark RGB indicator is not reliable profile evidence.
+
+## Required verification
+
+After any firmware, board, verifier, or documentation change:
 
 ```sh
-make test
 make verify
 git diff --check
-make
-(cd firmware && shasum -a 256 -c SHA256SUMS)
-python3 scripts/field_test.py report --strict  # requires real user data
 ```
 
-A release is blocked by any macro output error. If 20/20 ms drops, duplicates, or reorders a character, raise both macro timings to 30 ms and restart the field test. If thumb errors exceed 0.5/hour, adjust only the tapping term by 10 ms and restart. Never compensate by adding timing behavior to letters.
+When the active macOS host contract changes or is part of the claim:
 
-## Review priorities
+```sh
+make verify-active
+```
 
-1. Lost or reordered characters, typing delays, and layer misfires.
-2. Exact physical positions and complete `[14,14,18,14,16]` row shape.
-3. Macro definition, output sequence, timing, and exactly one active binding.
-4. Modifier and held-layer composability.
-5. F13-F20 firmware/host semantic parity.
-6. Documentation accuracy and reproducible build provenance.
+After every hold-tap, combo, macro, layer, DTS, Kconfig, or build-input change:
 
-Generated `firmware/` artifacts are gitignored. Their names include the commit,
-the complete firmware-input fingerprint from `scripts/firmware_fingerprint.py`,
-and `-dirty` when built from tracked worktree changes.
+```sh
+make clean_firmware
+make
+cd firmware && shasum -a 256 -c SHA256SUMS
+```
+
+The current `scripts/firmware_fingerprint.py` value must equal
+`config_sha256` in `firmware/build-manifest.json`. Validate both UF2 files as
+non-empty 512-byte-block files with valid UF2 framing.
+
+## Physical acceptance
+
+Build success makes the keymap test-ready, not optimized. Use
+`docs/7-day-field-test.md` and `scripts/field_test.py`. Strict acceptance
+requires real macOS and Linux sessions, measured aggressive input, no more than
+0.5 home-row misfires per hour, zero combo misfires, zero macro output errors,
+and the required sustained duration. Migrated logs are not physical evidence
+for the new profile.
+
+The decision after the trial is explicitly: accept / revert / iterate.
+
+## Change discipline
+
+- Keep macros literal: no cursor movement, spaces, auto-pairs, or editor state.
+- Keep ordinary editor shortcuts composable from modifiers; do not recreate an
+  EDIT layer.
+- Keep CODE merged into SYM, click/scroll controls in NAV, and media in SYS.
+- Keep documentation, tests, verifier expectations, protocol files, and active
+  host configuration synchronized.
+- Never hand off firmware built from a fingerprint that differs from the final
+  source.
+- Do not claim physical optimization without a passing fresh field-test log.

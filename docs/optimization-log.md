@@ -74,6 +74,80 @@ Changed host architecture:
 
 Physical acceptance: existing firmware trial requirements are unchanged; this host-only migration still requires normal real-workflow shortcut observation, but it does not restart the firmware timing trial.
 
+## 2026-08-16 — aggressive-home-row candidate
+
+Status: static gates, active-host verification, both-half firmware build, and bounded independent follow-up review passed; physical field test not started.
+
+Requested design change:
+
+- Replaced the six-layer deterministic profile with ten useful layers.
+- Added bilateral ASDF/JKL; home-row modifiers while preserving plain US QWERTY taps.
+- Activated G and H on every layer and removed all `&none` bindings.
+- Added 16 BASE-only home-row combos at 35 ms.
+- Expanded thumb access to NAV, SYM, NUM, CODE, EDIT, MOUSE, GLOBAL, and MEDIA.
+- Preserved the F13-F20 AeroSpace/Hyprland protocol and left-only ZMK Studio support.
+- Extended physical logging with home-row and combo measurement; previous logs cannot validate the new aggressive input model.
+
+Acceptance status:
+
+- `make verify`: 51/51 tests passed; semantic verifier and `git diff --check` passed.
+- `make verify-active`: active AeroSpace reload, runtime binding parity, exclusive ownership, monitor assignment, and Neovim include passed.
+- Both halves compiled from firmware fingerprint `8bbbc11f1a71`; manifest records left/right=true and both SHA-256 checks passed.
+- UF2 structure checks passed: left 553,984 bytes/1,082 blocks; right 363,520 bytes/710 blocks.
+- Independent review found and drove fixes for destructive GLOBAL bracket drift, incorrect macOS Replace, unsafe legacy-log migration, and stale/symlink backup collisions. The bounded final backup review passed with no remaining issue.
+- Seven-day physical trial: pending and required before any optimization claim.
+
+Decision rule:
+
+- Zero combo misfires are required.
+- Home-row, thumb, and layer misfires must remain at or below 0.5/hour.
+- Any firmware macro output error blocks acceptance.
+- Failed criteria trigger a single-variable iteration, rebuild, and fresh trial.
+
+## 2026-08-16 — six-layer production candidate
+
+Status: static gates, active-host verification, both-half build, and bounded
+independent review passed; the physical trial remains pending.
+
+Reason for superseding the ten-layer candidate:
+
+- Eight timed thumbs and sixteen typing combos competed with the HRM timing
+  system and increased ordinary typing risk without physical evidence.
+- CODE duplicated SYM, EDIT duplicated composable modifiers and NUM F-keys,
+  MOUSE duplicated NAV, and MEDIA duplicated SYS.
+- The user selected the bounded production design before flashing.
+
+Authoritative changes:
+
+- Restored six layers: BASE, NAV, SYM, NUM, GLOBAL, SYS.
+- Kept bilateral ASDF/JKL; HRMs and active G/H letters.
+- Kept only Q+W -> Escape as the one BASE typing combo: 35 ms with 80 ms prior
+  idle.
+- Kept only four timed layer thumbs: Esc/NAV, Tab/SYM, Caps Word/NUM, and
+  Alt+F13/GLOBAL.
+- Restored plain Backspace, Delete, Enter, and Space.
+- Merged all 21 literal developer macros into SYM, scroll/click controls into
+  NAV, VS Code debug keys into NUM, and media/lighting into SYS.
+- Removed layer toggles; all six layers are momentary.
+- Preserved the F13-F20 host protocol and left-only ZMK Studio support.
+
+Acceptance status:
+
+- `make verify`: 51/51 tests, semantic verifier, and `git diff --check` passed.
+- `make verify-active`: active AeroSpace reload/runtime parity, exclusive carrier
+  ownership, monitor assignment, and Neovim include passed.
+- Both halves built from fingerprint `8d592f94fd9c`; manifest records
+  left/right=true and matches the current firmware inputs.
+- SHA-256 checks passed. Left: 536,576 bytes/1,048 valid UF2 blocks,
+  `2f73d58ed4838d6006c933736ae1157d42ce7cf315331e25b9d3d95084202db5`.
+  Right: 363,520 bytes/710 valid UF2 blocks,
+  `b0837fe0294aac6d183697aa3bb8b82157aceffbb61777c7474019dbde5e68fa`.
+- Independent final review found one stale README host-install command pair. The
+  commands now use `scripts/manage_host.py plan/install`, a regression test
+  guards both paths, and the bounded follow-up review passed with no remaining
+  blocker/high/medium defect.
+- A fresh seven-day trial remains required. The decision is accept / revert / iterate.
+
 ## Template for the next iteration
 
 Date:

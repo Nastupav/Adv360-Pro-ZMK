@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "macos": {
-    "launcher": { "command": ["/usr/bin/open", "-a", "Spotlight"] },
+    "launcher": { "command": ["/usr/bin/osascript", "-e", "tell application \"System Events\" to key code 49 using {command down}"] },
     "terminal": { "command": ["/usr/bin/open", "-a", "Ghostty"] },
     "browser": { "command": ["/usr/bin/open", "-a", "Google Chrome"] },
     "files": { "command": ["/usr/bin/open", "-a", "Finder"] },

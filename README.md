@@ -1,219 +1,266 @@
-# Advantage360 Pro developer workflow
+# Advantage360 Pro six-layer developer workflow
 
 Source-controlled ZMK firmware and host adapters for a Kinesis Advantage360 Pro.
-The layout is deterministic US QWERTY and speed-focused for Python, PowerShell,
-SQL, shell, and PySpark work, with AeroSpace on macOS and Hyprland on Linux.
+The production candidate favors reliable daily typing over maximizing layer and
+combo counts. macOS is primary; Linux is supported by the same firmware.
 
-Normal letters never wait on timing. There are no home-row mods or typing
-combos; only four dedicated thumb keys are dual-role.
+## Design contract
 
-## Thumb and layer model
+- Plain US QWERTY isolated taps on BASE.
+- Bilateral home-row modifiers on `ASDF` and `JKL;`.
+- G and H remain ordinary letters.
+- Six-layer architecture: BASE, NAV, SYM, NUM, GLOBAL, SYS.
+- Every layer has 76 bindings with no `&none`; deliberate `&trans` preserves
+  momentary-layer release and modifier composition.
+- Q+W -> Escape is the only BASE typing combo. It is BASE-only, 35 ms, and
+  requires 80 ms of prior idle.
+- Backspace, Delete, Enter, and Space remain plain. They are not timed layer
+  keys.
+- Only four thumbs are timed: Esc/NAV, Tab/SYM, Caps Word/NUM, and
+  Alt+F13/GLOBAL.
+- Layers are momentary. There are no layer toggles.
+- AeroSpace owns macOS F13-F20 automation. Hyprland owns Linux automation.
+- A clean build proves compatibility, not physical ergonomics. The seven-day
+  field test remains mandatory before calling the layout optimized.
 
-```text
-Left upper:   Alt  Ctrl  GUI      Right upper:  GUI  Ctrl  Alt
-Layer thumbs: tap Esc / hold NAV  | tap Tab / hold SYM
-Lower thumbs: Bsp  Del  CapsWord/NUM  | Launcher/GLOBAL  Enter  Space
-```
+“Plain QWERTY” means isolated taps emit normal US QWERTY characters. Home-row
+hold-taps and the Q+W combo remain timing-sensitive by design.
 
-The four layer thumbs use hold-preferred 170 ms behavior, so a layer resolves
-on the next key-down instead of waiting for release. The two central keys are
-lazy sticky GUI and Ctrl with quick release and a one-second timeout.
-
-| Layer | Activation | Purpose |
-|---|---|---|
-| BASE | Default | QWERTY, plain/sticky modifiers, direct brackets |
-| NAV | Hold Esc/NAV | Navigation, selection, scroll, mouse buttons |
-| SYM | Hold Tab/SYM | Python/SQL/shell symbols and operators |
-| NUM | Hold CapsWord/NUM | Numpad and F1-F12 |
-| GLOBAL | Hold Launcher/GLOBAL | Host-neutral desktop protocol |
-| SYS | Either top-inner SYS | Bluetooth, output, lighting, maintenance |
-
-### Developer layers
-
-NAV keeps the ergonomic home zones and leaves G/H inactive:
+## BASE
 
 ```text
-A       S        D       F       J      K       L     ;
-Home    PageDn   PageUp  End     Left   Down    Up    Right
+Home row
+A             S             D             F        G
+Cmd / A       Option / S    Ctrl / D      Shift / F  G
+
+H        J             K             L             ;
+H        Shift / J     Ctrl / K      Option / L    Cmd / ;
 ```
 
-NAV+Y/U/I/O scroll left/down/up/right. While NAV is held, the right GLOBAL,
-Enter, and Space thumbs click middle, left, and right respectively. Firmware
-does not provide cursor movement.
+The mirrored plain Alt, Ctrl, and Cmd keys in the inner columns plus the outer
+plain Shift keys are deterministic fallbacks when an HRM hold is undesirable.
 
-SYM places common symbols on the same zones:
+HRM timing:
+
+- balanced
+- 180 ms tapping term
+- 150 ms quick tap
+- 120 ms prior idle
+- opposite-hand positional hold trigger
+- hold trigger on release
+
+### Thumb controls
 
 ```text
-A   S   D   F       J   K   L   ;
-_   :   !   ?       +   *   &   |
+Tap                         Hold
+Esc                         NAV
+Tab                         SYM
+Caps Word                   NUM
+Alt+F13 launcher carrier    GLOBAL
 ```
 
-The upper-alpha row emits language-neutral operators:
+Plain frequent thumbs:
 
 ```text
-Q   W   E   R   T        Y   U   I   O   P   \
-==  !=  <=  >=  ->       =>  &&  ||  :=  **  //
+Backspace    Delete    Enter    Space
 ```
 
-The lower-alpha row groups PowerShell comparisons and shared SQL tokens:
+`SYS` has three direct momentary keys: both top inner keys and the far-right
+thumb key.
+
+## Six-layer architecture
+
+### BASE
+
+US QWERTY, HRMs, plain frequent thumbs, physical arrows, and direct SYS access.
+
+### NAV
+
+Prime action zones:
 
 ```text
-Z    X    C    V    B        N    M   ,   .   /
--eq  -ne  -lt  -le  -gt      -ge  <>  ::  $_  --
+ASDF    Home / Page Down / Page Up / End
+G/H     Option+Left / Option+Right (macOS word movement)
+JKL;    Left / Down / Up / Right
+YUIO    Scroll left / down / up / right
+NM,.    Select left / down / up / right
 ```
 
-All 21 literal macros use 20/20 ms timing and contain no trailing spaces or
-cursor movement, so editor auto-pairs and formatters remain authoritative.
-NUM puts F1-F12 on the left and a J-starting numpad on the right.
+Linux word movement remains composable with a plain Ctrl key plus NAV `J` or
+`;`. The thumb area contains left/right/middle mouse clicks. Pointer movement is
+intentionally omitted until real use shows that it is worth a dedicated control
+surface.
 
-## F13-F20 desktop protocol
+### SYM
 
-`host/protocol.json` is the machine-readable contract. Firmware never emits
-F21-F24.
+A direct symbol surface plus editor-independent literal developer tokens. SYM owns all 21 macros; CODE was merged into SYM.
 
-| Signal | Meaning |
-|---|---|
-| F13-F20 | Workspace 1-8 |
-| Shift+F13-F20 | Move window to workspace 1-8 and follow |
-| Ctrl+F13-F16 | Focus left/down/up/right |
-| Ctrl+Shift+F13-F16 | Move/place left/down/up/right |
-| Ctrl+F17/F18 | Previous/next workspace |
-| Ctrl+F19/F20 | Fullscreen/maximize and floating/restore |
-| Ctrl+Shift+F19/F20 | Close and toggle split |
-| Alt+F13-F20 | Eight developer actions |
-
-Developer gestures are mnemonic:
+Home row:
 
 ```text
-tap GLOBAL  launcher       GLOBAL+T  terminal
-GLOBAL+W    browser        GLOBAL+O  files
-GLOBAL+E    editor         GLOBAL+P  project picker
-GLOBAL+U    Git UI         GLOBAL+I  AI chat
+A _    S :    D !    F ?    G =
+H -    J +    K *    L &    ; |    ' "
 ```
 
-Default applications are defined in `host/apps.defaults.json`. Override any
-entry in `~/.config/adv360/apps.json`; commands are argv arrays and are launched
-without shell interpolation. Test one without opening it:
+Shared operators on the QWERTY row:
 
-```sh
-python3 scripts/adv360_action.py terminal --dry-run
+```text
+Q ==    W !=    E <=    R >=    T ->
+Y &&    U ||    I :=    O **    P //    \ ::
 ```
 
-## Host integration
+PowerShell, SQL, and shell tokens on the lower row:
 
-Preview, install, or roll back versioned host includes with:
-
-```sh
-python3 scripts/manage_host.py plan
-python3 scripts/manage_host.py install
-python3 scripts/manage_host.py rollback latest
+```text
+Z -eq   X -ne   C -lt   V -le   B -gt
+N -ge   M <>    , $_    . --
 ```
 
-Installation is idempotent. Before changing a live file it stores a timestamped
-copy and manifest under `~/.local/state/adv360-host-backups/`. After every macOS
-installation, run `make verify-active`; it performs the real AeroSpace reload,
-compares the loaded runtime binding table with the repository, checks that no
-running Hammerspoon hotkey or selected Karabiner rewrite claims F13-F20, and
-verifies monitor assignment. A dry-run parse alone is not an activation check.
+All macros emit literal characters at 20/20 ms. They do not add spaces, move the
+cursor, create pairs, or invoke editor shortcuts.
 
-### macOS
+### NUM
 
-AeroSpace owns macOS workspaces, window movement, window state, and all eight
-developer actions. `host/macos/aerospace.toml` is the source-controlled adapter;
-`scripts/manage_host.py install` renders the stable `adv360-action` path and
-installs it as the sole active AeroSpace config.
+- F1-F12 on the top row.
+- Right-hand numpad.
+- VS Code run/debug cluster on `ASDFG`:
 
-The installer also removes the retired Advantage360 block from Hammerspoon and
-the old F14/F15 Hammerspoon normalization from Karabiner. Hammerspoon may remain
-installed for unrelated automation, but it must not bind the Advantage360
-protocol. Karabiner is not required for the current raw F13-F20 carriers.
-
-Workspaces 1-5 are assigned to `PG32UCDM`; 6-10 are assigned to `P34WD-40`.
-Previous/next workspace actions wrap at boundaries. AeroSpace starts at login
-and auto-reloads config changes.
-
-### Linux
-
-Hyprland 0.55+ uses Lua:
-
-```lua
-dofile('/absolute/path/host/hyprland-adv360.lua')
+```text
+A F5    S F9    D F10    F F11    G F12
 ```
 
-For Hyprland 0.54 and older, install `adv360-action` on PATH and source
-`host/hyprland-adv360.conf`.
+Standard Ctrl/Cmd chords remain composable from BASE; the former EDIT layer was
+removed.
 
-### Neovim
+### GLOBAL
 
-```lua
-dofile('/absolute/path/host/nvim-adv360.lua')
+GLOBAL emits uncommon F13-F20 carriers. Firmware stays host-neutral; the host
+adapter decides what each carrier means.
+
+Application carriers:
+
+```text
+Tap GLOBAL thumb   Alt+F13   launcher
+GLOBAL+T           Alt+F14   terminal
+GLOBAL+W           Alt+F15   browser
+GLOBAL+O           Alt+F16   files
+GLOBAL+E           Alt+F17   editor
+GLOBAL+P           Alt+F18   project
+GLOBAL+U           Alt+F19   git
+GLOBAL+I           Alt+F20   AI
 ```
 
-Ctrl+J/K/L/`;` focuses panes. `<leader>w` followed by J/K/L/`;` moves panes;
-this avoids unreliable Ctrl+Shift letter distinctions in terminal protocols.
+Workspace and window controls use the existing protocol. Important physical
+bindings:
 
-## Build and verification
-
-Python 3.9 or newer is supported. Podman is preferred when both container
-runtimes are installed.
-
-```sh
-make test            # unit tests
-make verify          # semantic, protocol, host, syntax, and provenance checks
-make verify-active   # additionally verify live AeroSpace/config/Neovim
-make                 # build both firmware halves
-make left            # build only the left half
+```text
+GLOBAL + [    Ctrl+F17    previous workspace
+GLOBAL + ]    Ctrl+F18    next workspace
+GLOBAL + J/K/L/;          focus left/down/up/right
 ```
 
-`make left` writes `right=false` in the manifest and removes any right-hand UF2
-with the same commit/fingerprint prefix, preventing stale pairings.
+See `host/PROTOCOL.md` and `host/protocol.json` for the complete contract.
 
-The build pins both the ZMK source commit and container digest. Firmware names
-contain the Git commit, a fingerprint of every file under `config/` plus the
-Dockerfile and build script, and `-dirty` when tracked inputs differ.
-`firmware/SHA256SUMS` and `firmware/build-manifest.json` record the result.
+### SYS
 
-## Flashing and Bluetooth
+SYS merges Bluetooth, USB output, ZMK Studio, media, lighting, and protected
+maintenance controls. MEDIA was merged into SYS.
 
-Pointing changes the HID descriptor, so the first installation requires a
-clean reset and re-pair:
+## Bluetooth profiles and output control
 
-1. Archive the previous known-good firmware.
-2. Obtain the V3 `settings-reset.uf2` from the official Kinesis repository.
-3. Follow Kinesis's reset procedure, which clears Bluetooth bonds.
-4. Flash the left and right UF2 files using the vendor procedure.
-5. Forget the old keyboard on each host and pair profile 0 to macOS, profile 1
-   to Linux, and profile 2 to mobile.
+Hold any direct SYS key, then press:
 
-Vendor procedure:
-<https://github.com/KinesisCorporation/Adv360-Pro-ZMK#flashing-firmware>
+```text
+SYS + 1..5    select Bluetooth profile 1..5
+SYS + F       select the next Bluetooth profile
+SYS + A       force USB output
+SYS + S       force Bluetooth output
+SYS + D       toggle USB/Bluetooth output
+```
+
+To pair a device:
+
+1. Select a profile with `SYS + 1..5`.
+2. On the host, open Bluetooth settings.
+3. Pair with `Adv360 Dev`.
+
+To clear the currently selected Bluetooth profile, hold SYS and chord `1+2`.
+This is destructive. Select the intended profile first and do not press the
+maintenance chord casually. Clearing one profile does not clear all profiles.
+
+The right half is a Bluetooth peripheral. USB and ZMK Studio belong only to the
+left/central half. Right-half RGB can turn off while idle to save battery; an
+unlit indicator does not prove which profile is selected.
 
 ## ZMK Studio
 
-ZMK Studio is enabled on the left/central half over USB. The right half remains
-a normal split peripheral and intentionally does not include the Studio transport.
+1. Connect a data-capable USB cable to the left half.
+2. Select USB output with `SYS + A`.
+3. Open ZMK Studio and wait for its authorization prompt.
+4. Press `SYS + U` only while Studio is requesting authorization.
 
-1. Flash both newly generated UF2 files.
-2. Connect the left half by USB and select USB output with `SYS + A`.
-3. Open <https://zmk.studio/> in Chrome/Edge or the native application.
-4. When Studio requests authorization, press `SYS + U` to unlock editing.
+Before flashing a source-controlled redesign, use **Restore Stock Settings** in
+ZMK Studio. Persistent Studio edits can otherwise override the compiled keymap.
+Studio edits are not automatically written back to this repository.
 
-Studio edits are stored on the keyboard and override later `.keymap` changes. Use
-**Restore Stock Settings** in ZMK Studio before expecting newly flashed Git
-keymap changes to take effect.
+## Host ownership
 
-RGB and the white backlight start off to protect battery life.
+AeroSpace owns macOS F13-F20 automation. Do not add another Hammerspoon or
+Karabiner F13-F20 owner. Linux uses the Hyprland adapter.
 
-## Seven-day field test
+Install or update the host adapters:
 
-Static checks cannot prove ergonomics. Follow `docs/7-day-field-test.md` and
-record at least seven days, 420 minutes total, and 60 minutes on each OS:
+```sh
+cd /Users/macbook/Desktop/kinesis360
+python3 scripts/manage_host.py plan
+python3 scripts/manage_host.py install
+make verify-active
+```
+
+## Verify and build
+
+```sh
+cd /Users/macbook/Desktop/kinesis360
+make verify
+make verify-active
+make clean_firmware
+make
+cd firmware
+shasum -a 256 -c SHA256SUMS
+```
+
+`make` builds both halves in the pinned container. The resulting UF2 filenames
+and source fingerprint are recorded in `firmware/build-manifest.json`.
+
+Flash the left UF2 to the left half and the right UF2 to the right half. Do not
+mix artifacts from different fingerprints.
+
+## Seven-day physical acceptance
+
+Initialize a fresh log after flashing:
 
 ```sh
 python3 scripts/field_test.py init
-python3 scripts/field_test.py log --os macos --minutes 60
+```
+
+Example session:
+
+```sh
+python3 scripts/field_test.py log \
+  --os macos \
+  --minutes 60 \
+  --home-row-misfires 0 \
+  --combo-misfires 0 \
+  --macro-output-errors 0
+```
+
+Strict report:
+
+```sh
 python3 scripts/field_test.py report --strict
 ```
 
-The 170 ms thumb term and 20/20 ms macro timing are test baselines, not proven
-ergonomic optima. Change only one variable per field-test cycle.
+Acceptance requires the documented macOS/Linux coverage, no more than 0.5
+home-row misfires per hour, zero combo misfires, zero macro-output errors, and
+the required sustained usage. See `docs/7-day-field-test.md`. Until that passes,
+this is a production candidate, not a proven ergonomic optimum.
