@@ -3,16 +3,22 @@
  * Developer keymap: macOS + Windows + Linux, Python / SQL / PowerShell / Vim.
  *
  * Design:
- * - Timeless home-row mods (GACS) with same-hand suppression and prior-idle
- *   gating, so fast typing never waits on a timing decision.
+ * - Timeless home-row mods (GAC) with same-hand suppression and prior-idle
+ *   gating, so fast typing never waits on a timing decision. Shift is NOT
+ *   among them: prior-idle gating abandons a hold that starts within 150 ms
+ *   of the previous key, which is exactly the mid-word capital of PascalCase
+ *   and DataFrame. Shift lives on the outer pinkies instead, where it has no
+ *   timing window at all, and F and J stay plain letters.
  * - Real Cmd/Ctrl on the inner thumbs, because same-hand Cmd+C/V/Z/S/A/W
  *   cannot be produced by a same-hand home-row mod.
  * - MAC is the default base. WIN is an overlay that swaps GUI<->Ctrl on both
  *   the home row and the thumbs, so the "command" modifier never moves.
  * - NAV carries OS-correct clipboard, word motion and editor actions. Holding
  *   NAV while WIN is active pulls in NAV_WIN via a conditional layer.
- * - MACRO is reached by holding both middle thumbs (NAV + SYM). It costs no
- *   thumb key of its own and holds the full text-macro bank.
+ * - Multi-character operators (-> := ** != <= >= || :: __) are firmware
+ *   macros on SYM. Nothing with autocomplete behind it is: the SQL, Python
+ *   and PySpark keyword bank was removed, because every editor here finishes
+ *   those from two characters with scope awareness firmware cannot have.
  * - GLOBAL emits a host-neutral F13-F20 protocol consumed by AeroSpace
  *   (macOS), Hyprland (Linux) and komorebi/AutoHotkey (Windows).
  * - Destructive firmware actions exist only as SYS-layer combos.
@@ -35,7 +41,6 @@
 #define GLOBAL  5
 #define SYS     6
 #define NAV_WIN 7
-#define MACRO   8
 
 /*
  * Key-position map (76 keys, 0-indexed, matches matrix_transform0).
@@ -116,16 +121,19 @@
         };
 
         /*
-         * Smart shift, on the two outer Shift keys.
+         * Smart shift, on the two outer Shift keys. This is the ONLY Shift
+         * on the letter block - there is deliberately no home-row Shift to
+         * compete with it.
          *
          *   hold -> real Shift    tap -> sticky Shift for the next key
          *
-         * This exists because require-prior-idle-ms on the home-row mods
-         * abandons a hold that starts within 150 ms of the previous keypress,
-         * which makes a mid-word capital impossible from the home row. That
-         * costs nothing in snake_case Python but shows up constantly in
-         * PascalCase and after a hyphen. Tap this once and the next character
-         * is capitalised, with no timing window to hit.
+         * Shift was moved here off F and J because require-prior-idle-ms
+         * abandons a home-row hold that starts within 150 ms of the previous
+         * keypress, which makes a mid-word capital impossible - exactly the
+         * PascalCase, DataFrame and StructType case that dominates typing
+         * here. A sticky tap has no timing window to hit at all. The second
+         * gain is that F and J, the two homing-bump keys the index fingers
+         * rest on, no longer carry a hold decision of any kind.
          *
          * flavor = "hold-preferred": any other key pressed during the term
          *   resolves the hold, so Shift+arrow selection and Shift+click keep
@@ -141,6 +149,11 @@
         };
     };
 
+    /*
+     * One conditional layer. There used to be a second - NAV+SYM opened a
+     * text-macro bank - and it was removed with the bank: both middle thumbs
+     * are where the thumbs rest, so an accidental rest silently typed text.
+     */
     conditional_layers {
         compatible = "zmk,conditional-layers";
 
@@ -148,12 +161,6 @@
         nav_win {
             if-layers = <WIN NAV>;
             then-layer = <NAV_WIN>;
-        };
-
-        // Both middle thumbs -> the text-macro bank. Costs no dedicated key.
-        macro_chord {
-            if-layers = <NAV SYM>;
-            then-layer = <MACRO>;
         };
     };
 
@@ -197,22 +204,25 @@
         /*
          * MAC - default base.
          *
-         * Home-row mods (hold):  A=Cmd  S=Alt  D=Ctrl  F=Shift
-         *                        J=Shift K=Ctrl L=Alt  ;=Cmd
+         * Home-row mods (hold):  A=Cmd  S=Alt  D=Ctrl   F and J are plain
+         *                        K=Ctrl L=Alt  ;=Cmd    letters, not mods.
+         * Shift is on the outer pinkies only (see &sms above).
          * Inner thumbs are real Cmd; outer thumbs are real Ctrl.
+         * The two inner top keys are Esc and Tab; SYS is the bottom-right
+         * key alone, which is enough for a layer touched about weekly.
          */
         layer_mac {
             display-name = "MAC";
             bindings = <
-&kp EQUAL   &kp N1        &kp N2        &kp N3         &kp N4         &kp N5     &mo SYS
-    &mo SYS &kp N6        &kp N7        &kp N8         &kp N9         &kp N0     &kp MINUS
+&kp EQUAL   &kp N1        &kp N2        &kp N3         &kp N4         &kp N5     &kp ESC
+    &kp TAB &kp N6        &kp N7        &kp N8         &kp N9         &kp N0     &kp MINUS
 
 &kp TAB     &kp Q         &kp W         &kp E          &kp R          &kp T      &caps_word
     &key_repeat &kp Y     &kp U         &kp I          &kp O          &kp P      &kp BSLH
 
-&kp ESC     &hml LGUI A   &hml LALT S   &hml LCTRL D   &hml LSHFT F   &kp G      &kp LALT
+&kp ESC     &hml LGUI A   &hml LALT S   &hml LCTRL D   &kp F          &kp G      &kp LALT
     &kp LCTRL &kp LGUI                                 &kp RGUI &kp RCTRL
-    &kp RALT  &kp H       &hmr RSHFT J  &hmr RCTRL K   &hmr RALT L    &hmr RGUI SEMI  &kp SQT
+    &kp RALT  &kp H       &kp J         &hmr RCTRL K   &hmr RALT L    &hmr RGUI SEMI  &kp SQT
 
 &sms LSHFT LSHFT &kp Z    &kp X         &kp C          &kp V          &kp B
     &mo NAV                                            &mo SYM
@@ -233,8 +243,8 @@
          * through to MAC, which is the point of an overlay - transparency here
          * is the content, not an empty key.
          *
-         * Home-row mods (hold):  A=Ctrl S=Alt  D=Cmd   F=Shift
-         *                        J=Shift K=Cmd L=Alt   ;=Ctrl
+         * Home-row mods (hold):  A=Ctrl S=Alt  D=Cmd   F and J fall through
+         *                        K=Cmd  L=Alt  ;=Ctrl   to MAC as letters.
          */
         layer_win {
             display-name = "WIN";
@@ -245,9 +255,9 @@
 &trans      &trans        &trans        &trans         &trans         &trans     &trans
     &trans  &trans        &trans        &trans         &trans         &trans     &trans
 
-&trans      &hml LCTRL A  &hml LALT S   &hml LGUI D    &hml LSHFT F   &trans     &trans
+&trans      &hml LCTRL A  &hml LALT S   &hml LGUI D    &trans         &trans     &trans
     &kp LGUI  &kp LCTRL                                &kp RCTRL &kp RGUI
-    &trans    &trans      &hmr RSHFT J  &hmr RGUI K    &hmr RALT L    &hmr RCTRL SEMI &trans
+    &trans    &trans      &trans        &hmr RGUI K    &hmr RALT L    &hmr RCTRL SEMI &trans
 
 &trans      &trans        &trans        &trans         &trans         &trans
     &trans                                             &trans
@@ -301,11 +311,19 @@
          * SYM - hold right middle thumb.
          *
          * Home row is the enclosure ladder, mirrored:
-         *     <  {  [  (  :   |   _  )  ]  }  >  =
-         * Left index stretch is ':' and right index stretch is '_' - the two
-         * highest-frequency punctuation marks in Python and SQL.
-         * Bottom row is the multi-character operators you reach for hourly;
-         * the rest of the bank lives on MACRO. `||` replaces the old `=>`,
+         *     {  [  (  :  <   |   >  _  )  ]  }  =
+         * The ladder is rotated one position outward from the obvious
+         * arrangement, and that rotation is the point. ':' and '_' are the
+         * two highest-frequency punctuation marks in Python and SQL, so they
+         * sit on F and J - index home, strongest fingers. '<' and '>' are the
+         * rarest, so they take G and H, which are index *stretches* into the
+         * bowl and the two worst positions on the row.
+         *
+         * The closing brackets sit outboard of the openers because editors
+         * auto-close: you type '(' and receive '()'. ')' ']' '}' are pressed
+         * far less often than the shape of the ladder suggests.
+         * Bottom row is the multi-character operators you reach for hourly,
+         * and it is now the whole macro bank. `||` replaces the old `=>`,
          * which nothing in Python, SQL or PowerShell uses; `||` is SQL string
          * concatenation in Spark SQL, Postgres and Snowflake.
          *
@@ -323,9 +341,9 @@
 &trans      &kp TILDE     &kp GRAVE     &kp BSLH       &kp PIPE       &kp SEMI   &trans
     &trans  &kp DQT       &kp SQT       &kp QMARK      &kp FSLH       &kp BSLH   &trans
 
-&trans      &kp LT        &kp LBRC      &kp LBKT       &kp LPAR       &kp COLON  &trans
+&trans      &kp LBRC      &kp LBKT      &kp LPAR       &kp COLON      &kp LT     &trans
     &trans    &trans                                   &trans   &trans
-    &trans    &kp UNDER   &kp RPAR      &kp RBKT       &kp RBRC       &kp GT     &kp EQUAL
+    &trans    &kp GT      &kp UNDER     &kp RPAR       &kp RBKT       &kp RBRC   &kp EQUAL
 
 &trans      &kp CARET     &kp DLLR      &kp MINUS      &kp UNDER      &kp ASTRK
     &trans                                             &trans
@@ -338,7 +356,12 @@
         };
 
         /*
-         * NUM - hold left bottom thumb.
+         * NUM - hold left bottom thumb, or hold it and tap the same key
+         * again to lock the layer (&tog NUM sits under the thumb that opened
+         * it). Numeric entry is bursty - a column of figures is thirty digits,
+         * not three - and holding a thumb for the whole run is what the lock
+         * exists to avoid. Tap it once more to leave.
+         *
          * Left hand is F1-F12 in two aligned rows, then the hex digits A-F in
          * reading order with an "0x" macro under X, comparison operators, and
          * a grouping cluster on the bottom row.
@@ -370,7 +393,7 @@
     &kp N1    &kp N2      &kp N3        &kp DOT        &kp COMMA      &trans
 
 &kp PRCNT   &kp CARET     &kp ASTRK     &kp LPAR       &kp RPAR
-    &trans    &trans      &trans                       &trans         &trans     &trans
+    &trans    &trans      &tog NUM                     &trans         &trans     &trans
     &kp N0    &kp DOT     &kp EQUAL     &kp ENTER      &trans
             >;
         };
@@ -439,7 +462,10 @@
         };
 
         /*
-         * SYS - hold either inner top key or the bottom-right key.
+         * SYS - hold the bottom-right key. It used to answer to the two
+         * inner top keys as well; those are Esc and Tab now, because SYS is
+         * Bluetooth pairing and lighting, reached about weekly, and it was
+         * holding three of the most reachable positions on the board.
          *
          * A -> base layer MAC (Apple)      W -> base layer WIN
          * Number row: USB out, BT profiles 0-4, BLE out, output toggle,
@@ -523,46 +549,5 @@
             >;
         };
 
-        /*
-         * MACRO - automatic while both middle thumbs are held (NAV + SYM).
-         *
-         * Aimed at Python and data engineering: SQL, PySpark, Databricks.
-         * There are no PowerShell macros - SYM and the base number row already
-         * make every PowerShell token fast (see the SYM comment).
-         *
-         * Number row: SQL core clauses, left to right in query order.
-         * Upper row:  SQL CTEs and CASE on the left, null handling, casting
-         *             and window functions on the right. 25-26-27 read
-         *             ROW_NUMBER() OVER (PARTITION BY in order.
-         * Home row:   the quoting patterns and Python/PySpark, on the
-         *             strongest fingers. The old operator block moved out -
-         *             it duplicated SYM's bottom row, which is one thumb away.
-         * Lower row:  joins, set operations and the MERGE vocabulary.
-         * Bottom row: comment openers and comment tags.
-         *
-         * Every entry is a plain tap sequence defined in macros.dtsi.
-         */
-        layer_macro {
-            display-name = "MACRO";
-            bindings = <
-&m_select   &m_from       &m_where      &m_groupby     &m_orderby     &m_join    &trans
-    &trans  &m_leftjoin   &m_on         &m_as          &m_isnull      &m_notnull &m_countall
-
-&m_with     &m_case       &m_then       &m_else        &m_end         &m_distinct &trans
-    &trans  &m_coalesce   &m_cast       &m_datetrunc   &m_rownum      &m_over    &m_partition
-
-&trans      &m_self       &m_print      &m_fstring     &m_qarg        &m_qkey    &trans
-    &trans    &trans                                   &trans   &trans
-    &trans    &m_fcol     &m_display    &m_dbutils     &m_sqlmagic    &m_mdmagic &m_pymagic
-
-&trans      &m_innerjoin  &m_unionall   &m_having      &m_qualify     &m_merge
-    &trans                                             &trans
-    &m_when   &m_using    &m_trycast    &m_nullif      &m_limit       &trans
-
-&m_hashcmt  &m_sqlcmt     &m_blockcmt   &m_docstr      &m_ellipsis
-    &trans    &trans      &trans                       &trans         &trans     &trans
-    &m_todo   &m_fixme    &m_note       &m_hack        &trans
-            >;
-        };
     };
 };

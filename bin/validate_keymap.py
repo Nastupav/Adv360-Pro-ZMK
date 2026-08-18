@@ -32,7 +32,6 @@ EXPECTED_LAYERS = [
     ("layer_global", "GLOBAL", 5),
     ("layer_sys", "SYS", 6),
     ("layer_nav_win", "NAV_WIN", 7),
-    ("layer_macro", "MACRO", 8),
 ]
 
 ROOT = Path(__file__).resolve().parent.parent
