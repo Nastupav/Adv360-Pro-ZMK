@@ -283,6 +283,20 @@ Ready-to-use consumers live in `host/`:
 | Linux | `host/linux/hyprland.conf` | Hyprland |
 | Windows | `host/windows/adv360-global.ahk` | AutoHotkey v2, komorebi |
 
+`make validate` checks both that each host binds every signal *and* that its
+command matches the documented intent — 126 assertions across the movement
+family. Presence alone is not enough: macOS ran `move-workspace-to-monitor` for
+`Ctrl+Shift+F17` for a long time, moving the whole workspace to another display
+while Linux and Windows moved the window to the adjacent workspace, and every
+presence check passed throughout.
+
+Three bindings are deliberate approximations, listed in `APPROXIMATIONS` in
+`bin/validate_protocol.py` so they stay visible: Hyprland has no balance-layout
+command, AeroSpace has no pin, and komorebi's monocle stands in for fullscreen.
+The app-launcher and screenshot banks are excluded from the intent check —
+Ghostty, `wt.exe` and a Hyprland variable are all correct answers to
+"terminal".
+
 The Windows script degrades gracefully without komorebi: previous/next
 workspace falls back to native virtual desktops and focus falls back to
 `Alt+Tab`, but numbered workspaces and directional movement need komorebi.
@@ -306,7 +320,7 @@ base layer &nbsp;&middot;&nbsp; `>` truncated macro (see the reference below)
     =        1        2        3        4        5       SYS                                                               SYS       6        7        8        9        0        -
    Tab       Q        W        E        R        T       Caps                                                              Rept      Y        U        I        O        P        \
    Esc      A/G      S/A      D/C      F/S       G       Alt               Ctrl     Cmd    |    Cmd      Ctrl              Alt       H       J/S      K/C      L/A      ;/G       '
-   sms       Z        X        C        V        B                                  NAV    |    SYM                                  N        M        ,        .        /       sms
+   Shft      Z        X        C        V        B                                  NAV    |    SYM                                  N        M        ,        .        /       Shft
     `        [        ]        (        )                         Bspc   Del/NAV    NUM    |   GLOBAL  Ent/SYM    Spc                         <-       v        ^        ->      SYS
 ```
 
@@ -500,10 +514,17 @@ tethered keyboard.
 | Setting | Value | Why |
 |---|---|---|
 | `CONFIG_ZMK_SLEEP` | `y` | ZMK ships deep sleep **off**. This is the single largest idle drain. |
-| `CONFIG_ZMK_IDLE_TIMEOUT` | 30 s | Lighting and scanning wind down. |
-| `CONFIG_ZMK_IDLE_SLEEP_TIMEOUT` | 15 min | Radio and peripherals off; the first keypress wakes and reconnects. |
-| `CONFIG_ZMK_RGB_UNDERGLOW_ON_START` | `n` | The underglow strip is the largest continuous draw and nothing here binds it to layer state. Available from `SYS` on demand. |
-| `CONFIG_ZMK_BACKLIGHT_ON_START` | `n` | Same reasoning, smaller effect. |
+| `CONFIG_ZMK_IDLE_TIMEOUT` | 30 s | Lighting and scanning wind down; the next keypress brings them back. |
+| `CONFIG_ZMK_IDLE_SLEEP_TIMEOUT` | 1 hour | Radio and peripherals off; the first keypress wakes and reconnects. |
+| `CONFIG_ZMK_RGB_UNDERGLOW_ON_START` | `y` | Underglow is lit at boot. |
+| `CONFIG_ZMK_BACKLIGHT_ON_START` | `n` | The white key backlight stays off; reach it from `SYS`. |
+
+An hour of idle before deep sleep rather than ZMK's 15-minute default, because
+15 minutes is reachable during a working day and the battery difference is
+small. Nearly all the saving comes from sleeping overnight and at weekends, so
+waiting an extra 45 minutes out of a 16-hour idle stretch gives up roughly 5%
+of it. Shorten `CONFIG_ZMK_IDLE_SLEEP_TIMEOUT` if you would rather have the
+battery than the instant wake.
 
 Battery level is reported to the host for both halves: the central owns the
 battery service, and `CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING` plus
@@ -531,7 +552,8 @@ run the same validation and build in GitHub Actions.
 ### Tooling
 
 ```sh
-bin/validate_keymap.py          # layer shape, arity, dead keys, macros, combos
+bin/validate_keymap.py          # layer shape, arity, dead keys, macros, combos,
+                                # consumer usage range, macro length vs BLE queue
 bin/validate_protocol.py        # GLOBAL layer vs. the three host configs
 bin/render_keymap.py            # print the layer diagrams
 bin/render_keymap.py --write    # regenerate the diagrams in this README
@@ -591,7 +613,9 @@ are running: <https://github.com/KinesisCorporation/Adv360-Pro-ZMK#flashing-firm
 - `SYS` media keys work, **and** so do calculator, files, search and lock —
   those four need the full consumer usage range and a re-pair after the HID
   descriptor change.
-- Both underglow and backlight start off and are reachable from `SYS`.
+- Underglow is lit at boot, dims out after 30 s idle and returns on the next
+  keypress; the white backlight starts off and is reachable from `SYS`.
+- The board is still awake after a 20-minute meeting.
 - The host shows a battery level for both halves, Windows included.
 - The keyboard wakes from deep sleep on the first keypress and reconnects to
   the selected profile.

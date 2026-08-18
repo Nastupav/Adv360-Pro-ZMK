@@ -5,6 +5,10 @@
 firmware/
 *.uf2
 
+# Python
+__pycache__/
+*.py[cod]
+
 # IDE
 .vscode/
 .idea/

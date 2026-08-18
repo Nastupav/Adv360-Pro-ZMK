@@ -256,6 +256,39 @@ for name, positions in dead.items():
             f"{positions}; bind them or use &trans"
         )
 
+conf = ROOT / "config" / "adv360.conf"
+conf_text = conf.read_text() if conf.exists() else ""
+
+# --- 11. macro length against the BLE report queue -------------------------
+# Each &kp in a macro produces a press report and a release report. If a macro
+# is longer than the BLE keyboard report queue, ZMK drops the overflow instead
+# of erroring, so the macro types a truncated string over Bluetooth and the
+# full string over USB. MAX_TAPS is the documented authoring cap; the assert
+# below keeps it honest if anyone lowers the queue size.
+MAX_TAPS = 15
+
+queue = re.search(
+    r"^CONFIG_ZMK_BLE_KEYBOARD_REPORT_QUEUE_SIZE=(\d+)\s*$", conf_text, flags=re.M
+)
+queue_size = int(queue.group(1)) if queue else 20
+
+if MAX_TAPS * 2 > queue_size:
+    fail(
+        f"MAX_TAPS is {MAX_TAPS} ({MAX_TAPS * 2} reports) but "
+        f"CONFIG_ZMK_BLE_KEYBOARD_REPORT_QUEUE_SIZE is {queue_size}; raise the "
+        f"queue or lower the cap"
+    )
+
+for name, body in re.findall(
+    r"TEXT_MACRO\(\s*(m_\w+)\s*,(.*?)\)\s*$", macro_src, flags=re.M | re.S
+):
+    taps = len(re.findall(r"&kp\b", body))
+    if taps > MAX_TAPS:
+        fail(
+            f"macro &{name} is {taps} taps ({taps * 2} HID reports), over the "
+            f"{MAX_TAPS}-tap cap; shorten it or let an editor snippet do it"
+        )
+
 # --- 10. consumer usages are sendable --------------------------------------
 # ZMK's basic consumer report can only carry usages 0x00-0xFF. A key bound to
 # a higher usage under CONFIG_ZMK_HID_CONSUMER_REPORT_USAGES_BASIC does not
@@ -273,8 +306,6 @@ CONSUMER_USAGE = {
 }
 BASIC_MAX_USAGE = 0xFF
 
-conf = (ROOT / "config" / "adv360.conf")
-conf_text = conf.read_text() if conf.exists() else ""
 full_range = re.search(
     r"^CONFIG_ZMK_HID_CONSUMER_REPORT_USAGES_FULL=y\s*$", conf_text, flags=re.M
 ) is not None
