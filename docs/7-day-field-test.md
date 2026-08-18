@@ -2,8 +2,8 @@
 
 Compilation does not validate ergonomics. This protocol measures bilateral
 home-row modifiers, the single Q+W Escape combo, four timed layer thumbs,
-literal macros, merged NAV pointer controls, and host integration on macOS and
-Linux.
+literal macros, NAV editor-pane carriers and scrolling, and host integration on
+macOS and Linux.
 
 The six-layer redesign requires a fresh log. Older logs are validated before
 migration, backed up beside the original as `<log>.pre-migration.bak` (or the
@@ -57,13 +57,16 @@ session. Do not enter zero without exercising those paths.
    and Alt+F13/GLOBAL. Backspace, Delete, Enter, and Space are plain controls and
    should show no tap-hold delay.
 5. **Neovim and NAV**: J/K/L/; directions, ASDF document movement, G/H word
-   movement on macOS, Ctrl-composed word movement on Linux, selection, scrolling,
-   and all three mouse clicks.
-6. **VS Code and NUM**: F1-F12, numpad, and ASDFG debug keys
+   movement on macOS, Ctrl-composed word movement on Linux, selection, physical-
+   arrow scrolling, left/right click, and F21-F24 pane focus from normal, insert,
+   and terminal modes.
+6. **VS Code, NAV, and NUM**: verify F21-F24 focuses editor groups in
+   left/down/up/right order. Then exercise F1-F12, numpad, and ASDFG debug keys
    `F5/F9/F10/F11/F12`. Exercise ordinary undo/redo, copy/paste, quick open,
    command palette, save, rename, definition, and references through standard
    Cmd/Ctrl composition rather than an EDIT layer.
-7. **SYM language tokens**: Python/PySpark `== != <= >= -> := ** //`;
+7. **SYM language tokens**: exercise `==` and `!=` on SYM Backspace/Delete,
+   confirm SYM Enter/Space still pass through, then test Python/PySpark `<= >= -> := ** //`;
    PowerShell `-eq` through `-ge`, `$_`, `::`; SQL `<>` and comments; Bash pipes,
    redirects, quotes, and `&&/||`.
 8. **GLOBAL and SYS**: application carriers, workspace/window actions,

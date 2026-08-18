@@ -358,12 +358,14 @@ class WorkflowVerifierTests(unittest.TestCase):
 
         self.assertEqual(
             sym[1],
-            ["&op_eqeq", "&op_neq", "&op_lte", "&op_gte", "&op_arrow", "&op_fatarrow", "&trans", "&trans", "&op_and", "&op_or", "&op_walrus", "&op_pow", "&op_floordiv", "&op_scope"],
+            ["&trans", "&trans", "&op_lte", "&op_gte", "&op_arrow", "&op_fatarrow", "&trans", "&trans", "&op_and", "&op_or", "&op_walrus", "&op_pow", "&op_floordiv", "&op_scope"],
         )
         self.assertEqual(
             sym[3],
             ["&kp LSHFT", "&ps_eq", "&ps_ne", "&ps_lt", "&ps_le", "&ps_gt", "&trans", "&trans", "&ps_ge", "&op_sql_ne", "&ps_current", "&op_comment", "&kp LT", "&kp RSHFT"],
         )
+        self.assertEqual(sym[4][5:7], ["&op_eqeq", "&op_neq"], "SYM Backspace/Delete must own the prime equality macros")
+        self.assertEqual(sym[4][9:11], ["&trans", "&trans"], "SYM Enter/Space must remain plain passthrough keys")
 
         fast = verify_workflow.node_body(text, "tlt_fast")
         self.assertIn('flavor = "hold-preferred"', fast)
@@ -375,10 +377,67 @@ class WorkflowVerifierTests(unittest.TestCase):
         self.assertEqual(num[2][1:6], ["&kp F5", "&kp F9", "&kp F10", "&kp F11", "&kp F12"])
         self.assertEqual(num[2][12:18], ["&kp KP_MINUS", "&kp KP_N4", "&kp KP_N5", "&kp KP_N6", "&kp KP_PLUS", "&kp KP_MULTIPLY"])
 
+    def test_nav_editor_panes_use_unambiguous_f21_f24_carriers(self) -> None:
+        keymap = (ROOT / "config/adv360.keymap").read_text()
+        nav = verify_workflow.layer_rows(keymap, "layer_nav")
+        self.assertEqual(nav[1][8:12], ["&kp F21", "&kp F22", "&kp F23", "&kp F24"])
+        self.assertEqual(
+            nav[4][11:15],
+            ["&msc SCRL_LEFT", "&msc SCRL_DOWN", "&msc SCRL_UP", "&msc SCRL_RIGHT"],
+            "physical arrow cluster must retain keyboard scrolling",
+        )
+        self.assertNotIn("&mkp MCLK", " ".join(binding for row in nav for binding in row))
+
+        nvim = (ROOT / "host/nvim-adv360.lua").read_text()
+        for mode in ("n", "i", "t"):
+            for number in range(21, 25):
+                self.assertIn(f"vim.keymap.set('{mode}', '<F{number}>'", nvim)
+        self.assertNotIn("<C-;>", nvim, "terminal-ambiguous Ctrl+; must be retired")
+
+        vscode_path = ROOT / "host/vscode-adv360.json"
+        self.assertTrue(vscode_path.is_file())
+        self.assertEqual(
+            json.loads(vscode_path.read_text()),
+            [
+                {"key": "f21", "command": "workbench.action.focusLeftGroup"},
+                {"key": "f22", "command": "workbench.action.focusBelowGroup"},
+                {"key": "f23", "command": "workbench.action.focusAboveGroup"},
+                {"key": "f24", "command": "workbench.action.focusRightGroup"},
+            ],
+        )
+
+    def test_active_vscode_verifier_allows_unrelated_custom_bindings(self) -> None:
+        canonical = json.loads((ROOT / "host/vscode-adv360.json").read_text())
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "keybindings.json"
+            path.write_text(json.dumps([
+                {"key": "cmd+k cmd+s", "command": "workbench.action.openGlobalKeybindings"},
+                *canonical,
+            ]))
+            verify_workflow.check_vscode(path, "customized VS Code", allow_extra=True)
+
+            path.write_text(json.dumps([
+                *canonical,
+                {"key": "f21", "command": "workbench.action.closeActiveEditor"},
+            ]))
+            with self.assertRaises(AssertionError):
+                verify_workflow.check_vscode(path, "conflicting VS Code", allow_extra=True)
+
+    def test_readme_matches_physical_macro_and_editor_carrier_positions(self) -> None:
+        readme = (ROOT / "README.md").read_text()
+        for token in (
+            "SYM + Backspace    ==", "SYM + Delete       !=",
+            "Tab and Q pass through", "NAV + Y/U/I/O", "pane left/down/up/right",
+            "F21/F22/F23/F24", "NAV + physical arrows", "scroll left/down/up/right",
+        ):
+            self.assertIn(token, readme)
+        self.assertNotIn("Q ==    W !=", readme)
+
     def test_host_adapters(self) -> None:
         verify_workflow.check_aerospace(ROOT / "host/macos/aerospace.toml", "repository AeroSpace")
         verify_workflow.check_hyprland()
         verify_workflow.check_nvim(ROOT / "host/nvim-adv360.lua", "test Neovim")
+        verify_workflow.check_vscode(ROOT / "host/vscode-adv360.json", "test VS Code")
         hyprland = (ROOT / "host/hyprland-adv360.lua").read_text()
         self.assertIn("local function shellQuote", hyprland)
         self.assertNotIn("%q", hyprland)
@@ -400,14 +459,16 @@ class WorkflowVerifierTests(unittest.TestCase):
             karabiner = home / ".config/karabiner/karabiner.json"
             aerospace = home / ".config/aerospace/aerospace.toml"
             nvim = home / ".config/nvim/init.lua"
+            vscode = home / "Library/Application Support/Code/User/keybindings.json"
             action_link = home / ".local/bin/adv360-action"
-            for path in (hammerspoon, karabiner, aerospace, nvim, action_link):
+            for path in (hammerspoon, karabiner, aerospace, nvim, vscode, action_link):
                 path.parent.mkdir(parents=True, exist_ok=True)
             hammerspoon.write_text("-- unrelated Hammerspoon config\n")
             karabiner.write_text(json.dumps({"profiles": [{"selected": True, "complex_modifications": {"rules": [{"description": "keep me"}]}}]}))
             source = (ROOT / "host/macos/aerospace.toml").read_text()
             aerospace.write_text(source.replace("__ADV360_ACTION__", str(action_link)))
             nvim.write_text("dofile('" + str(ROOT / "host/nvim-adv360.lua") + "')\n")
+            vscode.write_text((ROOT / "host/vscode-adv360.json").read_text())
             action_link.symlink_to(ROOT / "scripts/adv360_action.py")
             calls: list[list[str]] = []
 

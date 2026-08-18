@@ -148,6 +148,38 @@ Acceptance status:
   blocker/high/medium defect.
 - A fresh seven-day trial remains required. The decision is accept / revert / iterate.
 
+## 2026-08-16 — editor-pane and thumb-macro revision
+
+Reason:
+
+- `==` and `!=` were on the outer Tab/Q positions despite the opposite left
+  thumb being free while the right-thumb SYM key is held.
+- The Neovim adapter depended on terminal-ambiguous `Ctrl+;`, and VS Code had no
+  matching pane-focus contract.
+
+Changes:
+
+- Moved `==` and `!=` to SYM Backspace/Delete. BASE Backspace/Delete remain plain;
+  SYM Enter/Space remain passthrough keys.
+- NAV Y/U/I/O now emits editor-local F21-F24 in left/down/up/right order.
+- Moved scrolling to the physical arrow cluster and retained left/right click;
+  removed low-value middle click.
+- Added matching Neovim normal/insert/terminal mappings and VS Code editor-group
+  focus bindings.
+
+Status:
+
+- `make verify`: 54/54 tests, semantic verifier, and whitespace checks passed.
+- `make verify-active`: AeroSpace runtime parity, exclusive F13-F20 ownership,
+  Neovim loading, and installed VS Code F21-F24 keybinding-file parity passed.
+- Both halves built from fingerprint `c0a742d7855e`; SHA-256 and every 512-byte
+  UF2 frame passed validation.
+- Left SHA-256: `ee7886962ba1658fc0d739dfbb845431d24d8920444594459e9b5a1f4e5d9802`.
+- Right SHA-256: `b0837fe0294aac6d183697aa3bb8b82157aceffbb61777c7474019dbde5e68fa`.
+- The 5000×4550 layout image contains 456 key shapes, 21 macro cards, the four
+  editor carriers, and both thumb macros; full-image and focused visual QA passed.
+- A fresh seven-day physical trial remains required for ergonomic acceptance.
+
 ## Template for the next iteration
 
 Date:

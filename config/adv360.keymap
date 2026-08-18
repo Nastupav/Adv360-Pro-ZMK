@@ -173,15 +173,15 @@
             >;
         };
 
-        /* NAV — ASDF document movement; G/H words; JKL; directions. */
+        /* NAV — ASDF documents; JKL; movement; YUIO editor panes; arrows scroll. */
         layer_nav {
             display-name = "NAV";
             bindings = <
 &kp ESC &kp LG(LEFT) &kp LA(LEFT) &kp LC(LEFT) &kp HOME &kp PG_UP &trans                &trans &kp PG_DN &kp END &kp LC(RIGHT) &kp LA(RIGHT) &kp LG(RIGHT) &kp DEL
-&trans &kp LG(LBKT) &kp LG(RBKT) &kp LC(PG_UP) &kp LC(PG_DN) &kp LG(UP) &trans          &trans &msc SCRL_LEFT &msc SCRL_DOWN &msc SCRL_UP &msc SCRL_RIGHT &kp BSPC &kp DEL
+&trans &kp LG(LBKT) &kp LG(RBKT) &kp LC(PG_UP) &kp LC(PG_DN) &kp LG(UP) &trans          &trans &kp F21 &kp F22 &kp F23 &kp F24 &kp BSPC &kp DEL
 &kp ESC &kp HOME &kp PG_DN &kp PG_UP &kp END &kp LA(LEFT) &trans &trans &trans           &trans &trans &trans &kp LA(RIGHT) &kp LEFT &kp DOWN &kp UP &kp RIGHT &kp ENTER
 &kp LSHFT &kp LS(HOME) &kp LS(PG_DN) &kp LS(PG_UP) &kp LS(END) &kp LS(LA(LEFT))        &trans &trans        &kp LS(LA(RIGHT)) &kp LS(LEFT) &kp LS(DOWN) &kp LS(UP) &kp LS(RIGHT) &kp RSHFT
-&kp LG(Z) &kp LG(LS(Z)) &kp LG(X) &kp LG(C) &kp LG(V)       &trans &trans &trans          &trans &mkp LCLK &mkp RCLK       &mkp MCLK &kp LC(LEFT) &kp LC(DOWN) &kp LC(UP) &trans
+&kp LG(Z) &kp LG(LS(Z)) &kp LG(X) &kp LG(C) &kp LG(V)       &trans &trans &trans          &trans &mkp LCLK &mkp RCLK       &msc SCRL_LEFT &msc SCRL_DOWN &msc SCRL_UP &msc SCRL_RIGHT &trans
             >;
         };
 
@@ -190,10 +190,10 @@
             display-name = "SYM";
             bindings = <
 &kp EXCL &kp AT &kp HASH &kp DLLR &kp PRCNT &kp CARET &trans                            &trans &kp AMPS &kp ASTRK &kp LPAR &kp RPAR &kp UNDER &kp PLUS
-&op_eqeq &op_neq &op_lte &op_gte &op_arrow &op_fatarrow &trans                          &trans &op_and &op_or &op_walrus &op_pow &op_floordiv &op_scope
+&trans &trans &op_lte &op_gte &op_arrow &op_fatarrow &trans                              &trans &op_and &op_or &op_walrus &op_pow &op_floordiv &op_scope
 &kp ESC &kp UNDER &kp COLON &kp EXCL &kp QMARK &kp EQUAL &trans &trans &trans            &trans &trans &trans &kp MINUS &kp PLUS &kp ASTRK &kp AMPS &kp PIPE &kp DQT
 &kp LSHFT &ps_eq &ps_ne &ps_lt &ps_le &ps_gt                              &trans          &trans          &ps_ge &op_sql_ne &ps_current &op_comment &kp LT &kp RSHFT
-&kp GRAVE &kp LBKT &kp RBKT &kp LBRC &kp RBRC       &trans &trans &trans                  &trans &trans &trans       &kp LPAR &kp RPAR &kp SQT &kp SEMI &trans
+&kp GRAVE &kp LBKT &kp RBKT &kp LBRC &kp RBRC       &op_eqeq &op_neq &trans               &trans &trans &trans       &kp LPAR &kp RPAR &kp SQT &kp SEMI &trans
             >;
         };
 

@@ -46,6 +46,11 @@ in `host/apps.defaults.json`; optional overrides live in
   `host/hyprland-adv360.conf`.
 - Neovim: `dofile("/absolute/path/host/nvim-adv360.lua")`.
 
-F21-F24 are deliberately absent from the firmware protocol because the selected
-AeroSpace binding path supports F1-F20. Extended NKRO reports and pointing remain
-enabled in `config/adv360.conf`.
+## Editor-local namespace
+
+F21-F24 are deliberately excluded from AeroSpace and Hyprland. On NAV they are
+local editor carriers emitted by physical `Y/U/I/O` in left/down/up/right order.
+Neovim and VS Code consume them for pane/editor-group focus; the window manager
+must let them pass through unchanged.
+
+Extended NKRO reports and pointing remain enabled in `config/adv360.conf`.

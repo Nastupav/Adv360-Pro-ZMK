@@ -1,0 +1,18 @@
+[
+  {
+    "key": "f21",
+    "command": "workbench.action.focusLeftGroup"
+  },
+  {
+    "key": "f22",
+    "command": "workbench.action.focusBelowGroup"
+  },
+  {
+    "key": "f23",
+    "command": "workbench.action.focusAboveGroup"
+  },
+  {
+    "key": "f24",
+    "command": "workbench.action.focusRightGroup"
+  }
+]

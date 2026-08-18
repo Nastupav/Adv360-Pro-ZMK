@@ -76,20 +76,28 @@ US QWERTY, HRMs, plain frequent thumbs, physical arrows, and direct SYS access.
 
 ### NAV
 
-Prime action zones:
+Prime action zones and editor controls:
 
 ```text
-ASDF    Home / Page Down / Page Up / End
-G/H     Option+Left / Option+Right (macOS word movement)
-JKL;    Left / Down / Up / Right
-YUIO    Scroll left / down / up / right
-NM,.    Select left / down / up / right
+ASDF                    Home / Page Down / Page Up / End
+G/H                     Option+Left / Option+Right (macOS word movement)
+JKL;                    Left / Down / Up / Right
+NAV + Y/U/I/O           pane left/down/up/right
+                        F21/F22/F23/F24 editor-local carriers
+NM,.                    Select left / down / up / right
+NAV + physical arrows   scroll left/down/up/right
+NAV + Enter/Space       left/right mouse click
 ```
 
+The F21-F24 bank is intentionally editor-local: AeroSpace and Hyprland must not
+capture it. `host/nvim-adv360.lua` maps it in normal, insert, and terminal modes;
+`host/vscode-adv360.json` maps it to VS Code editor-group focus. This avoids the
+terminal ambiguity of `Ctrl+;`. Ghostty's active terminfo declares distinct
+F21-F24 sequences.
+
 Linux word movement remains composable with a plain Ctrl key plus NAV `J` or
-`;`. The thumb area contains left/right/middle mouse clicks. Pointer movement is
-intentionally omitted until real use shows that it is worth a dedicated control
-surface.
+`;`. Pointer movement and middle click are intentionally omitted; the physical
+arrow cluster keeps keyboard scrolling without taking prime editor positions.
 
 ### SYM
 
@@ -102,11 +110,22 @@ A _    S :    D !    F ?    G =
 H -    J +    K *    L &    ; |    ' "
 ```
 
-Shared operators on the QWERTY row:
+Prime equality macros use the opposite thumb while the right-thumb SYM key is
+held. BASE Backspace/Delete remain plain and untimed; only their SYM bindings
+change:
 
 ```text
-Q ==    W !=    E <=    R >=    T ->
-Y &&    U ||    I :=    O **    P //    \ ::
+SYM + Backspace    ==
+SYM + Delete       !=
+SYM + Enter        Enter passthrough
+SYM + Space        Space passthrough
+```
+
+Tab and Q pass through on SYM. Remaining shared operators:
+
+```text
+W <=    E >=    R ->    T =>
+Y &&    U ||    I :=    O **    P //    \\ ::
 ```
 
 PowerShell, SQL, and shell tokens on the lower row:
@@ -216,6 +235,13 @@ python3 scripts/manage_host.py plan
 python3 scripts/manage_host.py install
 make verify-active
 ```
+
+The Neovim adapter is loaded by the managed `init.lua` block. The canonical VS
+Code pane bindings are `host/vscode-adv360.json`; on this Mac they are installed
+at `~/Library/Application Support/Code/User/keybindings.json` (Linux VS Code uses
+`~/.config/Code/User/keybindings.json`). If that file later contains unrelated
+custom bindings, merge the four F21-F24 entries rather than overwriting them.
+`make verify-active` checks current parity.
 
 ## Verify and build
 

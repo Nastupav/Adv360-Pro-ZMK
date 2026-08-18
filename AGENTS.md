@@ -3,8 +3,8 @@
 ## Scope
 
 This repository owns the Kinesis Advantage360 Pro firmware, its F13-F20 host
-protocol, macOS AeroSpace integration, Linux Hyprland integration, Neovim
-bindings, and physical acceptance tooling.
+protocol, macOS AeroSpace integration, Linux Hyprland integration, Neovim and
+VS Code editor bindings, and physical acceptance tooling.
 
 ## Authoritative production-candidate contract
 
@@ -32,9 +32,11 @@ bindings, and physical acceptance tooling.
   the typing-combo inventory.
 - Layers are momentary; do not add `&tog` without explicit user approval and a
   physical trial.
-- SYM owns exactly 21 literal macros with 20/20 ms timing.
-- NAV owns scroll and mouse-click controls; do not add pointer movement without
-  measured need.
+- SYM owns exactly 21 literal macros with 20/20 ms timing. `==` and `!=` live on
+  SYM Backspace/Delete; SYM Enter/Space remain transparent passthrough keys.
+- NAV `Y/U/I/O` emits editor-local F21/F22/F23/F24 in left/down/up/right order.
+  The physical arrow cluster owns scrolling; Enter/Space retain left/right
+  click. Pointer movement and middle click remain omitted.
 - NUM owns F1-F12, the right numpad, and VS Code `F5/F9/F10/F11/F12` on ASDFG.
 - GLOBAL preserves the F13-F20 host protocol. `GLOBAL + [` and `GLOBAL + ]`
   must emit Ctrl+F17 and Ctrl+F18.
@@ -44,9 +46,9 @@ bindings, and physical acceptance tooling.
 ## Host ownership
 
 AeroSpace is the only macOS owner of F13-F20 carriers. Do not reintroduce a
-Hammerspoon or Karabiner owner. Hyprland owns the Linux side. Firmware emits
-host-neutral carriers; host adapters own application, workspace, and window
-semantics.
+Hammerspoon or Karabiner owner. Hyprland owns the Linux side. F21-F24 are
+editor-local and must pass through both window managers unchanged to Neovim or
+VS Code. Firmware emits host-neutral carriers; adapters own their semantics.
 
 ## ZMK Studio
 

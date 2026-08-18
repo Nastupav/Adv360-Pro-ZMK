@@ -136,7 +136,13 @@ def check_keymap() -> None:
     require(global_top[1:6] + global_top[8:11] == [f"&kp F{number}" for number in range(13, 21)], "GLOBAL workspace carriers differ from F13-F20")
     require(layers["GLOBAL"][4][1:3] == ["&kp LC(F17)", "&kp LC(F18)"],
             "GLOBAL + [ / ] must emit previous/next workspace carriers")
-    require(not re.search(r"\bF2[1-4]\b", clean), "active firmware must not emit F21-F24")
+    editor_carriers = ["&kp F21", "&kp F22", "&kp F23", "&kp F24"]
+    require(layers["NAV"][1][8:12] == editor_carriers,
+            "NAV Y/U/I/O must emit F21-F24 for editor pane focus")
+    for name, rows in layers.items():
+        carrier_uses = [binding for row in rows for binding in row if binding in editor_carriers]
+        require(carrier_uses == (editor_carriers if name == "NAV" else []),
+                f"{name}: F21-F24 editor carriers escaped the dedicated NAV bank")
 
     base_bindings = [binding for row in layers["BASE"] for binding in row]
     base = " ".join(base_bindings)
@@ -229,16 +235,23 @@ def check_keymap() -> None:
         require(len(re.findall(rf"&{macro}\b", clean)) == 1, f"{macro}: expected one active use")
 
     expected_sym_rows = {
-        1: ["&op_eqeq", "&op_neq", "&op_lte", "&op_gte", "&op_arrow", "&op_fatarrow", "&trans", "&trans", "&op_and", "&op_or", "&op_walrus", "&op_pow", "&op_floordiv", "&op_scope"],
+        1: ["&trans", "&trans", "&op_lte", "&op_gte", "&op_arrow", "&op_fatarrow", "&trans", "&trans", "&op_and", "&op_or", "&op_walrus", "&op_pow", "&op_floordiv", "&op_scope"],
         3: ["&kp LSHFT", "&ps_eq", "&ps_ne", "&ps_lt", "&ps_le", "&ps_gt", "&trans", "&trans", "&ps_ge", "&op_sql_ne", "&ps_current", "&op_comment", "&kp LT", "&kp RSHFT"],
     }
     for row_index, expected in expected_sym_rows.items():
         require(layers["SYM"][row_index] == expected, f"SYM row {row_index + 1}: speed macro placement changed")
+    require(layers["SYM"][4][5:7] == ["&op_eqeq", "&op_neq"],
+            "SYM Backspace/Delete must own == and !=")
+    require(layers["SYM"][4][9:11] == ["&trans", "&trans"],
+            "SYM Enter/Space must remain plain passthrough keys")
 
     nav = " ".join(binding for row in layers["NAV"] for binding in row)
     for binding in ("&msc SCRL_LEFT", "&msc SCRL_DOWN", "&msc SCRL_UP", "&msc SCRL_RIGHT",
-                    "&mkp MCLK", "&mkp LCLK", "&mkp RCLK"):
+                    "&mkp LCLK", "&mkp RCLK"):
         require(binding in nav, f"NAV pointer binding missing: {binding}")
+    require("&mkp MCLK" not in nav, "low-value middle click must not displace the editor/scroll banks")
+    require(layers["NAV"][4][11:15] == ["&msc SCRL_LEFT", "&msc SCRL_DOWN", "&msc SCRL_UP", "&msc SCRL_RIGHT"],
+            "NAV physical arrow cluster must provide scrolling")
     require("&mmv" not in nav, "production NAV must not include unvalidated pointer movement")
 
     conf = uncomment((ROOT / "config/adv360.conf").read_text(), marker="#")
@@ -248,7 +261,7 @@ def check_keymap() -> None:
         require(token in conf, f"adv360.conf missing {token}")
     require("CONFIG_ZMK_COMBO_MAX_COMBOS_PER_KEY" not in conf, "single-combo profile must use default fan-out")
     require("&tog" not in clean, "production layers must be momentary, not toggled")
-    print("PASS six-layer geometry, no-dead-key contract, HRMs, one combo, four timed thumbs, merged macros/pointer controls, Studio, and power defaults")
+    print("PASS six-layer geometry, HRMs, one combo, four timed thumbs, thumb macros, editor carriers, scrolling, Studio, and power defaults")
 
 
 def check_protocol() -> dict[str, Any]:
@@ -356,7 +369,7 @@ def check_hyprland() -> None:
 def parse_nvim_maps(path: Path) -> dict[tuple[str, str], str]:
     clean = "\n".join(line for line in path.read_text().splitlines() if not line.lstrip().startswith("--"))
     mappings: dict[tuple[str, str], str] = {}
-    pattern = re.compile(r"vim\.keymap\.set\('([nt])',\s*'([^']+)',\s*'([^']+)'")
+    pattern = re.compile(r"vim\.keymap\.set\('([nit])',\s*'([^']+)',\s*'([^']+)'")
     for mode, lhs, rhs in pattern.findall(clean):
         key = (mode, lhs)
         require(key not in mappings, f"{path}: duplicate mapping for {mode} {lhs}")
@@ -366,16 +379,46 @@ def parse_nvim_maps(path: Path) -> dict[tuple[str, str], str]:
 
 def check_nvim(path: Path, label: str) -> None:
     mappings = parse_nvim_maps(path)
-    expected = {
-        ("n", "<C-j>"): "<C-w><C-h>", ("n", "<C-k>"): "<C-w><C-j>",
-        ("n", "<C-l>"): "<C-w><C-k>", ("n", "<C-;>"): "<C-w><C-l>",
-        ("n", "<leader>wJ"): "<C-w>H", ("n", "<leader>wK"): "<C-w>J",
-        ("n", "<leader>wL"): "<C-w>K", ("n", "<leader>w;"): "<C-w>L",
-        ("t", "<C-j>"): r"<C-\\><C-n><C-w><C-h>", ("t", "<C-k>"): r"<C-\\><C-n><C-w><C-j>",
-        ("t", "<C-l>"): r"<C-\\><C-n><C-w><C-k>", ("t", "<C-;>"): r"<C-\\><C-n><C-w><C-l>",
-    }
-    require(mappings == expected, f"{label}: mappings differ from the J/K/L/; contract")
-    require(not any("C-S-" in lhs for _, lhs in mappings), f"{label}: unreliable Ctrl+Shift letter mapping remains")
+    directions = ((21, "h", "H"), (22, "j", "J"), (23, "k", "K"), (24, "l", "L"))
+    expected: dict[tuple[str, str], str] = {}
+    for number, direction, move in directions:
+        carrier = f"<F{number}>"
+        expected[("n", carrier)] = f"<C-w>{direction}"
+        expected[("i", carrier)] = f"<C-o><C-w>{direction}"
+        expected[("t", carrier)] = rf"<C-\\><C-n><C-w>{direction}"
+        physical = {21: "J", 22: "K", 23: "L", 24: ";"}[number]
+        expected[("n", f"<leader>w{physical}")] = f"<C-w>{move}"
+    require(mappings == expected, f"{label}: mappings differ from the F21-F24 editor-pane contract")
+    require("<C-;>" not in path.read_text(), f"{label}: terminal-ambiguous Ctrl+; mapping remains")
+
+
+def check_vscode(path: Path, label: str, *, allow_extra: bool = False) -> None:
+    try:
+        entries = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as error:
+        raise AssertionError(f"{label}: cannot read keybindings: {error}") from error
+    require(isinstance(entries, list), f"{label}: keybindings root must be an array")
+    expected = [
+        {"key": "f21", "command": "workbench.action.focusLeftGroup"},
+        {"key": "f22", "command": "workbench.action.focusBelowGroup"},
+        {"key": "f23", "command": "workbench.action.focusAboveGroup"},
+        {"key": "f24", "command": "workbench.action.focusRightGroup"},
+    ]
+    if not allow_extra:
+        require(entries == expected, f"{label}: F21-F24 editor-pane bindings differ from the firmware contract")
+        return
+
+    managed_keys = {entry["key"] for entry in expected}
+    managed: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        require(isinstance(entry, dict), f"{label}: every keybinding must be an object")
+        key = entry.get("key")
+        if key not in managed_keys:
+            continue
+        require(key not in managed, f"{label}: duplicate or conflicting {key} binding")
+        managed[key] = entry
+    require([managed.get(entry["key"]) for entry in expected] == expected,
+            f"{label}: installed F21-F24 editor-pane bindings differ from the firmware contract")
 
 
 def check_apps() -> None:
@@ -524,16 +567,18 @@ def check_repository() -> None:
     check_aerospace(ROOT / "host/macos/aerospace.toml", "repository AeroSpace")
     check_hyprland()
     check_nvim(ROOT / "host/nvim-adv360.lua", "repository Neovim")
+    check_vscode(ROOT / "host/vscode-adv360.json", "repository VS Code")
     check_apps()
     check_lua_syntax()
     check_build_and_docs()
-    print("PASS protocol, AeroSpace, Hyprland, Neovim, apps, build, and docs")
+    print("PASS protocol, AeroSpace, Hyprland, Neovim, VS Code, apps, build, and docs")
 
 
 def check_active_macos() -> None:
     home = Path.home()
     aerospace_config = home / ".config/aerospace/aerospace.toml"
     nvim = home / ".config/nvim/init.lua"
+    vscode = home / "Library/Application Support/Code/User/keybindings.json"
     hammerspoon = home / ".hammerspoon/init.lua"
     karabiner = home / ".config/karabiner/karabiner.json"
     action_link = home / ".local/bin/adv360-action"
@@ -545,6 +590,8 @@ def check_active_macos() -> None:
     check_aerospace(aerospace_config, "active AeroSpace")
     require(action_link.is_symlink() and action_link.resolve() == (ROOT / "scripts/adv360_action.py").resolve(), "active adv360-action link is missing or stale")
     require(nvim.exists() and "nvim-adv360.lua" in nvim.read_text(), "active Neovim does not load the Advantage360 module")
+    require(vscode.exists(), "active VS Code keybindings are missing")
+    check_vscode(vscode, "active VS Code", allow_extra=True)
 
     if hammerspoon.exists():
         hammer_text = hammerspoon.read_text()
@@ -600,15 +647,18 @@ def check_active_macos() -> None:
     secondary = run_aerospace("list-workspaces", "--monitor", monitor_ids["P34WD-40"]).split()
     require(primary == ["1", "2", "3", "4", "5"], f"PG32UCDM workspace assignment mismatch: {primary}")
     require(secondary == ["6", "7", "8", "9", "10"], f"P34WD-40 workspace assignment mismatch: {secondary}")
-    print("PASS active AeroSpace reload/runtime bindings, repository parity, exclusive ownership, monitor assignment, and Neovim include")
+    print("PASS active AeroSpace runtime parity, exclusive ownership, monitor assignment, Neovim include, and installed VS Code keybinding-file parity")
 
 
 def check_active_linux() -> None:
     hypr = Path.home() / ".config/hypr/hyprland.lua"
     nvim = Path.home() / ".config/nvim/init.lua"
+    vscode = Path.home() / ".config/Code/User/keybindings.json"
     require(hypr.exists() and "hyprland-adv360.lua" in hypr.read_text(), "active Hyprland Lua does not load Advantage360")
     require(nvim.exists() and "nvim-adv360.lua" in nvim.read_text(), "active Neovim does not load Advantage360")
-    print("PASS active Hyprland and Neovim includes")
+    require(vscode.exists(), "active VS Code keybindings are missing")
+    check_vscode(vscode, "active VS Code", allow_extra=True)
+    print("PASS active Hyprland and Neovim includes plus installed VS Code keybinding-file parity")
 
 
 def parser() -> argparse.ArgumentParser:
