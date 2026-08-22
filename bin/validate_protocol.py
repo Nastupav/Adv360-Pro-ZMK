@@ -63,7 +63,7 @@ RESIZE = {
 # mistaken for exact parity.
 APPROXIMATIONS = {
     ("linux", "C-A-F19"): "Hyprland has no balance command; cycles orientation",
-    ("macos", "C-A-F20"): "AeroSpace has no sticky/pin; floats the window",
+    ("macos", "C-A-F20"): "AeroSpace has no sticky/pin; fullscreens the window",
     ("windows", "C-F19"): "komorebi monocle stands in for fullscreen",
 }
 
@@ -142,7 +142,7 @@ def build_intents() -> dict[str, tuple[str, dict[str, str]]]:
             "macos": r"balance-sizes", "linux": r"orientationnext",
             "windows": r"retile"}),
         "C-A-F20": ("pin-window", {
-            "macos": r"layout floating", "linux": r"\bpin\b",
+            "macos": r"fullscreen", "linux": r"\bpin\b",
             "windows": r"AlwaysOnTop"}),
     })
     return intent
