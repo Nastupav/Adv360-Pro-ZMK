@@ -7,10 +7,11 @@
 # the keymap by bin/validate_protocol.py, while the settings below are host
 # environment and have no counterpart on the keyboard.
 #
-# Carried over verbatim from the deterministic profile's installed config
-# (branch agent/aerospace-host-owner) on 2026-08-22. Ten persistent
-# workspaces are retained deliberately: the F-key protocol addresses 1-8, and
-# the window rules below place communication apps on 9.
+# Carried over from the deterministic profile's installed config (branch
+# agent/aerospace-host-owner) on 2026-08-22, with the monitor assignment
+# revised - see the note above that table. Ten persistent workspaces are
+# retained deliberately: the F-key protocol addresses 1-8, and the window
+# rules below place communication apps on 9.
 # ---------------------------------------------------------------------------
 
 config-version = 2
@@ -85,15 +86,20 @@ run = ['move-node-to-workspace 9']
 if.window-title-regex-substring = '(?i)(open file|save as|find and replace|choose a file|select folder)'
 run = ['layout floating']
 
+# The F13-F20 protocol addresses workspaces 1-8, so all eight are pinned to
+# one display: no GLOBAL number-row key should ever throw focus to another
+# monitor. 9 and 10 are off-protocol - the on-window-detected rules above park
+# Slack, Outlook and Zoom on 9 - so they stay on the second display, reached
+# by focusing it rather than by switching workspace.
 [workspace-to-monitor-force-assignment]
 1 = 'PG32UCDM'
 2 = 'PG32UCDM'
 3 = 'PG32UCDM'
 4 = 'PG32UCDM'
 5 = 'PG32UCDM'
-6 = 'P34WD-40'
-7 = 'P34WD-40'
-8 = 'P34WD-40'
+6 = 'PG32UCDM'
+7 = 'PG32UCDM'
+8 = 'PG32UCDM'
 9 = 'P34WD-40'
 10 = 'P34WD-40'
 

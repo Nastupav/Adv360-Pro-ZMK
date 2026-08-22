@@ -43,6 +43,18 @@ def bindings_of(text: str) -> dict[str, str]:
             for m in pattern.finditer(body)}
 
 
+def forced_assignment(text: str) -> dict[str, str]:
+    """Read [workspace-to-monitor-force-assignment] as {workspace: display}."""
+    import re
+
+    if "[workspace-to-monitor-force-assignment]" not in text:
+        return {}
+    body = text.split("[workspace-to-monitor-force-assignment]", 1)[1]
+    body = re.split(r"(?m)^\[", body)[0]
+    return {m.group(1): m.group(2)
+            for m in re.finditer(r"(?m)^(\d+)\s*=\s*'([^']+)'", body)}
+
+
 def main() -> int:
     from manage_host import rendered_aerospace
 
@@ -114,21 +126,27 @@ def main() -> int:
             missing = [str(n) for n in range(1, 11) if str(n) not in workspaces]
             require(not missing, f"persistent workspaces missing: {missing}")
 
+        # Expected assignment is read from the config rather than restated
+        # here, so rebalancing which workspaces live on which display is a
+        # one-file change and cannot drift away from the check.
         monitors: dict[str, str] = {}
         for line in run("list-monitors").splitlines():
             parts = [part.strip() for part in line.split("|", 1)]
             if len(parts) == 2:
                 monitors[parts[1]] = parts[0]
-        if monitors:
-            require("PG32UCDM" in monitors and "P34WD-40" in monitors,
-                    f"expected monitors not active: {sorted(monitors)}")
-            if "PG32UCDM" in monitors and "P34WD-40" in monitors:
-                primary = run("list-workspaces", "--monitor", monitors["PG32UCDM"]).split()
-                secondary = run("list-workspaces", "--monitor", monitors["P34WD-40"]).split()
-                require(primary == ["1", "2", "3", "4", "5"],
-                        f"PG32UCDM workspace assignment mismatch: {primary}")
-                require(secondary == ["6", "7", "8", "9", "10"],
-                        f"P34WD-40 workspace assignment mismatch: {secondary}")
+        wanted = forced_assignment(installed.read_text())
+        for display in sorted(set(wanted.values())):
+            if display not in monitors:
+                require(False, f"forced monitor not active: {display} "
+                               f"(active: {sorted(monitors)})")
+                continue
+            expected = sorted((w for w, d in wanted.items() if d == display), key=int)
+            actual = run("list-workspaces", "--monitor", monitors[display]).split()
+            missing = [w for w in expected if w not in actual]
+            stray = [w for w in actual if w in wanted and wanted[w] != display]
+            require(not missing and not stray,
+                    f"{display} workspace assignment mismatch: expected {expected}, "
+                    f"got {actual}")
 
     if failures:
         for failure in failures:
