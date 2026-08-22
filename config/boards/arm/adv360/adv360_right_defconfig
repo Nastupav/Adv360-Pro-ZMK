@@ -35,26 +35,19 @@ CONFIG_CLOCK_CONTROL_NRF_K32SRC_150PPM=y
 CONFIG_WS2812_STRIP=y
 CONFIG_ZMK_RGB_UNDERGLOW=y
 CONFIG_ZMK_RGB_UNDERGLOW_EXT_POWER=y
-CONFIG_ZMK_RGB_UNDERGLOW_ON_START=y
-CONFIG_ZMK_RGB_UNDERGLOW_EFF_START=4
 # Idle auto-off is set to y for both halves in config/adv360.conf, which is
 # applied after this file. Nothing here needs to differ between the sides.
-CONFIG_ZMK_RGB_UNDERGLOW_AUTO_OFF_IDLE=y
 
 #Backlighting configuration
 CONFIG_PWM=y
 CONFIG_LED_PWM=y
 CONFIG_ZMK_BACKLIGHT=y
-CONFIG_ZMK_BACKLIGHT_BRT_START=20
-CONFIG_ZMK_BACKLIGHT_AUTO_OFF_IDLE=y
 
 #Misc configuration
 CONFIG_USB_DEVICE_VID=0x29EA
 CONFIG_USB_DEVICE_PID=0x0362
 CONFIG_USB_DEVICE_MANUFACTURER="Kinesis Corporation"
 CONFIG_BT_CTLR_TX_PWR_PLUS_8=y
-CONFIG_ZMK_HID_REPORT_TYPE_NKRO=y
-CONFIG_ZMK_HID_CONSUMER_REPORT_USAGES_BASIC=y
 CONFIG_BUILD_OUTPUT_UF2=y
 
 # EXPERIMENTAL_FEATURES pulls in EXPERIMENTAL_SEC, which turns on passkey
@@ -66,3 +59,9 @@ CONFIG_ZMK_BLE_PASSKEY_ENTRY=n
 
 CONFIG_ZMK_BLE=y
 CONFIG_ZMK_USB=y
+
+# Removed 2026-08-22: these are owned by config/adv360.conf. Declaring
+# them here too made the consumer usage range depend on fragment
+# ordering - the defconfigs said BASIC=y while adv360.conf says FULL=y,
+# and under BASIC the SYS calculator/files/search/lock keys are
+# silently unsendable. bin/validate_keymap.py now fails on any overlap.

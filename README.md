@@ -221,6 +221,16 @@ used but never defined.
 `GLOBAL` never sends application-specific shortcuts. It emits F13-F20 with
 modifiers, and each host translates:
 
+Two of those slots are not literally F14/F15 on the wire. macOS treats those
+two keycodes as display brightness below application delivery and regardless
+of modifiers, so all fourteen signals containing them fired the brightness OSD
+alongside the real action. They are sent as the keypad divide and multiply
+keys instead - `KP_DIVIDE`/`KP_MULTIPLY` in the keymap, `keypadDivide`/
+`keypadMultiply` on macOS, `KP_Divide`/`KP_Multiply` on Linux,
+`NumpadDiv`/`NumpadMult` on Windows. The keypad range is the only range this
+keymap never otherwise touches. The table below keeps the F14/F15 names as
+protocol slot labels.
+
 | Signal | Action |
 |---|---|
 | `F13`-`F20` | Workspace 1-8 |
@@ -368,11 +378,11 @@ base layer &nbsp;&middot;&nbsp; `>` truncated macro (see the reference below)
 **GLOBAL**
 
 ```text
-  C-S-F17      F13        F14        F15        F16        F17         ^^                                                                              ^^        F18        F19        F20       C-F17      C-F18     C-S-F18
-  A-S-F13    C-S-F19     C-F20      A-F16     C-A-F19     A-F13     A-S-F17                                                                            ^^      C-S-F13    C-S-F14    C-S-F15    C-S-F16   C-A-S-F17  C-A-S-F18
-     ^^       A-F17      A-F18      A-F19      C-F19      A-F20        ^^                    ^^         ^^     |      ^^         ^^                    ^^       C-F13      C-F14      C-F15      C-F16     C-A-F17    C-A-F18
-     ^^      A-S-F14    A-S-F15     A-F15     A-S-F16     A-F14                                         ^^     |      ^^                                       C-A-F13    C-A-F14    C-A-F15    C-A-F16    C-A-F20       ^^
-  C-S-F20     C-F17      C-F18     C-A-F17    C-A-F18                             ^^         ^^         ^^     |      ^^         ^^         ^^                             C-F13      C-F14      C-F15      C-F16        ^^
+  C-S-F17      F13         #/         #*        F16        F17         ^^                                                                              ^^        F18        F19        F20       C-F17      C-F18     C-S-F18
+  A-S-F13    C-S-F19     C-F20      A-F16     C-A-F19     A-F13     A-S-F17                                                                            ^^      C-S-F13     C-S-#/     C-S-#*    C-S-F16   C-A-S-F17  C-A-S-F18
+     ^^       A-F17      A-F18      A-F19      C-F19      A-F20        ^^                    ^^         ^^     |      ^^         ^^                    ^^       C-F13       C-#/       C-#*      C-F16     C-A-F17    C-A-F18
+     ^^       A-S-#/     A-S-#*      A-#*     A-S-F16      A-#/                                         ^^     |      ^^                                       C-A-F13     C-A-#/     C-A-#*    C-A-F16    C-A-F20       ^^
+  C-S-F20     C-F17      C-F18     C-A-F17    C-A-F18                             ^^         ^^         ^^     |      ^^         ^^         ^^                             C-F13       C-#/       C-#*      C-F16        ^^
 ```
 
 **SYS**

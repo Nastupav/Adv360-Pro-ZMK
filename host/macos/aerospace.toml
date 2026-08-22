@@ -20,8 +20,8 @@
 
 # F13-F20 -> workspace 1-8
 f13 = 'workspace 1'
-f14 = 'workspace 2'
-f15 = 'workspace 3'
+keypadDivide = 'workspace 2'
+keypadMultiply = 'workspace 3'
 f16 = 'workspace 4'
 f17 = 'workspace 5'
 f18 = 'workspace 6'
@@ -30,8 +30,8 @@ f20 = 'workspace 8'
 
 # Shift+F13-F20 -> move window to workspace 1-8
 shift-f13 = 'move-node-to-workspace 1'
-shift-f14 = 'move-node-to-workspace 2'
-shift-f15 = 'move-node-to-workspace 3'
+shift-keypadDivide = 'move-node-to-workspace 2'
+shift-keypadMultiply = 'move-node-to-workspace 3'
 shift-f16 = 'move-node-to-workspace 4'
 shift-f17 = 'move-node-to-workspace 5'
 shift-f18 = 'move-node-to-workspace 6'
@@ -40,14 +40,14 @@ shift-f20 = 'move-node-to-workspace 8'
 
 # Ctrl+F13-F16 -> focus left/down/up/right
 ctrl-f13 = 'focus left'
-ctrl-f14 = 'focus down'
-ctrl-f15 = 'focus up'
+ctrl-keypadDivide = 'focus down'
+ctrl-keypadMultiply = 'focus up'
 ctrl-f16 = 'focus right'
 
 # Ctrl+Shift+F13-F16 -> move window left/down/up/right
 ctrl-shift-f13 = 'move left'
-ctrl-shift-f14 = 'move down'
-ctrl-shift-f15 = 'move up'
+ctrl-shift-keypadDivide = 'move down'
+ctrl-shift-keypadMultiply = 'move up'
 ctrl-shift-f16 = 'move right'
 
 # Ctrl+F17/F18 -> previous/next workspace
@@ -63,8 +63,8 @@ ctrl-shift-f18 = 'move-node-to-workspace --wrap-around next'
 
 # Ctrl+Alt+F13-F16 -> resize left/down/up/right
 ctrl-alt-f13 = 'resize width -50'
-ctrl-alt-f14 = 'resize height 50'
-ctrl-alt-f15 = 'resize height -50'
+ctrl-alt-keypadDivide = 'resize height 50'
+ctrl-alt-keypadMultiply = 'resize height -50'
 ctrl-alt-f16 = 'resize width 50'
 
 # Ctrl+Alt+F17/F18 -> focus previous/next monitor
@@ -82,8 +82,8 @@ ctrl-alt-f20 = 'fullscreen'
 
 # Alt+Shift+F13-F16 -> screenshot region, screenshot window, clipboard, picker
 alt-shift-f13 = '''exec-and-forget screencapture -i -c'''
-alt-shift-f14 = '''exec-and-forget screencapture -i -w -c'''
-alt-shift-f15 = '''exec-and-forget open raycast://extensions/raycast/clipboard-history/clipboard-history'''
+alt-shift-keypadDivide = '''exec-and-forget screencapture -i -w -c'''
+alt-shift-keypadMultiply = '''exec-and-forget open raycast://extensions/raycast/clipboard-history/clipboard-history'''
 alt-shift-f16 = '''exec-and-forget open -a "Digital Color Meter"'''
 
 # Alt+Shift+F17 -> Neovim in a terminal
@@ -100,8 +100,8 @@ ctrl-shift-f20 = 'layout horizontal vertical'
 # Alt+F13-F20 -> applications
 # AeroSpace has no launcher primitive, so shell out to `open -a`.
 alt-f13 = '''exec-and-forget open -a "Ghostty"'''
-alt-f14 = '''exec-and-forget open -a "Safari"'''
-alt-f15 = '''exec-and-forget open -a "Visual Studio Code"'''
+alt-keypadDivide = '''exec-and-forget open -a "Safari"'''
+alt-keypadMultiply = '''exec-and-forget open -a "Visual Studio Code"'''
 alt-f16 = '''exec-and-forget open -a "Finder"'''
 alt-f17 = '''exec-and-forget open -a "Raycast"'''
 alt-f18 = '''exec-and-forget open -a "Slack"'''

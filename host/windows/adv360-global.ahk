@@ -20,8 +20,8 @@ KOMOREBIC    := "komorebic.exe"
 ; Adjust the right-hand side to taste; anything Run() accepts works.
 APPS := Map(
     "F13", "wt.exe",                                          ; terminal
-    "F14", "msedge.exe",                                      ; browser
-    "F15", "code",                                            ; code editor
+    "NumpadDiv", "msedge.exe",                                      ; browser
+    "NumpadMult", "code",                                            ; code editor
     "F16", "explorer.exe",                                    ; files
     "F17", "",                                                ; launcher (see below)
     "F18", "ms-teams.exe",                                    ; chat
@@ -109,8 +109,8 @@ Launch(key) {
 
 ; F13-F20 -> workspace 1-8
 F13:: Workspace(1)
-F14:: Workspace(2)
-F15:: Workspace(3)
+NumpadDiv:: Workspace(2)
+NumpadMult:: Workspace(3)
 F16:: Workspace(4)
 F17:: Workspace(5)
 F18:: Workspace(6)
@@ -119,8 +119,8 @@ F20:: Workspace(8)
 
 ; Shift+F13-F20 -> move active window to workspace 1-8
 +F13:: MoveToWorkspace(1)
-+F14:: MoveToWorkspace(2)
-+F15:: MoveToWorkspace(3)
++NumpadDiv:: MoveToWorkspace(2)
++NumpadMult:: MoveToWorkspace(3)
 +F16:: MoveToWorkspace(4)
 +F17:: MoveToWorkspace(5)
 +F18:: MoveToWorkspace(6)
@@ -129,14 +129,14 @@ F20:: Workspace(8)
 
 ; Ctrl+F13-F16 -> focus left/down/up/right
 ^F13:: Focus("left")
-^F14:: Focus("down")
-^F15:: Focus("up")
+^NumpadDiv:: Focus("down")
+^NumpadMult:: Focus("up")
 ^F16:: Focus("right")
 
 ; Ctrl+Shift+F13-F16 -> move window left/down/up/right
 ^+F13:: MoveWindow("left")
-^+F14:: MoveWindow("down")
-^+F15:: MoveWindow("up")
+^+NumpadDiv:: MoveWindow("down")
+^+NumpadMult:: MoveWindow("up")
 ^+F16:: MoveWindow("right")
 
 ; Ctrl+F17/F18 -> previous/next workspace
@@ -149,8 +149,8 @@ F20:: Workspace(8)
 
 ; Ctrl+Alt+F13-F16 -> resize left/down/up/right
 ^!F13:: Kmb("resize-axis", "horizontal", "decrease")
-^!F14:: Kmb("resize-axis", "vertical", "increase")
-^!F15:: Kmb("resize-axis", "vertical", "decrease")
+^!NumpadDiv:: Kmb("resize-axis", "vertical", "increase")
+^!NumpadMult:: Kmb("resize-axis", "vertical", "decrease")
 ^!F16:: Kmb("resize-axis", "horizontal", "increase")
 
 ; Ctrl+Alt+F17/F18 -> focus previous/next monitor
@@ -167,8 +167,8 @@ F20:: Workspace(8)
 
 ; Alt+Shift+F13-F16 -> screenshot region, screenshot window, clipboard, picker
 !+F13:: Send("#+s")            ; Snipping Tool region capture
-!+F14:: Send("!{PrintScreen}") ; active window to clipboard
-!+F15:: Send("#v")             ; clipboard history
+!+NumpadDiv:: Send("!{PrintScreen}") ; active window to clipboard
+!+NumpadMult:: Send("#v")             ; clipboard history
 !+F16:: Run("ms-screenclip:")  ; nearest built-in colour/screen tool
 
 ; Alt+Shift+F17 -> Neovim in a terminal
@@ -184,8 +184,8 @@ F20:: Workspace(8)
 
 ; Alt+F13-F20 -> applications
 !F13:: Launch("F13")
-!F14:: Launch("F14")
-!F15:: Launch("F15")
+!NumpadDiv:: Launch("NumpadDiv")
+!NumpadMult:: Launch("NumpadMult")
 !F16:: Launch("F16")
 !F17:: Launch("F17")
 !F18:: Launch("F18")

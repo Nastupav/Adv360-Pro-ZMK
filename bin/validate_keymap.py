@@ -12,6 +12,7 @@ Checks that are cheap here and expensive on the keyboard:
   7. Braces and angle brackets balance.
   8. Every text macro is defined and every defined macro is used.
   9. No dead &none keys.
+ 12. No Kconfig symbol is set in both adv360.conf and a board defconfig.
  10. Every consumer key the keymap binds is actually sendable under the
      consumer usage range selected in adv360.conf.
 """
@@ -262,6 +263,24 @@ for name, positions in dead.items():
 
 conf = ROOT / "config" / "adv360.conf"
 conf_text = conf.read_text() if conf.exists() else ""
+
+# --- 12. one source of truth per Kconfig symbol ----------------------------
+# A symbol set in both adv360.conf and a board defconfig resolves by fragment
+# ordering, not by intent. That bit us on the consumer usage range: the
+# defconfigs said CONSUMER_REPORT_USAGES_BASIC=y while adv360.conf says
+# FULL=y, and under BASIC the SYS calculator/files/search/lock keys are
+# silently unsendable - the exact failure this file's check 10 exists to
+# catch, reintroduced one layer down where check 10 cannot see it.
+conf_symbols = set(re.findall(r"^CONFIG_([A-Z0-9_]+)=", conf_text, flags=re.M))
+for defconfig in sorted((ROOT / "config/boards/arm/adv360").glob("*_defconfig")):
+    board_symbols = set(
+        re.findall(r"^CONFIG_([A-Z0-9_]+)=", defconfig.read_text(), flags=re.M)
+    )
+    for symbol in sorted(conf_symbols & board_symbols):
+        fail(
+            f"{defconfig.name} and adv360.conf both set CONFIG_{symbol}; "
+            f"keep it in adv360.conf only so the value cannot depend on ordering"
+        )
 
 # --- 11. macro length against the BLE report queue -------------------------
 # Each &kp in a macro produces a press report and a release report. If a macro

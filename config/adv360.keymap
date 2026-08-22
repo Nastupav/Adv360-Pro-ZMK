@@ -442,23 +442,23 @@
         layer_global {
             display-name = "GLOBAL";
             bindings = <
-&kp LC(LS(F17)) &kp F13   &kp F14       &kp F15        &kp F16        &kp F17    &trans
+&kp LC(LS(F17)) &kp F13   &kp KP_DIVIDE       &kp KP_MULTIPLY        &kp F16        &kp F17    &trans
     &trans  &kp F18       &kp F19       &kp F20        &kp LC(F17)    &kp LC(F18) &kp LC(LS(F18))
 
 &kp LA(LS(F13)) &kp LC(LS(F19)) &kp LC(F20) &kp LA(F16) &kp LC(LA(F19)) &kp LA(F13) &kp LA(LS(F17))
-    &trans  &kp LC(LS(F13)) &kp LC(LS(F14)) &kp LC(LS(F15)) &kp LC(LS(F16)) &kp LC(LA(LS(F17))) &kp LC(LA(LS(F18)))
+    &trans  &kp LC(LS(F13)) &kp LC(LS(KP_DIVIDE)) &kp LC(LS(KP_MULTIPLY)) &kp LC(LS(F16)) &kp LC(LA(LS(F17))) &kp LC(LA(LS(F18)))
 
 &trans      &kp LA(F17)   &kp LA(F18)   &kp LA(F19)    &kp LC(F19)    &kp LA(F20) &trans
     &trans    &trans                                   &trans   &trans
-    &trans    &kp LC(F13) &kp LC(F14)   &kp LC(F15)    &kp LC(F16)    &kp LC(LA(F17)) &kp LC(LA(F18))
+    &trans    &kp LC(F13) &kp LC(KP_DIVIDE)   &kp LC(KP_MULTIPLY)    &kp LC(F16)    &kp LC(LA(F17)) &kp LC(LA(F18))
 
-&trans      &kp LA(LS(F14)) &kp LA(LS(F15)) &kp LA(F15) &kp LA(LS(F16)) &kp LA(F14)
+&trans      &kp LA(LS(KP_DIVIDE)) &kp LA(LS(KP_MULTIPLY)) &kp LA(KP_MULTIPLY) &kp LA(LS(F16)) &kp LA(KP_DIVIDE)
     &trans                                             &trans
-    &kp LC(LA(F13)) &kp LC(LA(F14)) &kp LC(LA(F15)) &kp LC(LA(F16)) &kp LC(LA(F20)) &trans
+    &kp LC(LA(F13)) &kp LC(LA(KP_DIVIDE)) &kp LC(LA(KP_MULTIPLY)) &kp LC(LA(F16)) &kp LC(LA(F20)) &trans
 
 &kp LC(LS(F20)) &kp LC(F17) &kp LC(F18)  &kp LC(LA(F17)) &kp LC(LA(F18))
     &trans    &trans      &trans                       &trans         &trans     &trans
-    &kp LC(F13) &kp LC(F14) &kp LC(F15) &kp LC(F16)    &trans
+    &kp LC(F13) &kp LC(KP_DIVIDE) &kp LC(KP_MULTIPLY) &kp LC(F16)    &trans
             >;
         };
 

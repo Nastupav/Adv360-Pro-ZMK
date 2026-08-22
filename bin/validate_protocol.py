@@ -40,6 +40,25 @@ HOSTS = {
 }
 
 MOD_ORDER = ["C", "A", "S"]
+
+# Slots 2 and 3 of the protocol are named F14/F15 throughout this file, the
+# README and the intent table, but they are not sent as F14/F15 any more.
+# macOS treats those two keycodes as display brightness at a level below
+# application delivery, and does so regardless of modifiers - so every one of
+# the fourteen signals containing them fired the brightness OSD alongside the
+# real action. Nothing suppresses that but not emitting the keycodes, and
+# AeroSpace binds f1-f20 only, so there is no spare function key to move to.
+# The keypad range is the one range this keymap never touches.
+#
+# The canonical signal names stay F14/F15 so the protocol vocabulary, the
+# intent table and the documentation are unchanged; only the wire code differs
+# per host. Each parser maps its host's spelling back to the canonical name.
+WIRE = {
+    "keymap":  {"KP_DIVIDE": "F14", "KP_MULTIPLY": "F15"},
+    "macos":   {"keypaddivide": "F14", "keypadmultiply": "F15"},
+    "linux":   {"KP_Divide": "F14", "KP_Multiply": "F15"},
+    "windows": {"NumpadDiv": "F14", "NumpadMult": "F15"},
+}
 errors: list[str] = []
 
 
@@ -167,6 +186,7 @@ def from_keymap() -> set[str]:
         while (m := re.fullmatch(r"[LR]([CASG])\((.*)\)", tok)):
             mods.add(m.group(1))
             tok = m.group(2)
+        tok = WIRE["keymap"].get(tok, tok)
         if re.fullmatch(r"F1[3-9]|F20", tok):
             out.add(sig(mods, tok))
     return out
@@ -176,29 +196,35 @@ def from_aerospace(text: str) -> dict[str, str]:
     out = {}
     for line in text.splitlines():
         m = re.match(r"\s*((?:ctrl|alt|shift|cmd)(?:-(?:ctrl|alt|shift|cmd))*-)?"
-                     r"(f1[3-9]|f20)\s*=\s*(.*)", line)
+                     r"(f1[3-9]|f20|keypadDivide|keypadMultiply)\s*=\s*(.*)",
+                     line, re.I)
         if m:
             names = (m.group(1) or "").rstrip("-").split("-")
             mods = {"ctrl": "C", "alt": "A", "shift": "S"}
-            out[sig({mods[n] for n in names if n in mods}, m.group(2))] = m.group(3)
+            key = WIRE["macos"].get(m.group(2).lower(), m.group(2))
+            out[sig({mods[n] for n in names if n in mods}, key)] = m.group(3)
     return out
 
 
 def from_hyprland(text: str) -> dict[str, str]:
     out = {}
-    for m in re.finditer(r"^bind\s*=\s*([A-Z ]*),\s*(F1[3-9]|F20)\s*,(.*)$",
-                         text, re.M):
+    for m in re.finditer(
+            r"^bind\s*=\s*([A-Z ]*),\s*(F1[3-9]|F20|KP_Divide|KP_Multiply)\s*,(.*)$",
+            text, re.M):
         names = m.group(1).split()
         mods = {"CTRL": "C", "ALT": "A", "SHIFT": "S"}
-        out[sig({mods[n] for n in names if n in mods}, m.group(2))] = m.group(3)
+        key = WIRE["linux"].get(m.group(2), m.group(2))
+        out[sig({mods[n] for n in names if n in mods}, key)] = m.group(3)
     return out
 
 
 def from_ahk(text: str) -> dict[str, str]:
     out = {}
-    for m in re.finditer(r"^([\^!+#]*)(F1[3-9]|F20)\s*::(.*)$", text, re.M):
+    for m in re.finditer(
+            r"^([\^!+#]*)(F1[3-9]|F20|NumpadDiv|NumpadMult)\s*::(.*)$", text, re.M):
         mods = {"^": "C", "!": "A", "+": "S"}
-        out[sig({mods[c] for c in m.group(1) if c in mods}, m.group(2))] = m.group(3)
+        key = WIRE["windows"].get(m.group(2), m.group(2))
+        out[sig({mods[c] for c in m.group(1) if c in mods}, key)] = m.group(3)
     return out
 
 
