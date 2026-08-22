@@ -106,10 +106,13 @@ def main() -> int:
                 require(norm(loaded) == norm(expected),
                         "AeroSpace runtime bindings differ from the installed config")
 
+        # The preamble declares ten persistent workspaces; AeroSpace also
+        # creates workspaces on demand when a window lands outside that set,
+        # so require the persistent ten and let extras be.
         workspaces = run("list-workspaces", "--all").split()
         if workspaces:
-            require(workspaces == [str(n) for n in range(1, 11)],
-                    f"unexpected active workspaces: {workspaces}")
+            missing = [str(n) for n in range(1, 11) if str(n) not in workspaces]
+            require(not missing, f"persistent workspaces missing: {missing}")
 
         monitors: dict[str, str] = {}
         for line in run("list-monitors").splitlines():
