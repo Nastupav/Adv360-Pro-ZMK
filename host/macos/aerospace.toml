@@ -1,22 +1,19 @@
 # ---------------------------------------------------------------------------
-# FINALIZED — ready to merge into host/macos/aerospace.toml in the repo.
+# Adv360 GLOBAL layer consumer for macOS / AeroSpace: the F13-F20 binding
+# fragment. It implements the same protocol as ../windows/adv360-global.ahk
+# and ../linux/hyprland.conf, and bin/validate_protocol.py checks all three
+# against the keymap key-for-key.
 #
-# Base pulled from https://github.com/Nastupav/Adv360-Pro-ZMK/blob/V3.0/host/macos/aerospace.toml
-# on 2026-08-22, then adjusted per decisions made 2026-08-22:
-# 1. Ctrl+Alt+F20 — V3.0 shipped this as `layout floating`, an approximation
-#    of "pin" that AeroSpace can't actually do. Rebound to `fullscreen`
-#    (duplicates Ctrl+F19, but is a real, non-approximated action rather than
-#    a mislabeled one).
-# 2. Alt+F13-F20 app bank — kept exactly as V3.0 ships it (Ghostty, Safari,
-#    VS Code, Finder, Raycast, Slack, Obsidian, Ghostty+lazygit). No changes.
+# Not a standalone config. scripts/manage_host.py installs
+# aerospace.preamble.toml followed by this file as
+# ~/.config/aerospace/aerospace.toml. The keyboard already applies the
+# modifiers, so every binding here is a bare fn-key with modifier prefixes
+# and needs no further remapping.
 #
-# Your live config is at ~/.config/aerospace/aerospace.toml, currently rendered
-# from the OLD deterministic profile (branch agent/aerospace-host-owner,
-# commit b4f33a5). Do not hand-copy this in — install it through
-# scripts/manage_host.py so the transactional backup/rollback machinery
-# in ~/.local/state/adv360-host-backups/ covers it. See the "V3.0 install
-# plan" in the "AeroSpace Config Repair — Adv360 Handoff" note for the full
-# command sequence, including when it's safe to push to GitHub.
+# One deliberate departure from stock V3.0 (2026-08-22): Ctrl+Alt+F20 shipped
+# as `layout floating`, an approximation of "pin" that AeroSpace cannot
+# actually do. It is bound to `fullscreen` here - a real action rather than a
+# mislabeled one. The Alt+F13-F20 app bank is exactly as V3.0 ships it.
 # ---------------------------------------------------------------------------
 
 [mode.main.binding]

@@ -10,12 +10,16 @@ SELINUX1 := :z
 SELINUX2 := ,z
 endif
 
-.PHONY: all left validate render clean_firmware clean_image clean
+.PHONY: all left validate verify-active render clean_firmware clean_image clean
 
 validate:
 	python3 bin/validate_keymap.py
 	python3 bin/validate_protocol.py
 	python3 bin/render_keymap.py --check
+
+# Static checks plus the installed host state on this machine.
+verify-active: validate
+	python3 bin/verify_active.py
 
 render:
 	python3 bin/render_keymap.py --write

@@ -1,0 +1,99 @@
+# ---------------------------------------------------------------------------
+# AeroSpace environment for macOS: everything that is not an F13-F20 binding.
+#
+# manage_host.py renders the installed ~/.config/aerospace/aerospace.toml as
+# this preamble followed by aerospace.toml, the protocol binding fragment.
+# The split exists because the fragment is cross-checked key-for-key against
+# the keymap by bin/validate_protocol.py, while the settings below are host
+# environment and have no counterpart on the keyboard.
+#
+# Carried over verbatim from the deterministic profile's installed config
+# (branch agent/aerospace-host-owner) on 2026-08-22. Ten persistent
+# workspaces are retained deliberately: the F-key protocol addresses 1-8, and
+# the window rules below place communication apps on 9.
+# ---------------------------------------------------------------------------
+
+config-version = 2
+start-at-login = true
+auto-reload-config = true
+after-startup-command = []
+
+key-mapping.preset = 'qwerty'
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+accordion-padding = 30
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'auto'
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+automatically-unhide-macos-hidden-apps = true
+focus-follows-mouse.enabled = false
+persistent-workspaces = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+
+[gaps]
+inner.horizontal = 8
+inner.vertical = 8
+outer.top = 8
+outer.bottom = 8
+outer.left = 8
+outer.right = 8
+
+[[on-window-detected]]
+if.app-id = 'md.obsidian'
+run = ['move-node-to-workspace 8']
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.VSCode'
+run = ['move-node-to-workspace 4']
+
+[[on-window-detected]]
+if.app-id = 'com.github.wez.wezterm'
+run = ['move-node-to-workspace 5']
+
+[[on-window-detected]]
+if.app-id = 'com.mitchellh.ghostty'
+run = ['move-node-to-workspace 5']
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Terminal'
+run = ['move-node-to-workspace 5']
+
+[[on-window-detected]]
+if.app-id = 'com.google.Chrome'
+run = ['move-node-to-workspace 7']
+
+[[on-window-detected]]
+if.app-id = 'org.mozilla.firefox'
+run = ['move-node-to-workspace 7']
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Safari'
+run = ['move-node-to-workspace 7']
+
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgap'
+run = ['move-node-to-workspace 9']
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.Outlook'
+run = ['move-node-to-workspace 9']
+
+[[on-window-detected]]
+if.app-id = 'us.zoom.xos'
+run = ['move-node-to-workspace 9']
+
+[[on-window-detected]]
+if.window-title-regex-substring = '(?i)(open file|save as|find and replace|choose a file|select folder)'
+run = ['layout floating']
+
+[workspace-to-monitor-force-assignment]
+1 = 'PG32UCDM'
+2 = 'PG32UCDM'
+3 = 'PG32UCDM'
+4 = 'PG32UCDM'
+5 = 'PG32UCDM'
+6 = 'P34WD-40'
+7 = 'P34WD-40'
+8 = 'P34WD-40'
+9 = 'P34WD-40'
+10 = 'P34WD-40'
+
