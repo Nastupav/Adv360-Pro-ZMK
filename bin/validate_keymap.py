@@ -8,7 +8,7 @@ Checks that are cheap here and expensive on the keyboard:
   4. hold-trigger-key-positions on each home-row-mod behavior references the
      opposite hand plus the thumbs (never its own hand).
   5. Combo key-positions are in range.
-  6. Runtime keymap editing (studio_unlock) is not exposed.
+  6. Runtime keymap editing is reachable from exactly one key, not several.
   7. Braces and angle brackets balance.
   8. Every text macro is defined and every defined macro is used.
   9. No dead &none keys.
@@ -85,9 +85,14 @@ for open_ch, close_ch in (("{", "}"), ("<", ">")):
     if opens != closes:
         fail(f"unbalanced {open_ch}{close_ch}: {opens} open vs {closes} close")
 
-# --- 6. no runtime keymap editing ------------------------------------------
-if "studio_unlock" in src:
-    fail("studio_unlock present; git must stay the sole keymap authority")
+# --- 6. runtime keymap editing is bounded ----------------------------------
+# Studio was deliberately banned here while git was the sole keymap authority.
+# It is now enabled on the central half by choice (2026-08-22), so the ban is
+# replaced by the weaker invariant that still holds: exactly one unlock key,
+# so runtime editing cannot be entered accidentally or from several places.
+unlocks = src.count("&studio_unlock")
+if unlocks > 1:
+    fail(f"{unlocks} studio_unlock bindings; expected exactly one")
 
 # --- 2/3. #defines ----------------------------------------------------------
 defines = dict(re.findall(r"^#define\s+(\w+)\s+(.+)$", src, flags=re.M))

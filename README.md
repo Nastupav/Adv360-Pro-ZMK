@@ -378,11 +378,11 @@ base layer &nbsp;&middot;&nbsp; `>` truncated macro (see the reference below)
 **SYS**
 
 ```text
-  USB    BT0    BT1    BT2    BT3    BT4     ^^                                                  ^^    BLE    Out~   BT>    BT<    Lum-   Lum+
-  BL~    BL-   =>WIN   BL+     ON    OFF     ^^                                                  ^^    BTx0   BTx1   BTx2   BTx3   BTx4   SPD
-   ^^   =>MAC   HUD    HUI    SAD    SAI     ^^            ^^     ^^   |    ^^     ^^            ^^    RGB    BRD    BRI    EFF    EFR    SPI
-   ^^   PrtSc   ScLk   Paus   Menu   Caps                         ^^   |    ^^                         Prev   Play   Next   Vol-   Vol+    ^^
-  Stop   Ejct   Calc   File   Srch                  ^^     ^^     ^^   |    ^^     ^^     ^^                  Mute   #Num   Lang   Lock    ^^
+      USB            BT0            BT1            BT2            BT3            BT4             ^^                                                                                                          ^^            BLE            Out~           BT>            BT<            Lum-           Lum+
+      BL~            BL-           =>WIN           BL+             ON            OFF             ^^                                                                                                          ^^            BTx0           BTx1           BTx2           BTx3           BTx4           SPD
+ studio_unlock      =>MAC           HUD            HUI            SAD            SAI             ^^                            ^^             ^^       |        ^^             ^^                            ^^            RGB            BRD            BRI            EFF            EFR            SPI
+       ^^           PrtSc           ScLk           Paus           Menu           Caps                                                         ^^       |        ^^                                                         Prev           Play           Next           Vol-           Vol+            ^^
+      Stop           Ejct           Calc           File           Srch                                          ^^             ^^             ^^       |        ^^             ^^             ^^                                          Mute           #Num           Lang           Lock            ^^
 ```
 
 **NAVWIN**
