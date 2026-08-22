@@ -235,7 +235,7 @@ modifiers, and each host translates:
 | `Ctrl+Alt+F17`/`F18` | Focus previous/next monitor |
 | `Ctrl+Alt+Shift+F17`/`F18` | Move window to previous/next monitor |
 | `Ctrl+Alt+F19` | Balance / reset layout |
-| `Ctrl+Alt+F20` | Pin (sticky) window |
+| `Ctrl+Alt+F20` | Pin (sticky) window — macOS substitutes fullscreen |
 | `Alt+Shift+F13`-`F16` | Screenshot region, screenshot window, clipboard history, colour picker |
 | `Alt+Shift+F17` | Neovim in a terminal |
 | `Alt+F13`-`F20` | Terminal, browser, code, files, launcher, chat, notes, git |
@@ -291,7 +291,9 @@ presence check passed throughout.
 
 Three bindings are deliberate approximations, listed in `APPROXIMATIONS` in
 `bin/validate_protocol.py` so they stay visible: Hyprland has no balance-layout
-command, AeroSpace has no pin, and komorebi's monocle stands in for fullscreen.
+command, AeroSpace has no pin — it fullscreens instead, duplicating `Ctrl+F19`
+rather than mislabelling `layout floating` as pinning — and komorebi's monocle
+stands in for fullscreen.
 The app-launcher and screenshot banks are excluded from the intent check —
 Ghostty, `wt.exe` and a Hyprland variable are all correct answers to
 "terminal".
