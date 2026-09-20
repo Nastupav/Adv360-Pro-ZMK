@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Build artifacts
+firmware/
+*.uf2
+
+# Python
+__pycache__/
+*.py[cod]
+
+# IDE
+.vscode/
+.idea/
+
+# Assets (upstream reference only)
+assets/

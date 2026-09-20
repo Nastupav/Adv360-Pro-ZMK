@@ -1,0 +1,58 @@
+name: Build firmware
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: zmkfirmware/zmk-build-arm:stable
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate firmware, host protocol and installer regressions
+        run: make validate
+
+      - name: Cache west modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            modules/
+            tools/
+            zephyr/
+            bootloader/
+            zmk/
+          key: ${{ runner.os }}-zmk-${{ hashFiles('config/west.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-zmk-
+
+      - name: Initialize west
+        run: |
+          west init -l config
+          west update
+          west zephyr-export
+
+      - name: Exercise actual ZMK behavior events
+        run: python3 bin/test_behaviors.py --zmk "${GITHUB_WORKSPACE}/zmk/app"
+
+      - name: Build and package both halves
+        shell: bash
+        run: COMMIT="${GITHUB_SHA::7}" BUILD_RIGHT=true bash bin/build.sh
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: adv360-firmware
+          path: |
+            firmware/*.uf2
+            firmware/*.config
+            firmware/*-manifest.yml
+            firmware/*-source.tar.gz
+            firmware/SHA256SUMS
+            firmware/behavior-tests/tests/*/events.log
+            firmware/behavior-tests/tests/*/build.log
+          if-no-files-found: error

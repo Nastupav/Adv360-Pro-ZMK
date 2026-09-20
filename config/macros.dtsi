@@ -1,0 +1,4 @@
+/* Daily driver uses individual keypresses only.
+ * Previous operator macros are preserved in profiles/previous/macros.dtsi.
+ * Use editor pairing/snippets for context-sensitive expansions.
+ */
