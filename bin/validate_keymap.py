@@ -5,13 +5,12 @@ Checks that are cheap here and expensive on the keyboard:
   1. Every keymap layer binds exactly KEY_COUNT positions.
   2. The expected layers exist, in the expected order, with matching #defines.
   3. KEYS_L / KEYS_R / THUMBS partition 0..KEY_COUNT-1 exactly once.
-  4. hold-trigger-key-positions on each home-row-mod behavior references the
-     opposite hand plus the thumbs (never its own hand).
+  4. No hold-tap behaviors delay letters or dedicated modifiers.
   5. Combo key-positions are in range.
   6. Runtime keymap editing (studio_unlock) is not exposed.
   7. Braces and angle brackets balance.
   8. Every text macro is defined and every defined macro is used.
-  9. No dead &none keys.
+  9. Inactive &none keys are restricted to SYS.
  10. Every consumer key the keymap binds is actually sendable under the
      consumer usage range selected in adv360.conf.
 """
@@ -23,16 +22,8 @@ import sys
 from pathlib import Path
 
 KEY_COUNT = 76
-EXPECTED_LAYERS = [
-    ("layer_mac", "MAC", 0),
-    ("layer_win", "WIN", 1),
-    ("layer_nav", "NAV", 2),
-    ("layer_sym", "SYM", 3),
-    ("layer_num", "NUM", 4),
-    ("layer_global", "GLOBAL", 5),
-    ("layer_sys", "SYS", 6),
-    ("layer_nav_win", "NAV_WIN", 7),
-]
+EXPECTED_LAYERS = [("layer_" + name.lower(), name, i)
+                   for i, name in enumerate(("BASE", "NAV", "SYM", "NUM", "SYS"))]
 
 ROOT = Path(__file__).resolve().parent.parent
 KEYMAP = ROOT / "config" / "adv360.keymap"
@@ -119,33 +110,9 @@ if total != KEY_COUNT or union != set(range(KEY_COUNT)):
         f"{len(union)} unique, {overlap} overlapping, missing {missing}"
     )
 
-# --- 4. home-row-mod hold-trigger sets --------------------------------------
-behaviors = extract_block(src, r"behaviors\s*\{")
-if behaviors is None:
-    fail("no behaviors node found")
-else:
-    expected_trigger = {
-        "home_row_mod_left": ("KEYS_R", "KEYS_L"),
-        "home_row_mod_right": ("KEYS_L", "KEYS_R"),
-    }
-    for node, (want, forbid) in expected_trigger.items():
-        body = extract_block(behaviors, rf"{node}\s*\{{")
-        if body is None:
-            fail(f"behavior {node} not found")
-            continue
-        trig = re.search(r"hold-trigger-key-positions\s*=\s*<([^>]*)>", body)
-        if not trig:
-            fail(f"{node} has no hold-trigger-key-positions")
-            continue
-        tokens = set(trig.group(1).split())
-        if tokens != {want, "THUMBS"}:
-            fail(f"{node} hold-trigger set is {sorted(tokens)}, expected [{want}, THUMBS]")
-        if forbid in tokens:
-            fail(f"{node} allows same-hand ({forbid}) hold resolution")
-        if "hold-trigger-on-release" not in body:
-            fail(f"{node} is missing hold-trigger-on-release")
-        if "require-prior-idle-ms" not in body:
-            fail(f"{node} is missing require-prior-idle-ms")
+# Immediate typing is an explicit contract, not a hold-tap tuning target.
+if 'zmk,behavior-hold-tap' in src:
+    fail("hold-tap behavior present in dedicated-modifier configuration")
 
 # --- 5. combos --------------------------------------------------------------
 # Behaviors that lose data or drop the keyboard off the bus. A combo bound to
@@ -168,6 +135,8 @@ if combos:
 
         binding = bind_match.group(1).strip() if bind_match else ""
         if any(binding.startswith(d) for d in DESTRUCTIVE):
+            if not re.search(r"layers\s*=\s*<SYS>\s*;", body):
+                fail(f"destructive combo {node} must be restricted to SYS")
             left = [p for p in positions if p in hands["KEYS_L"]]
             right = [p for p in positions if p in hands["KEYS_R"]]
             if not (left and right):
@@ -204,15 +173,13 @@ ARITY = {
     "trans": 0, "none": 0, "caps_word": 0, "key_repeat": 0,
     "bootloader": 0, "sys_reset": 0,
     "kp": 1, "mo": 1, "to": 1, "tog": 1, "sl": 1, "sk": 1, "out": 1,
-    "hml": 2, "hmr": 2, "tlt": 2, "sms": 2,
+    "oneshot_shift": 1, "mkp": 1, "mmv": 1, "msc": 1,
 }
 
 # Text macros take no parameters. Collect their labels so a typo in a macro
 # name, or a macro used but never defined, fails here.
 macro_src = strip_comments(MACROS.read_text()) if MACROS.exists() else ""
 defined_macros = set(re.findall(r"TEXT_MACRO\(\s*(m_\w+)", macro_src))
-if not defined_macros:
-    fail("no text macros found in config/macros.dtsi")
 ARITY.update({name: 0 for name in defined_macros})
 
 counts: list[tuple[str, int]] = []
@@ -244,12 +211,12 @@ for name in sorted(defined_macros - used_macros):
 
 # --- 9. no dead keys -------------------------------------------------------
 # Design rule: every position does something or falls through on purpose.
-# &trans is content (it exposes the layer below); &none is wasted space.
+# &trans exposes the layer below; SYS uses &none to block accidental text.
 dead = {name: [i for i, t in enumerate(b.split() for b in
                [x for x in body.split("&") if x.strip()]) if t[0] == "none"]
         for name, body in found}
 for name, positions in dead.items():
-    if positions:
+    if positions and name not in {"layer_sys"}:
         fail(
             f"layer {name} has {len(positions)} dead &none key(s) at "
             f"{positions}; bind them or use &trans"
@@ -259,11 +226,8 @@ conf = ROOT / "config" / "adv360.conf"
 conf_text = conf.read_text() if conf.exists() else ""
 
 # --- 11. macro length against the BLE report queue -------------------------
-# Each &kp in a macro produces a press report and a release report. If a macro
-# is longer than the BLE keyboard report queue, ZMK drops the overflow instead
-# of erroring, so the macro types a truncated string over Bluetooth and the
-# full string over USB. MAX_TAPS is the documented authoring cap; the assert
-# below keeps it honest if anyone lowers the queue size.
+# Conservative burst budget: count two keyboard reports per tap. Actual queue
+# drainage depends on connection timing, so this check is not a runtime proof.
 MAX_TAPS = 15
 
 queue = re.search(

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cross-check the GLOBAL layer against the host consumers in host/.
+"""Cross-check the preserved previous GLOBAL layer against the host consumers in host/.
 
 The keyboard emits F13-F20 with modifiers; three separate files decide what
 those mean. Nothing but this script stops them drifting apart, which is the
@@ -32,7 +32,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-KEYMAP = ROOT / "config" / "adv360.keymap"
+KEYMAP = ROOT / "profiles" / "previous" / "adv360.keymap"
 HOSTS = {
     "macos": ROOT / "host" / "macos" / "aerospace.toml",
     "linux": ROOT / "host" / "linux" / "hyprland.conf",
@@ -63,7 +63,7 @@ RESIZE = {
 # mistaken for exact parity.
 APPROXIMATIONS = {
     ("linux", "C-A-F19"): "Hyprland has no balance command; cycles orientation",
-    ("macos", "C-A-F20"): "AeroSpace has no sticky/pin; floats the window",
+    ("macos", "C-A-F20"): "AeroSpace has no sticky/pin; uses fullscreen",
     ("windows", "C-F19"): "komorebi monocle stands in for fullscreen",
 }
 
@@ -142,7 +142,7 @@ def build_intents() -> dict[str, tuple[str, dict[str, str]]]:
             "macos": r"balance-sizes", "linux": r"orientationnext",
             "windows": r"retile"}),
         "C-A-F20": ("pin-window", {
-            "macos": r"layout floating", "linux": r"\bpin\b",
+            "macos": r"fullscreen", "linux": r"\bpin\b",
             "windows": r"AlwaysOnTop"}),
     })
     return intent
@@ -254,4 +254,4 @@ print(f"  ok  {checked} host commands match their documented intent")
 for (name, signal), why in sorted(APPROXIMATIONS.items()):
     print(f"  ~~  {name:<8} {signal}: {why}")
 
-print("\nF13-F20 protocol: keymap and all host consumers agree")
+print("\nPrevious F13-F20 protocol: preserved profile and host consumers agree (not active firmware)")

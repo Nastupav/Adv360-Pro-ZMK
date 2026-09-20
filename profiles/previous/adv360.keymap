@@ -1,0 +1,190 @@
+/* Advantage360 Pro: immediate QWERTY, dedicated modifiers, macOS-first.
+ * Positions and layer indices are stable; see the generated README diagrams.
+ * EDIT/POINTER intentionally block unused keys. Git is the keymap authority.
+ */
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/backlight.h>
+#include <dt-bindings/zmk/bt.h>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/outputs.h>
+#include <dt-bindings/zmk/pointing.h>
+#include <dt-bindings/zmk/rgb.h>
+#include "macros.dtsi"
+
+#define MAC      0
+#define WIN      1
+#define NAV      2
+#define SYM      3
+#define NUM      4
+#define GLOBAL   5
+#define SYS      6
+#define NAV_WIN  7
+#define EDIT     8
+#define POINTER  9
+#define KEYS_L  0  1  2  3  4  5  6 14 15 16 17 18 19 20 28 29 30 31 32 33 34 46 47 48 49 50 51 60 61 62 63 64
+#define KEYS_R  7  8  9 10 11 12 13 21 22 23 24 25 26 27 39 40 41 42 43 44 45 54 55 56 57 58 59 71 72 73 74 75
+#define THUMBS 35 36 37 38 52 53 65 66 67 68 69 70
+
+/ {
+    behaviors {
+        oneshot_shift: oneshot_shift {
+            compatible = "zmk,behavior-sticky-key";
+            #binding-cells = <1>;
+            release-after-ms = <1000>;
+            quick-release;
+            bindings = <&kp>;
+        };
+    };
+    conditional_layers {
+        compatible = "zmk,conditional-layers";
+        nav_win {
+            if-layers = <WIN NAV>;
+            then-layer = <NAV_WIN>;
+        };
+    };
+    combos {
+        compatible = "zmk,combos";
+        // SYS-only bilateral maintenance chords; no typing combos.
+        combo_bt_clear {
+            timeout-ms = <150>;
+            key-positions = <0 13>;
+            layers = <SYS>;
+            bindings = <&bt BT_CLR>;
+        };
+        combo_sys_reset {
+            timeout-ms = <150>;
+            key-positions = <46 59>;
+            layers = <SYS>;
+            bindings = <&sys_reset>;
+        };
+        combo_bootloader {
+            timeout-ms = <250>;
+            key-positions = <20 21>;
+            layers = <SYS>;
+            bindings = <&bootloader>;
+        };
+    };
+    keymap {
+        compatible = "zmk,keymap";
+
+        // Plain QWERTY. NUM/POINTER toggle; NAV/SYM/EDIT/GLOBAL are momentary.
+        layer_mac {
+            display-name = "MAC";
+            bindings = <
+                &kp EQUAL              &kp N1                 &kp N2                 &kp N3                 &kp N4                 &kp N5                 &mo EDIT               &tog POINTER           &kp N6                 &kp N7                 &kp N8                 &kp N9                 &kp N0                 &kp MINUS
+                &kp TAB                &kp Q                  &kp W                  &kp E                  &kp R                  &kp T                  &caps_word             &oneshot_shift LSHFT   &kp Y                  &kp U                  &kp I                  &kp O                  &kp P                  &kp BSLH
+                &kp ESC                &kp A                  &kp S                  &kp D                  &kp F                  &kp G                  &kp LALT               &kp LCTRL              &kp LGUI               &kp RGUI               &kp RCTRL              &kp RALT               &kp H                  &kp J                  &kp K                  &kp L                  &kp SEMI               &kp SQT
+                &kp LSHFT              &kp Z                  &kp X                  &kp C                  &kp V                  &kp B                  &mo NAV                &mo SYM                &kp N                  &kp M                  &kp COMMA              &kp DOT                &kp FSLH               &kp RSHFT
+                &kp GRAVE              &kp LBKT               &kp RBKT               &kp LPAR               &kp RPAR               &kp BSPC               &kp DEL                &tog NUM               &mo GLOBAL             &kp ENTER              &kp SPACE              &kp LEFT               &kp DOWN               &kp UP                 &kp RIGHT              &mo SYS
+            >;
+        };
+
+        // Ctrl/GUI thumb swap for Windows and Linux; MAC is the fallback base.
+        layer_win {
+            display-name = "WIN";
+            bindings = <
+                &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans
+                &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans
+                &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &kp LGUI               &kp LCTRL              &kp RCTRL              &kp RGUI               &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans
+                &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans
+                &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans
+            >;
+        };
+
+        // JKL; arrows; H/quote line edges; UIOP words/pages; Y/backslash document edges.
+        layer_nav {
+            display-name = "NAV";
+            bindings = <
+                &kp LG(GRAVE)          &kp LG(N1)             &kp LG(N2)             &kp LG(N3)             &kp LG(N4)             &kp LG(N5)             &trans                 &trans                 &kp LG(N6)             &kp LG(N7)             &kp LG(N8)             &kp LG(N9)             &kp LG(N0)             &kp LG(W)
+                &trans                 &kp LG(A)              &kp LG(S)              &kp LG(F)              &kp LG(LS(F))          &kp LG(P)              &trans                 &trans                 &kp LG(UP)             &kp LA(LEFT)           &kp PG_DN              &kp PG_UP              &kp LA(RIGHT)          &kp LG(DOWN)
+                &trans                 &kp LG(Z)              &kp LG(X)              &kp LG(C)              &kp LG(V)              &kp LG(LS(Z))          &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &kp LG(LEFT)           &kp LEFT               &kp DOWN               &kp UP                 &kp RIGHT              &kp LG(RIGHT)
+                &trans                 &kp F2                 &kp F12                &kp LS(F12)            &kp F3                 &kp LS(F3)             &trans                 &trans                 &kp LA(BSPC)           &kp LA(DEL)            &kp BSPC               &kp DEL                &kp INS                &trans
+                &kp LG(MINUS)          &kp LG(LBKT)           &kp LG(RBKT)           &kp LG(EQUAL)          &kp LG(LS(T))          &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &kp LG(FSLH)           &kp LA(DOWN)           &kp LA(UP)             &kp LG(LS(K))          &trans
+            >;
+        };
+
+        // ABC/US symbols. F colon, J underscore; N floor division.
+        layer_sym {
+            display-name = "SYM";
+            bindings = <
+                &trans                 &kp EXCL               &kp AT                 &kp HASH               &kp DLLR               &kp PRCNT              &trans                 &trans                 &kp CARET              &kp AMPS               &kp ASTRK              &kp LPAR               &kp RPAR               &trans
+                &trans                 &kp TILDE              &kp GRAVE              &kp BSLH               &kp PIPE               &kp SEMI               &trans                 &trans                 &kp DQT                &kp SQT                &kp QMARK              &kp FSLH               &kp BSLH               &trans
+                &trans                 &kp LBRC               &kp LBKT               &kp LPAR               &kp COLON              &kp LT                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &kp GT                 &kp UNDER              &kp RPAR               &kp RBKT               &kp RBRC               &kp EQUAL
+                &trans                 &kp CARET              &kp DLLR               &kp MINUS              &kp UNDER              &kp ASTRK              &trans                 &trans                 &m_floor               &kp PIPE               &m_pow                 &m_walrus              &kp EXCL               &trans
+                &m_sqlne               &m_arrow               &m_concat              &m_ne                  &m_eq                  &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &m_le                  &m_ge                  &m_scope               &m_dunder              &trans
+            >;
+        };
+
+        // Thumb 67 toggles. Escape exits. Digits ignore NumLock.
+        layer_num {
+            display-name = "NUM";
+            bindings = <
+                &kp F1                 &kp F2                 &kp F3                 &kp F4                 &kp F5                 &kp F6                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans
+                &kp F7                 &kp F8                 &kp F9                 &kp F10                &kp F11                &kp F12                &trans                 &key_repeat            &kp FSLH                 &kp N7                 &kp N8                 &kp N9               &kp ASTRK              &kp COMMA
+                &tog NUM               &kp A                  &kp B                  &kp C                  &kp D                  &kp E                  &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &kp MINUS                 &kp N4                 &kp N5                 &kp N6              &kp PLUS               &kp EQUAL
+                &trans                 &kp F                  &m_hex                 &kp EQUAL              &kp LT                 &kp GT                 &trans                 &trans                 &kp N0                 &kp N1                 &kp N2                 &kp N3                &kp DOT              &trans
+                &kp PRCNT              &kp CARET              &kp ASTRK              &kp LPAR               &kp RPAR               &trans                 &trans                 &tog NUM               &trans                 &trans                 &trans                 &kp N0                 &kp DOT                &kp EQUAL              &kp ENTER              &trans
+            >;
+        };
+
+        // F13-F20 protocol. JKL; focus; UIOP move; M,./ resize.
+        layer_global {
+            display-name = "GLOBAL";
+            bindings = <
+                &kp LC(LS(F17))        &kp F13                &kp F14                &kp F15                &kp F16                &kp F17                &trans                 &trans                 &kp F18                &kp F19                &kp F20                &kp LC(F17)            &kp LC(F18)            &kp LC(LS(F18))
+                &kp LA(LS(F13))        &kp LC(LS(F19))        &kp LC(F20)            &kp LA(F16)            &kp LC(LA(F19))        &kp LA(F13)            &kp LA(LS(F17))        &trans                 &kp LC(LA(LS(F17)))    &kp LC(LS(F13))        &kp LC(LS(F14))        &kp LC(LS(F15))        &kp LC(LS(F16))        &kp LC(LA(LS(F18)))
+                &trans                 &kp LA(F17)            &kp LA(F18)            &kp LA(F19)            &kp LC(F19)            &kp LA(F20)            &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &kp LC(LA(F17))        &kp LC(F13)            &kp LC(F14)            &kp LC(F15)            &kp LC(F16)            &kp LC(LA(F18))
+                &trans                 &kp LA(LS(F14))        &kp LA(LS(F15))        &kp LA(F15)            &kp LA(LS(F16))        &kp LA(F14)            &trans                 &trans                 &kp LC(LA(F20))        &kp LC(LA(F13))        &kp LC(LA(F14))        &kp LC(LA(F15))        &kp LC(LA(F16))        &trans
+                &kp LC(LS(F20))        &kp LC(F17)            &kp LC(F18)            &kp LC(LA(F17))        &kp LC(LA(F18))        &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &kp LC(F13)            &kp LC(F14)            &kp LC(F15)            &kp LC(F16)            &trans
+            >;
+        };
+
+        // Maintenance. Exit EDIT/POINTER before accessing SYS.
+        layer_sys {
+            display-name = "SYS";
+            bindings = <
+                &out OUT_USB           &bt BT_SEL 0           &bt BT_SEL 1           &bt BT_SEL 2           &bt BT_SEL 3           &bt BT_SEL 4           &trans                 &trans                 &out OUT_BLE           &out OUT_TOG           &bt BT_NXT             &bt BT_PRV             &kp C_BRI_DN           &kp C_BRI_UP
+                &bl BL_TOG             &bl BL_DEC             &to WIN                &bl BL_INC             &rgb_ug RGB_ON         &rgb_ug RGB_OFF        &trans                 &trans                 &bt BT_DISC 0          &bt BT_DISC 1          &bt BT_DISC 2          &bt BT_DISC 3          &bt BT_DISC 4          &rgb_ug RGB_SPD
+                &trans                 &to MAC                &rgb_ug RGB_HUD        &rgb_ug RGB_HUI        &rgb_ug RGB_SAD        &rgb_ug RGB_SAI        &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &rgb_ug RGB_TOG        &rgb_ug RGB_BRD        &rgb_ug RGB_BRI        &rgb_ug RGB_EFF        &rgb_ug RGB_EFR        &rgb_ug RGB_SPI
+                &trans                 &kp PSCRN              &kp SLCK               &kp PAUSE_BREAK        &kp K_APP              &kp CAPS               &trans                 &trans                 &kp C_PREV             &kp C_PP               &kp C_NEXT             &kp C_VOL_DN           &kp C_VOL_UP           &trans
+                &kp C_STOP             &kp C_EJECT            &kp C_AL_CALC          &kp C_AL_FILES         &kp C_AC_SEARCH        &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &kp C_MUTE             &kp KP_NUM             &kp GLOBE              &kp C_AL_LOCK          &trans
+            >;
+        };
+
+        // Conditional WIN+NAV override, including Home/End line movement.
+        layer_nav_win {
+            display-name = "NAVWIN";
+            bindings = <
+                &kp LC(TAB)            &kp LC(N1)             &kp LC(N2)             &kp LC(N3)             &kp LC(N4)             &kp LC(N5)             &trans                 &trans                 &kp LC(N6)             &kp LC(N7)             &kp LC(N8)             &kp LC(N9)             &kp LC(N0)             &kp LC(W)
+                &trans                 &kp LC(A)              &kp LC(S)              &kp LC(F)              &kp LC(LS(F))          &kp LC(P)              &trans                 &trans                 &kp LC(HOME)           &kp LC(LEFT)           &trans                 &trans                 &kp LC(RIGHT)          &kp LC(END)
+                &trans                 &kp LC(Z)              &kp LC(X)              &kp LC(C)              &kp LC(V)              &kp LC(LS(Z))          &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &kp HOME               &trans                 &trans                 &trans                 &trans                 &kp END
+                &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &kp LC(BSPC)           &kp LC(DEL)            &trans                 &trans                 &trans                 &trans
+                &kp LC(MINUS)          &kp LA(LEFT)           &kp LA(RIGHT)          &kp LC(EQUAL)          &kp LC(LS(T))          &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &kp LC(FSLH)           &trans                 &trans                 &kp LC(LS(K))          &trans
+            >;
+        };
+
+        // F21-F24 editor protocol; unused positions are deliberately inactive.
+        layer_edit {
+            display-name = "EDIT";
+            bindings = <
+                &none                  &none                  &none                  &none                  &none                  &none                  &trans                 &none                  &none                  &none                  &none                  &none                  &none                  &none
+                &trans                 &kp LC(F21)            &kp LC(F22)            &kp LC(F23)            &kp LC(F24)            &kp LC(LA(F21))        &none                  &none                  &none                  &kp LS(F21)            &kp LS(F22)            &kp LS(F23)            &kp LS(F24)            &none
+                &trans                 &kp LA(F21)            &kp LA(F22)            &kp LA(F23)            &kp LA(F24)            &kp LC(LA(F22))        &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &kp LC(LA(F23))        &kp F21                &kp F22                &kp F23                &kp F24                &kp LC(LA(F24))
+                &trans                 &kp LC(LS(F21))        &kp LC(LS(F22))        &kp LC(LS(F23))        &kp LC(LS(F24))        &none                  &none                  &none                  &none                  &kp LA(LS(F21))        &kp LA(LS(F22))        &kp LA(LS(F23))        &kp LA(LS(F24))        &trans
+                &none                  &none                  &none                  &none                  &none                  &trans                 &trans                 &none                  &none                  &trans                 &trans                 &none                  &none                  &none                  &none                  &none
+            >;
+        };
+
+        // 7 toggles; Escape exits. Buttons are held, never latched.
+        layer_pointer {
+            display-name = "POINTER";
+            bindings = <
+                &none                  &none                  &none                  &none                  &none                  &none                  &none                  &tog POINTER           &none                  &none                  &none                  &none                  &none                  &none
+                &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &msc SCRL_LEFT         &msc SCRL_DOWN         &msc SCRL_UP           &msc SCRL_RIGHT        &none
+                &tog POINTER           &mkp LCLK              &mkp RCLK              &mkp MCLK              &none                  &none                  &trans                 &trans                 &trans                 &trans                 &trans                 &trans                 &none                  &mmv MOVE_LEFT         &mmv MOVE_DOWN         &mmv MOVE_UP           &mmv MOVE_RIGHT        &none
+                &trans                 &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &trans
+                &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none                  &none
+            >;
+        };
+    };
+};

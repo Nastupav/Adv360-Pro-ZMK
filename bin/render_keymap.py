@@ -164,11 +164,13 @@ def label(binding: str) -> str:
         return f"{keyname(args[1])}/{args[0]}"
     if behavior == "sms":
         return keyname(args[0])
-    if behavior == "sk":
+    if behavior in ("sk", "oneshot_shift"):
         return "." + keyname(args[0])
     if behavior in ("mo", "to", "tog", "sl"):
         prefix = {"mo": "", "to": "=>", "tog": "~", "sl": "."}[behavior]
         return prefix + args[0]
+    if behavior in ("mmv", "msc", "mkp"):
+        return {"mmv": "Ptr-", "msc": "Scr-", "mkp": ""}[behavior] + args[0].replace("MOVE_", "").replace("SCRL_", "")
     if behavior == "caps_word":
         return "Caps"
     if behavior == "key_repeat":
@@ -232,20 +234,17 @@ def render(name: str, b: list[str]) -> str:
     return "\n".join(lines)
 
 
-LEGEND = """`^^` transparent — falls through to the layer below &nbsp;&middot;&nbsp;
-`X/S` tap X, hold Shift &nbsp;&middot;&nbsp; `C-` Ctrl `S-` Shift `A-` Alt
-`G-` Cmd/Gui &nbsp;&middot;&nbsp; `#` keypad &nbsp;&middot;&nbsp; `=>` switch
-base layer &nbsp;&middot;&nbsp; `>` truncated macro (see the reference below)"""
-
+LEGEND = """`^^` falls through to the highest active lower layer; `--` is inactive.
+`C-` Ctrl, `S-` Shift, `A-` Option, `G-` Command; `#` marks keypad codes.
+NAV/SYM/NUM/SYS are held; `=>BASE` cancels active layers. Left/right thumb
+clusters appear in the middle, separated by `|`. See the PNGs for key shapes."""
 
 def macro_reference() -> str:
     """Every macro and the exact text it types, grouped as in macros.dtsi."""
     if not MACRO_SECTIONS:
         return ""
     lines = [
-        "**Macro reference** — full contents of the `MACRO` layer. A trailing",
-        "space is part of the keyword macros. `^` marks where the caret lands",
-        "when the macro repositions it.",
+        "**Macro reference** — literal operators on SYM and the `0x` prefix on NUM.",
         "",
     ]
     for title, names in MACRO_SECTIONS:

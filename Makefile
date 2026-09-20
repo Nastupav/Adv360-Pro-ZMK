@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := all
+
 DOCKER := $(shell { command -v podman || command -v docker; })
 CONTAINER_USERNS := $(if $(findstring podman,$(DOCKER)),--userns=keep-id:uid=0,)
 TIMESTAMP := $(shell date -u +"%Y%m%d%H%M")
@@ -15,7 +17,10 @@ endif
 validate:
 	python3 bin/validate_keymap.py
 	python3 bin/validate_protocol.py
+	python3 bin/validate_workflow.py
+	python3 -m unittest discover -s tests -v
 	python3 bin/render_keymap.py --check
+	python3 bin/render_layer_images.py --check
 
 render:
 	python3 bin/render_keymap.py --write
