@@ -15,7 +15,7 @@ artifacts=("${prefix}-manifest.yml" "${prefix}-source.tar.gz")
 # Archive the exact config used, including uncommitted local changes.
 tar -czf "firmware/${prefix}-source.tar.gz" -C config .
 
-west build -s zmk/app -p -d build/left -b adv360_left -- \
+west build -s zmk/app -p -d build/left -b adv360_left -S studio-rpc-usb-uart -- \
     -DZMK_CONFIG="${project_dir}/config"
 cp build/left/zephyr/zmk.uf2 "firmware/${prefix}-left.uf2"
 

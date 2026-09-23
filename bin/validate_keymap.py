@@ -7,7 +7,7 @@ Checks that are cheap here and expensive on the keyboard:
   3. KEYS_L / KEYS_R / THUMBS partition 0..KEY_COUNT-1 exactly once.
   4. No hold-tap behaviors delay letters or dedicated modifiers.
   5. Combo key-positions are in range.
-  6. Runtime keymap editing (studio_unlock) is not exposed.
+  6. Studio is enabled and unlocked on the central, with USB transport.
   7. Braces and angle brackets balance.
   8. Every text macro is defined and every defined macro is used.
   9. Inactive &none keys are restricted to SYS.
@@ -76,9 +76,15 @@ for open_ch, close_ch in (("{", "}"), ("<", ">")):
     if opens != closes:
         fail(f"unbalanced {open_ch}{close_ch}: {opens} open vs {closes} close")
 
-# --- 6. no runtime keymap editing ------------------------------------------
-if "studio_unlock" in src:
-    fail("studio_unlock present; git must stay the sole keymap authority")
+# --- 6. Studio support ----------------------------------------------------
+central_config = (ROOT / "config/boards/arm/adv360/adv360_left_defconfig").read_text()
+for setting in ("CONFIG_ZMK_STUDIO=y", "CONFIG_ZMK_STUDIO_LOCKING=n"):
+    if setting not in central_config.splitlines():
+        fail(f"central must include {setting}")
+if "-S studio-rpc-usb-uart" not in (ROOT / "bin/build.sh").read_text():
+    fail("left build must include Studio USB transport snippet")
+if re.search(r"^CONFIG_ZMK_STUDIO(?:_LOCKING)?=", (ROOT / "config/adv360.conf").read_text(), re.M):
+    fail("keep Studio settings central-only in adv360_left_defconfig")
 
 # --- 2/3. #defines ----------------------------------------------------------
 defines = dict(re.findall(r"^#define\s+(\w+)\s+(.+)$", src, flags=re.M))

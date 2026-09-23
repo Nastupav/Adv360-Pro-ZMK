@@ -82,3 +82,6 @@ CONFIG_ZMK_HID_INDICATORS=y
 
 CONFIG_ZMK_BEHAVIOR_LOCAL_ID_TYPE_CRC16=y
 
+# Runtime keymap editing belongs on the central only. Keep Studio unlocked.
+CONFIG_ZMK_STUDIO=y
+CONFIG_ZMK_STUDIO_LOCKING=n

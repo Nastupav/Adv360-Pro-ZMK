@@ -8,6 +8,19 @@ toggles. VS Code and Neovim keep their normal typing keys.
 [editor/input-source notes](docs/editor.md), [validation results](docs/validation.md),
 [design and source audit](docs/research.md).
 
+## ZMK Studio
+
+The left/central firmware enables ZMK Studio over USB and Bluetooth with locking
+disabled, so no unlock key is needed. Build and flash the updated firmware before
+connecting: existing firmware files do not pick up configuration changes.
+Connect the left half by USB and open [ZMK Studio](https://zmk.studio/) in Chrome
+or Edge. Select USB output on SYS when using Studio over USB. The native Studio
+app also supports Bluetooth on macOS.
+
+Studio saves keymap edits on the keyboard. To apply later changes from this
+repository's keymap, use **Restore Stock Settings** in Studio; this discards saved
+Studio edits. The diagrams here describe the repository keymap.
+
 ## Thumb controls
 
 Positions are zero-based vendor positions, printed on the [layer images](docs/layers/all-layers.png).
