@@ -1,0 +1,39 @@
+/* Short literal operators for ABC/US input. Editors own autocomplete,
+ * indentation and paired delimiters. Existing 5 ms tap/wait values are retained
+ * as a starting point; BLE reliability must be checked on the actual host.
+ * Keep sequences within the validator's conservative 15-tap authoring budget.
+ */
+
+#define TEXT_MACRO(nm, ...)                                                    \
+    nm: nm {                                                                   \
+        compatible = "zmk,behavior-macro";                                     \
+        #binding-cells = <0>;                                                  \
+        wait-ms = <5>;                                                         \
+        tap-ms = <5>;                                                          \
+        bindings = <__VA_ARGS__>;                                              \
+    };
+
+/ {
+    macros {
+        /* ---- Comparison ---------------------------------------------- */
+        TEXT_MACRO(m_eq,       &kp EQUAL &kp EQUAL)
+        TEXT_MACRO(m_ne,       &kp EXCL  &kp EQUAL)
+        TEXT_MACRO(m_le,       &kp LT    &kp EQUAL)
+        TEXT_MACRO(m_ge,       &kp GT    &kp EQUAL)
+        TEXT_MACRO(m_sqlne,    &kp LT    &kp GT)
+
+        /* ---- Assignment, arithmetic, scope ---------------------------- */
+        TEXT_MACRO(m_walrus,   &kp COLON &kp EQUAL)
+        TEXT_MACRO(m_arrow,    &kp MINUS &kp GT)
+        TEXT_MACRO(m_floor,    &kp FSLH &kp FSLH)
+        TEXT_MACRO(m_pow,      &kp ASTRK &kp ASTRK)
+        TEXT_MACRO(m_concat,   &kp PIPE  &kp PIPE)
+        TEXT_MACRO(m_scope,    &kp COLON &kp COLON)
+        TEXT_MACRO(m_dunder,   &kp UNDER &kp UNDER)
+
+        /* ---- Literals ------------------------------------------------- */
+        TEXT_MACRO(m_hex,      &kp N0 &kp X)
+    };
+};
+
+#undef TEXT_MACRO

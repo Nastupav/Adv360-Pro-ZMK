@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # Adv360 GLOBAL layer consumer for macOS / AeroSpace.
 #
-# Merge this into ~/.aerospace.toml. It implements the same F13-F20 protocol
+# Installed by bin/manage_host.py; merged with the existing environment. It implements the same F13-F20 protocol
 # as ../windows/adv360-global.ahk and ../linux/hyprland.conf.
 #
 # The keyboard already applies the modifiers, so every binding here is a bare
@@ -67,14 +67,14 @@ ctrl-alt-f18 = 'focus-monitor --wrap-around next'
 ctrl-alt-shift-f17 = 'move-node-to-monitor --wrap-around prev'
 ctrl-alt-shift-f18 = 'move-node-to-monitor --wrap-around next'
 
-# Ctrl+Alt+F19 balance/reset layout, Ctrl+Alt+F20 pin window
+# Ctrl+Alt+F19 balance/reset layout, Ctrl+Alt+F20 fullscreen (pin substitute)
 ctrl-alt-f19 = 'balance-sizes'
-ctrl-alt-f20 = 'layout floating'
+ctrl-alt-f20 = 'fullscreen'
 
 # Alt+Shift+F13-F16 -> screenshot region, screenshot window, clipboard, picker
 alt-shift-f13 = '''exec-and-forget screencapture -i -c'''
 alt-shift-f14 = '''exec-and-forget screencapture -i -w -c'''
-alt-shift-f15 = '''exec-and-forget open raycast://extensions/raycast/clipboard-history/clipboard-history'''
+alt-shift-f15 = '''exec-and-forget osascript "$HOME/.local/share/adv360/spotlight-clipboard.applescript"'''
 alt-shift-f16 = '''exec-and-forget open -a "Digital Color Meter"'''
 
 # Alt+Shift+F17 -> Neovim in a terminal
@@ -94,7 +94,7 @@ alt-f13 = '''exec-and-forget open -a "Ghostty"'''
 alt-f14 = '''exec-and-forget open -a "Safari"'''
 alt-f15 = '''exec-and-forget open -a "Visual Studio Code"'''
 alt-f16 = '''exec-and-forget open -a "Finder"'''
-alt-f17 = '''exec-and-forget open -a "Raycast"'''
-alt-f18 = '''exec-and-forget open -a "Slack"'''
+alt-f17 = '''exec-and-forget osascript "$HOME/.local/share/adv360/spotlight-clipboard.applescript" launcher'''
+alt-f18 = '''exec-and-forget open -a "Telegram"'''
 alt-f19 = '''exec-and-forget open -a "Obsidian"'''
-alt-f20 = '''exec-and-forget open -a "Ghostty" --args -e lazygit'''
+alt-f20 = '''exec-and-forget open -a "GitHub Desktop"'''

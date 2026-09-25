@@ -50,17 +50,11 @@ CONFIG_ZMK_BACKLIGHT_AUTO_OFF_IDLE=y
 CONFIG_BT_CTLR_TX_PWR_PLUS_8=y
 CONFIG_BT_DIS_MANUF="Kinesis Corporation"
 
-# Battery reporting. This is the central half, so it owns the host-facing
-# battery service; with it off the host sees no charge level for either half.
-# FETCHING pulls the right half's level over the split link, PROXY republishes
-# it to the host as a second battery instance.
-CONFIG_BT_BAS=y
-CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING=y
-CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_PROXY=y
-
-# Windows drops GATT battery notifications unless subscription enforcement is
-# relaxed. Harmless on macOS and Linux.
-CONFIG_BT_GATT_ENFORCE_SUBSCRIPTION=n
+# Match the vendor default: BLE battery reporting can wake some hosts.
+# Physical battery indicators remain available. No split battery proxy polling.
+CONFIG_BT_BAS=n
+CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING=n
+CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_PROXY=n
 
 # SYS exposes five BLE profiles (BT_SEL 0-4) and the central also holds the
 # split link to the right half, so six connections are needed. ZMK defaults
@@ -88,3 +82,6 @@ CONFIG_ZMK_HID_INDICATORS=y
 
 CONFIG_ZMK_BEHAVIOR_LOCAL_ID_TYPE_CRC16=y
 
+# Runtime keymap editing belongs on the central only. Keep Studio unlocked.
+CONFIG_ZMK_STUDIO=y
+CONFIG_ZMK_STUDIO_LOCKING=n

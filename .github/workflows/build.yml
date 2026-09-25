@@ -14,14 +14,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate keymap structure
-        run: python3 bin/validate_keymap.py
-
-      - name: Validate F13-F20 protocol against host configs
-        run: python3 bin/validate_protocol.py
-
-      - name: Check README layer diagrams are current
-        run: python3 bin/render_keymap.py --check
+      - name: Validate firmware, host protocol and installer regressions
+        run: make validate
 
       - name: Cache west modules
         uses: actions/cache@v4
@@ -42,26 +36,23 @@ jobs:
           west update
           west zephyr-export
 
-      - name: Build left
-        run: west build -s zmk/app -p -d build/left -b adv360_left -- -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
+      - name: Exercise actual ZMK behavior events
+        run: python3 bin/test_behaviors.py --zmk "${GITHUB_WORKSPACE}/zmk/app"
 
-      - name: Build right
-        run: west build -s zmk/app -p -d build/right -b adv360_right -- -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
-
-      - name: Package firmware
+      - name: Build and package both halves
         shell: bash
-        run: |
-          set -euo pipefail
-          prefix="adv360-$(date -u +'%Y%m%d%H%M')-${GITHUB_SHA::7}"
-          mkdir -p firmware
-          cp build/left/zephyr/zmk.uf2 "firmware/${prefix}-left.uf2"
-          cp build/right/zephyr/zmk.uf2 "firmware/${prefix}-right.uf2"
-          cd firmware
-          sha256sum ./*.uf2 > SHA256SUMS
+        run: COMMIT="${GITHUB_SHA::7}" BUILD_RIGHT=true bash bin/build.sh
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: adv360-firmware
-          path: firmware/
+          path: |
+            firmware/*.uf2
+            firmware/*.config
+            firmware/*-manifest.yml
+            firmware/*-source.tar.gz
+            firmware/SHA256SUMS
+            firmware/behavior-tests/tests/*/events.log
+            firmware/behavior-tests/tests/*/build.log
           if-no-files-found: error

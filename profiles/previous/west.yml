@@ -7,7 +7,7 @@ manifest:
   projects:
     - name: zmk
       remote: refil
-      revision: f1d5fc736bdbdde11df0ec77114c6a398ee1252b # audited adv360-z3.5-2; no upgrade
+      revision: adv360-z3.5-2
       import: app/west.yml
   self:
     path: config
