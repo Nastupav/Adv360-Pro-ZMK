@@ -12,7 +12,7 @@ SELINUX1 := :z
 SELINUX2 := ,z
 endif
 
-.PHONY: all left validate render clean_firmware clean_image clean
+.PHONY: all left validate render check_container clean_firmware clean_image clean
 
 validate:
 	python3 bin/validate_keymap.py
@@ -25,7 +25,13 @@ validate:
 render:
 	python3 bin/render_keymap.py --write
 
-all: validate
+check_container:
+	@if [ -z "$(DOCKER)" ]; then \
+		echo "ERROR: Docker or Podman is required for native firmware builds." >&2; \
+		exit 127; \
+	fi
+
+all: validate check_container
 	mkdir -p firmware
 	$(DOCKER) build --tag zmk --file Dockerfile .
 	$(DOCKER) run --rm --name zmk $(CONTAINER_USERNS) \
@@ -36,7 +42,7 @@ all: validate
 		-e BUILD_RIGHT=true \
 		zmk
 
-left: validate
+left: validate check_container
 	mkdir -p firmware
 	$(DOCKER) build --tag zmk --file Dockerfile .
 	$(DOCKER) run --rm --name zmk $(CONTAINER_USERNS) \
@@ -50,7 +56,7 @@ left: validate
 clean_firmware:
 	rm -f firmware/*.uf2 firmware/SHA256SUMS
 
-clean_image:
+clean_image: check_container
 	$(DOCKER) image rm zmk docker.io/zmkfirmware/zmk-build-arm:stable
 
 clean: clean_firmware clean_image

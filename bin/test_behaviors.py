@@ -13,10 +13,22 @@ ROOT=Path(__file__).resolve().parents[1]
 def fixture(positions,events):
     source=(ROOT/'config/adv360.keymap').read_text()
     layers=parse_layers(source)
-    defines='\n'.join(re.findall(r'^#define\s+(?:BASE|NAV|SYM|NUM|SYS)\s+\d+\s*$',source,re.M))
+    layer_defines='\n'.join(re.findall(r'^#define\s+(?:BASE|NAV|SYM|NUM|SYS)\s+\d+\s*$',source,re.M))
+    timing_defines='\n'.join(re.findall(r'^#define\s+HRM_(?:TAPPING_TERM|QUICK_TAP|PRIOR_IDLE)_MS\s+\d+\s*$',source,re.M))
+    def source_positions(name):
+        raw=re.search(rf'^#define\s+{name}\s+(.+)$',source,re.M)[1]
+        return {int(x) for x in re.findall(r'\d+',raw)}
+    groups={name:source_positions(name) for name in ('KEYS_L','KEYS_R','THUMBS')}
+    # The native fixture remaps selected production positions to 0..N-1. Remap
+    # positional-HRM trigger sets too so same/cross-hand behavior stays realistic.
+    pos_defines=[]
+    for name,original in groups.items():
+        slots=[i for i,p in enumerate(positions) if p in original]
+        pos_defines.append(f'#define {name} '+(' '.join(map(str,slots)) if slots else '99'))
     caps=re.search(r'&caps_word\s*\{.*?\};',source,re.S)[0]
-    text='#include <behaviors.dtsi>\n#include <dt-bindings/zmk/keys.h>\n#include <dt-bindings/zmk/kscan_mock.h>\n'+defines+'\n'+caps
-    text+='\n/ { keymap { compatible = "zmk,keymap";\n'
+    behaviors=re.search(r'\n    behaviors \{(.*?)\n    \};\n\n    combos',source,re.S)[1]
+    text='#include <behaviors.dtsi>\n#include <dt-bindings/zmk/keys.h>\n#include <dt-bindings/zmk/kscan_mock.h>\n'+layer_defines+'\n'+timing_defines+'\n'+'\n'.join(pos_defines)+'\n'+caps
+    text+='\n/ { behaviors {'+behaviors+'\n}; keymap { compatible = "zmk,keymap";\n'
     for i,(_,bindings) in enumerate(layers):
         text+=f'layer_{i} {{ bindings = <'+' '.join('&none' if i==4 else '&'+bindings[p] for p in positions)+'>; };\n'
     text+='}; };\n&kscan { events = <\n'
@@ -31,6 +43,11 @@ def run(zmk,output):
     cases={
         'plain-asdf':((29,30,31,32),sum((tap(i,1) for i in range(4)),[]),['0x04','0x16','0x07','0x09']),
         'plain-jkl-semi':((41,42,43,44),sum((tap(i,1) for i in range(4)),[]),['0x0D','0x0E','0x0F','0x33']),
+        # Same-hand rolls must remain taps; l-i mirrors the open Kinesis HRM issue.
+        'hrm-fast-roll-as':((29,30,40,41),press(0,1)+press(1,25)+release(0,25)+release(1,25),['0x04','0x16']),
+        'hrm-fast-roll-li':((43,24,29,40),press(0,1)+press(1,25)+release(0,25)+release(1,25),['0x0F','0x0C']),
+        # Opposite-hand interrupt should turn A into Command while H remains H.
+        'hrm-cross-hand-cmd':((29,40,30,41),press(0,1)+press(1,25)+release(1,25)+release(0,25),['0xE3','0x0B']),
         # Digit is held 1 second; releasing NUM first must release the same usage.
         'num-hold-release':((66,23,70,28),press(0,1)+press(1,1000)+release(0,1)+release(1)+tap(1)+press(0)+tap(2)+tap(3)+tap(1)+release(0)+tap(2),
                             ['0x5F','0x18','0x62','0x29','0x5F','0x2C']),

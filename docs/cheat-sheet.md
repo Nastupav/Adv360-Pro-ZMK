@@ -1,7 +1,10 @@
 # Daily-driver cheat sheet
 
-**BASE:** ordinary QWERTY. ASDF and JKL; always type normally. Escape is left of
-A; Tab is left of Q. Hold plain thumb Command/Control or inner-home-row Option.
+**BASE:** QWERTY with bilateral home-row mods. Tap normally; hold for modifiers:
+**A/S/D/F = Cmd / Option / Ctrl / Shift** and **J/K/L/; = Shift / Ctrl / Option / Cmd**.
+The 150 ms prior-idle gate makes rapid rolls resolve immediately as taps. Dedicated
+thumb Cmd/Ctrl, inner Option, and outer Shift remain timing-free fallbacks. Escape
+is left of A; Tab is left of Q.
 
 | Hold | Location | Main actions |
 |---|---|---|
@@ -21,8 +24,10 @@ Neovim and remote Windows may interpret them differently.
 
 **NAV extras:** H/quote = line start/end; U/P = word left/right; I/O = page down/up;
 Y/backslash = document start/end. N/M = delete word backward/forward; comma/period =
-Backspace/Delete. Z/X/C/V/B = undo/cut/copy/paste/redo in macOS editors.
-Bottom-left five = Home, End, Ctrl+Home, Ctrl+End, Insert for remote/terminal use.
+Backspace/Delete. QWERT, G and ZXCVB intentionally fall through to BASE: use the
+home-row mods or the dedicated thumb Command/Control keys with normal letters for
+app shortcuts instead of memorizing a second shortcut bank. Bottom-left five = Home, End, Ctrl+Home, Ctrl+End,
+Insert for remote/terminal use.
 
 **SYM operators** (physical BASE keys, while holding SYM):
 
@@ -46,8 +51,9 @@ V toggles indicators; B cycles lighting effects (default Kinesis effect is 4).
 
 **Maintenance, only while SYS is held:** inner left/right number-row keys 6/7
 boot the respective half; inner left/right Q-row keys 20/21 reset that half.
-Both outer number-row keys together clear the selected Bluetooth bond.
-SYS + position 64 returns to BASE; then release all keys. Physical reset buttons
+After at least 300 ms without an ordinary keypress, both outer number-row keys together
+clear the selected Bluetooth bond while SYS is held. The idle gate plus bilateral chord
+reduces accidental bond loss. SYS + position 64 returns to BASE; then release all keys. Physical reset buttons
 remain the recovery path if the halves cannot communicate.
 
 Use **ABC/US for code and SYM**, **Czech for Czech writing**. NUM digits/operators

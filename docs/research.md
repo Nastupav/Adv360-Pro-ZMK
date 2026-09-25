@@ -1,3 +1,13 @@
+# Current overhaul note — 25 September 2026
+
+A new full-repository/current-web review is recorded in
+[`overhaul-20260925.md`](overhaul-20260925.md), with the active HRM follow-up in
+[`hrm-profile-20260925.md`](hrm-profile-20260925.md). The original 20 September
+audit below remains useful historical evidence for the five-layer baseline. The
+current profile additionally uses bilateral fast-typing home-row mods while
+retaining dedicated modifiers, removes the duplicated macOS app-shortcut bank,
+keeps the 300 ms Bluetooth-clear idle gate, and regression-tests the JKL; contract.
+
 # Design and firmware audit — 20 September 2026
 
 ## Baseline and scope

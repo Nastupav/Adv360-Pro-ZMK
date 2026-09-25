@@ -14,8 +14,10 @@ class WorkflowRegressionTests(unittest.TestCase):
     def test_production(self):self.assertEqual(validate(self.root),[])
     def test_toggle_num_rejected(self):
         self.change('base','&mo NUM','&tog NUM');self.assertTrue(validate(self.root))
-    def test_delayed_letter_rejected(self):
-        self.change('base','&kp A ','&mt LCTRL A ');self.assertTrue(validate(self.root))
+    def test_unapproved_hold_tap_rejected(self):
+        self.change('base','&kp G ','&mt LCTRL G ');self.assertTrue(validate(self.root))
+    def test_hrm_mapping_required(self):
+        self.change('base','&hml LGUI A ','&kp A ');self.assertTrue(validate(self.root))
     def test_left_shifted_grid_rejected(self):
         self.change('num','&kp KP_DIVIDE','&kp KP_N7');self.assertTrue(validate(self.root))
     def test_czech_number_row_rejected(self):
@@ -31,6 +33,12 @@ class WorkflowRegressionTests(unittest.TestCase):
         self.assertTrue(validate(self.root))
     def test_nav_shift_required(self):
         self.change('nav','&kp LSHFT','&kp LG(V)');self.assertTrue(validate(self.root))
+    def test_nav_jkl_semicolon_contract(self):
+        self.change('nav','&kp LEFT','&trans');self.assertTrue(validate(self.root))
+    def test_nav_app_shortcut_bank_rejected(self):
+        self.change('nav','&trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans              &kp LG(UP)',
+                    '&trans              &kp LG(A)           &trans              &trans              &trans              &trans              &trans              &trans              &kp LG(UP)')
+        self.assertTrue(validate(self.root))
     def test_blocked_access_rejected(self):
         self.change('sys','&trans','&none');self.assertTrue(validate(self.root))
     def test_recovery_source_required(self):

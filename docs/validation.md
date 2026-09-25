@@ -1,3 +1,41 @@
+# Current validation status — 25 September 2026
+
+The active profile now includes eight bilateral home-row modifiers on BASE:
+A/S/D/F = Cmd/Option/Ctrl/Shift and J/K/L/; = Shift/Ctrl/Option/Cmd. The
+configuration uses the validated fast-typing constants 280/175/150 ms, balanced
+resolution, opposite-hand+thumb positional triggers, and
+`hold-trigger-on-release`. Dedicated modifiers remain available on every layer.
+
+Current repository validation passes:
+
+- 5 layers × 76 bindings; custom HRM behavior arity and placement checks;
+- exact **J K L ; = Left / Down / Up / Right** NAV contract;
+- exact UIO/JKL/M,. numeric grid;
+- all 16 simultaneous layer-access combinations;
+- destructive Bluetooth-clear safety rules;
+- **25/25 Python regression tests**;
+- generated README maps and **380 physical rendered positions** with matching
+  source/artifact fingerprints.
+
+`bin/test_behaviors.py` was also updated so the next pinned-ZMK native simulation
+includes same-hand `A-S`, the reported-problem-style `L-I` fast roll, and an
+opposite-hand Command chord. Those native simulator cases were **not run here**
+because this environment does not have `west` or the pinned ZMK build tree.
+
+A full `make` was attempted after the changes. Static validation completed, but
+firmware compilation stopped at the build gate because this environment has no
+Docker or Podman. Therefore this exact HRM revision is **not claimed compiled**.
+See `firmware/validation-hrm-20260925.log` and
+`firmware/build-hrm-20260925.log`.
+
+The open Kinesis Advantage360 issue reporting ignored
+`hold-trigger-key-positions` remains a hardware/firmware acceptance risk. The
+150 ms prior-idle gate is active, but real fast typing on the flashed split board
+must still be tested before treating positional filtering as proven. See
+[`hrm-profile-20260925.md`](hrm-profile-20260925.md).
+
+---
+
 # Validation — 20 September 2026
 
 The active five-layer daily driver is based on the newest September 8 working

@@ -1,6 +1,6 @@
 /* Advantage360 Pro daily driver. Physical US QWERTY; host selects ABC or Czech.
- * No hold-taps, typing combos, or layer toggles. All layer access is immediate.
- * Priority: SYS > NUM > SYM > NAV > BASE. Release layer keys to return to BASE.
+ * BASE uses fast-typing-biased bilateral home-row mods; dedicated modifiers remain.
+ * Layers are immediate holds: SYS > NUM > SYM > NAV > BASE.
  * Thumb NUM uses the large left Delete position (66); Delete moves to 67/68.
  */
 #include <behaviors.dtsi>
@@ -20,6 +20,12 @@
 #define KEYS_R  7 8 9 10 11 12 13 21 22 23 24 25 26 27 39 40 41 42 43 44 45 54 55 56 57 58 59 71 72 73 74 75
 #define THUMBS 35 36 37 38 52 53 65 66 67 68 69 70
 
+// Fast-typing-biased "timeless" HRMs. 150 ms prior-idle resolves rapid typing
+// immediately as taps; positional triggers keep same-hand rolls as letters.
+#define HRM_TAPPING_TERM_MS 280
+#define HRM_QUICK_TAP_MS 175
+#define HRM_PRIOR_IDLE_MS 150
+
 // The pinned Caps Word only auto-continues number-row digits; add keypad digits.
 &caps_word {
     continue-list = <UNDERSCORE BACKSPACE DELETE KP_N0 KP_N1 KP_N2 KP_N3
@@ -27,11 +33,39 @@
 };
 
 / {
+    behaviors {
+        hml: home_row_mod_left {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <HRM_TAPPING_TERM_MS>;
+            quick-tap-ms = <HRM_QUICK_TAP_MS>;
+            require-prior-idle-ms = <HRM_PRIOR_IDLE_MS>;
+            bindings = <&kp>, <&kp>;
+            hold-trigger-key-positions = <KEYS_R THUMBS>;
+            hold-trigger-on-release;
+        };
+
+        hmr: home_row_mod_right {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <HRM_TAPPING_TERM_MS>;
+            quick-tap-ms = <HRM_QUICK_TAP_MS>;
+            require-prior-idle-ms = <HRM_PRIOR_IDLE_MS>;
+            bindings = <&kp>, <&kp>;
+            hold-trigger-key-positions = <KEYS_L THUMBS>;
+            hold-trigger-on-release;
+        };
+    };
+
     combos {
         compatible = "zmk,combos";
         // Hold SYS, then both outer number-row keys. Clears ONLY selected host bond.
         combo_bt_clear {
             timeout-ms = <150>;
+            // Refuse to arm during recent text entry; intentional maintenance should follow a pause.
+            require-prior-idle-ms = <300>;
             key-positions = <0 13>;
             layers = <SYS>;
             bindings = <&bt BT_CLR>;
@@ -40,26 +74,29 @@
     keymap {
         compatible = "zmk,keymap";
 
-        // Plain letters, dedicated modifiers; NAV 52, SYM 53, NUM 66, SYS 75.
+        // BASE HRMs: ASDF = Cmd/Option/Ctrl/Shift; JKL; = Shift/Ctrl/Option/Cmd.
+        // Dedicated thumb/inner modifiers remain for immediate or same-hand chords.
         layer_base {
             display-name = "BASE";
             bindings = <
                 &kp EQUAL           &kp N1              &kp N2              &kp N3              &kp N4              &kp N5              &kp F11             &kp F12             &kp N6              &kp N7              &kp N8              &kp N9              &kp N0              &kp MINUS
                 &kp TAB             &kp Q               &kp W               &kp E               &kp R               &kp T               &caps_word          &kp TAB             &kp Y               &kp U               &kp I               &kp O               &kp P               &kp BSLH
-                &kp ESC             &kp A               &kp S               &kp D               &kp F               &kp G               &kp LALT            &kp LCTRL           &kp LGUI            &kp RGUI            &kp RCTRL           &kp RALT            &kp H               &kp J               &kp K               &kp L               &kp SEMI            &kp SQT
+                &kp ESC             &hml LGUI A          &hml LALT S          &hml LCTRL D         &hml LSHFT F         &kp G               &kp LALT            &kp LGUI            &kp LCTRL           &kp RCTRL           &kp RGUI            &kp RALT            &kp H               &hmr RSHFT J         &hmr RCTRL K         &hmr RALT L          &hmr RGUI SEMI       &kp SQT
                 &kp LSHFT           &kp Z               &kp X               &kp C               &kp V               &kp B               &mo NAV             &mo SYM             &kp N               &kp M               &kp COMMA           &kp DOT             &kp FSLH            &kp RSHFT
                 &kp GRAVE           &kp LBKT            &kp RBKT            &kp LPAR            &kp RPAR            &kp BSPC            &mo NUM             &kp DEL             &kp DEL             &kp ENTER           &kp SPACE           &kp LEFT            &kp DOWN            &kp UP              &kp RIGHT           &mo SYS
             >;
         };
 
+        // NAV is a primitive layer, not an application-shortcut bank.
         // ASDF = Ctrl / Option / Command / Shift. JKL; = Left / Down / Up / Right.
+        // H / quote, U / P and Y / backslash add macOS line, word and document motion.
         layer_nav {
             display-name = "NAV";
             bindings = <
                 &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans
-                &trans              &kp LG(A)           &kp LG(S)           &kp LG(F)           &kp LG(LS(F))       &kp LG(P)           &trans              &trans              &kp LG(UP)          &kp LA(LEFT)        &kp PG_DN           &kp PG_UP           &kp LA(RIGHT)       &kp LG(DOWN)
-                &trans              &kp LCTRL           &kp LALT            &kp LGUI            &kp LSHFT           &kp LG(LS(Z))       &trans              &trans              &trans              &trans              &trans              &trans              &kp LG(LEFT)        &kp LEFT            &kp DOWN            &kp UP              &kp RIGHT           &kp LG(RIGHT)
-                &trans              &kp LG(Z)           &kp LG(X)           &kp LG(C)           &kp LG(V)           &kp LG(LS(Z))       &trans              &trans              &kp LA(BSPC)        &kp LA(DEL)         &kp BSPC            &kp DEL             &kp LG(BSPC)        &trans
+                &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans              &kp LG(UP)          &kp LA(LEFT)        &kp PG_DN           &kp PG_UP           &kp LA(RIGHT)       &kp LG(DOWN)
+                &trans              &kp LCTRL           &kp LALT            &kp LGUI            &kp LSHFT           &trans              &trans              &trans              &trans              &trans              &trans              &trans              &kp LG(LEFT)        &kp LEFT            &kp DOWN            &kp UP              &kp RIGHT           &kp LG(RIGHT)
+                &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans              &kp LA(BSPC)        &kp LA(DEL)         &kp BSPC            &kp DEL             &kp LG(BSPC)        &trans
                 &kp HOME            &kp END             &kp LC(HOME)        &kp LC(END)         &kp INS             &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans              &trans
             >;
         };

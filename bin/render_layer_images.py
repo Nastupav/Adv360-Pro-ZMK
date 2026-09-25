@@ -22,7 +22,7 @@ SOURCES = ['config/adv360.keymap', 'config/macros.dtsi', GEOMETRY,
 CONTEXTS = {name: [name, 'BASE'] for name in ORDER}
 CONTEXTS['BASE'] = ['BASE']
 NOTES = {
- 'BASE': 'Plain US QWERTY · hold large left thumb 66 for NUM',
+ 'BASE': 'HRM: ASDF = Cmd / Option / Ctrl / Shift · JKL; = Shift / Ctrl / Option / Cmd',
  'NAV': 'Hold left middle thumb 52 · ASDF = Ctrl / Option / Cmd / Shift',
  'SYM': 'Hold right middle thumb 53 · symbols require ABC / US input',
  'NUM': 'Hold large left thumb 66 · keypad digits work in ABC and Czech',
@@ -67,6 +67,8 @@ def generic_action(binding):
     parts=binding.split(); kind=parts[0]; args=parts[1:]
     if kind=='none': return 'Inactive'
     if kind=='kp': return KEY_NAMES.get(args[0],label(binding))
+    if kind in ('hml','hmr'):
+        return f"{KEY_NAMES.get(args[1],label('kp '+args[1]))} / hold {KEY_NAMES.get(args[0],args[0])}"
     if kind=='mo': return 'Hold '+args[0]
     if kind=='tog': return 'Toggle '+args[0]
     if kind=='to': return 'Select '+args[0]
@@ -109,7 +111,7 @@ def build_model(root=ROOT):
             secondary=label(effective)
             category='normal'
             if kind in ('mo','to','tog'): category='layers'
-            elif kind in ('oneshot_shift',) or effective in ['kp '+k for k in ('LGUI','RGUI','LCTRL','RCTRL','LALT','RALT','LSHFT','RSHFT')]: category='modifiers'
+            elif kind in ('hml','hmr','oneshot_shift') or effective in ['kp '+k for k in ('LGUI','RGUI','LCTRL','RCTRL','LALT','RALT','LSHFT','RSHFT')]: category='modifiers'
             elif effective in ('kp LEFT','kp RIGHT','kp UP','kp DOWN'): category='direction'
             elif re.fullmatch(r'kp (?:KP_)?N\d',effective): category='digits'
             elif effective.startswith('m_') or (len(action)==1 and not action.isalnum()): category='operators'

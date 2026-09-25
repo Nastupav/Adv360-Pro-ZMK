@@ -5,7 +5,7 @@ Checks that are cheap here and expensive on the keyboard:
   1. Every keymap layer binds exactly KEY_COUNT positions.
   2. The expected layers exist, in the expected order, with matching #defines.
   3. KEYS_L / KEYS_R / THUMBS partition 0..KEY_COUNT-1 exactly once.
-  4. No hold-tap behaviors delay letters or dedicated modifiers.
+  4. The only hold-taps are the approved fast-typing home-row modifiers.
   5. Combo key-positions are in range.
   6. Studio is enabled and unlocked on the central, with USB transport.
   7. Braces and angle brackets balance.
@@ -116,9 +116,38 @@ if total != KEY_COUNT or union != set(range(KEY_COUNT)):
         f"{len(union)} unique, {overlap} overlapping, missing {missing}"
     )
 
-# Immediate typing is an explicit contract, not a hold-tap tuning target.
-if 'zmk,behavior-hold-tap' in src:
-    fail("hold-tap behavior present in dedicated-modifier configuration")
+# --- 4. home-row mod contract ----------------------------------------------
+# HRMs are intentionally the only hold-taps in the daily driver. Their prior-idle
+# gate makes rapid typing resolve immediately as taps; positional triggers and
+# hold-trigger-on-release protect same-hand rolls when the vendor fork honors them.
+for name, trigger in (("hml", "KEYS_R THUMBS"), ("hmr", "KEYS_L THUMBS")):
+    body = extract_block(src, rf"{name}:\s*home_row_mod_(?:left|right)\s*\{{")
+    if body is None:
+        fail(f"missing {name} home-row-mod behavior")
+        continue
+    required = [
+        'compatible = "zmk,behavior-hold-tap";',
+        '#binding-cells = <2>;',
+        'flavor = "balanced";',
+        'tapping-term-ms = <HRM_TAPPING_TERM_MS>;',
+        'quick-tap-ms = <HRM_QUICK_TAP_MS>;',
+        'require-prior-idle-ms = <HRM_PRIOR_IDLE_MS>;',
+        'bindings = <&kp>, <&kp>;',
+        f'hold-trigger-key-positions = <{trigger}>;',
+        'hold-trigger-on-release;',
+    ]
+    for snippet in required:
+        if snippet not in body:
+            fail(f"{name} missing fast-typing HRM setting: {snippet}")
+
+for define, expected in (("HRM_TAPPING_TERM_MS", "280"),
+                         ("HRM_QUICK_TAP_MS", "175"),
+                         ("HRM_PRIOR_IDLE_MS", "150")):
+    if defines.get(define, "").strip() != expected:
+        fail(f"{define} must be {expected} for the validated HRM profile")
+
+if src.count('compatible = "zmk,behavior-hold-tap";') != 2:
+    fail("only hml/hmr may define hold-tap behaviors in the production keymap")
 
 # --- 5. combos --------------------------------------------------------------
 # Behaviors that lose data or drop the keyboard off the bus. A combo bound to
@@ -143,6 +172,12 @@ if combos:
         if any(binding.startswith(d) for d in DESTRUCTIVE):
             if not re.search(r"layers\s*=\s*<SYS>\s*;", body):
                 fail(f"destructive combo {node} must be restricted to SYS")
+            idle = re.search(r"require-prior-idle-ms\s*=\s*<(\d+)>", body)
+            if not idle or int(idle.group(1)) < 250:
+                fail(
+                    f"destructive combo {node} must require at least 250 ms prior idle "
+                    "before it can arm"
+                )
             left = [p for p in positions if p in hands["KEYS_L"]]
             right = [p for p in positions if p in hands["KEYS_R"]]
             if not (left and right):
@@ -179,6 +214,7 @@ ARITY = {
     "trans": 0, "none": 0, "caps_word": 0, "key_repeat": 0,
     "bootloader": 0, "sys_reset": 0,
     "kp": 1, "mo": 1, "to": 1, "tog": 1, "sl": 1, "sk": 1, "out": 1,
+    "hml": 2, "hmr": 2,
     "oneshot_shift": 1, "mkp": 1, "mmv": 1, "msc": 1,
 }
 

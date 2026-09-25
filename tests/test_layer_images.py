@@ -14,6 +14,12 @@ class LayerImageTests(unittest.TestCase):
         self.assertEqual((k[66]['binding'],k[66]['origin']),('mo NUM','BASE'))
         self.assertEqual(k[70]['binding'],'kp KP_N0')
         self.assertEqual(k[69]['binding'],'kp ENTER')
+    def test_base_hrm_anchors(self):
+        k=self.layers['BASE']['keys']
+        self.assertEqual([k[i]['binding'] for i in range(29,33)],
+                         ['hml LGUI A','hml LALT S','hml LCTRL D','hml LSHFT F'])
+        self.assertEqual([k[i]['binding'] for i in range(41,45)],
+                         ['hmr RSHFT J','hmr RCTRL K','hmr RALT L','hmr RGUI SEMI'])
     def test_nav_anchors(self):
         k=self.layers['NAV']['keys']
         self.assertEqual([k[i]['binding'] for i in range(41,45)],['kp LEFT','kp DOWN','kp UP','kp RIGHT'])

@@ -1,10 +1,12 @@
 # Advantage360 Pro — macOS daily driver
 
-Five layers, plain QWERTY and immediate thumb holds for ABC/US coding and Czech
-writing. No home-row modifiers, letter layer-taps, sticky modifiers or layer
-toggles. VS Code and Neovim keep their normal typing keys.
+Five layers, QWERTY with bilateral home-row modifiers, and immediate thumb holds
+for ABC/US coding and Czech writing. HRMs are tuned for fast typing with a 150 ms
+prior-idle gate; dedicated thumb/inner modifiers remain available for deterministic
+zero-delay chords. No sticky modifiers or layer toggles.
 
-**Start here:** [cheat sheet](docs/cheat-sheet.md), [installation and rollback](docs/setup.md),
+**Start here:** [current HRM profile](docs/hrm-profile-20260925.md),
+[baseline overhaul report](docs/overhaul-20260925.md), [cheat sheet](docs/cheat-sheet.md), [installation and rollback](docs/setup.md),
 [editor/input-source notes](docs/editor.md), [validation results](docs/validation.md),
 [design and source audit](docs/research.md).
 
@@ -36,19 +38,23 @@ Stock keycap names are useful landmarks; follow the actual diagrams after flashi
 | 68, small lower right (Page Down) | Delete; NUM: Backspace | Editing beside the numeric grid |
 | 69, large right Enter | Enter | Unchanged |
 | 70, large right Space | Space; NUM: 0 | Comfortable zero while the left thumb holds NUM |
-| 35/36, upper left | Control / Command | Plain dedicated modifiers |
-| 37/38, upper right | Command / Control | Plain dedicated modifiers |
+| 35/36, upper left | Command / Control | Plain dedicated modifiers |
+| 37/38, upper right | Control / Command | Plain dedicated modifiers |
 
 Option stays on the inner home-row keys (34/39); both outer Shift keys remain
-ordinary Shift. Tab and Escape stay on the outer left Q/home rows. Caps Word is
-on inner left Q-row key 20. Inner right Q-row key 21 is a second Tab.
+ordinary Shift. BASE also adds mirrored HRMs: **A/S/D/F = Cmd/Option/Ctrl/Shift**
+and **J/K/L/; = Shift/Ctrl/Option/Cmd**. Tapping still types the normal character.
+The dedicated modifiers stay in place as the fast, timing-free fallback. Tab and
+Escape stay on the outer left Q/home rows. Caps Word is on inner left Q-row key 20.
+Inner right Q-row key 21 is a second Tab.
 
 ## Five layers
 
-- **BASE (0):** ordinary physical US QWERTY, dedicated modifiers and editing keys.
+- **BASE (0):** physical US QWERTY with fast-typing bilateral HRMs plus dedicated modifiers and editing keys.
 - **NAV (1):** hold 52. ASDF = **Ctrl / Option / Command / Shift**;
-  JKL; = **Left / Down / Up / Right**. H/quote = line start/end;
-  U/P = word left/right; Y/backslash = document start/end; I/O = page down/up.
+  JKL; = **Left / Down / Up / Right** — deliberately JKL;, never HJKL. H/quote =
+  line start/end; U/P = word left/right; Y/backslash = document start/end; I/O =
+  page down/up. App-specific Cmd shortcuts are intentionally not duplicated here.
 - **SYM (2):** hold 53. ASDF = `{ [ ( :`; JKL; = `_ ) ] }`.
   G/H = `< >`; quote = `=`. Single keys combine into operators without macros.
 - **NUM (3):** hold 66. **UIO = 789, JKL = 456, M comma period = 123**.
@@ -113,7 +119,7 @@ clusters appear in the middle, separated by `|`. See the PNGs for key shapes.
 ```text
   =     1     2     3     4     5    F11                                          F12    6     7     8     9     0     -
  Tab    Q     W     E     R     T    Caps                                         Tab    Y     U     I     O     P     \
- Esc    A     S     D     F     G    Alt         Ctrl  Cmd   |  Cmd   Ctrl        Alt    H     J     K     L     ;     '
+ Esc   A/G   S/A   D/C   F/S    G    Alt         Cmd   Ctrl  |  Ctrl  Cmd         Alt    H    J/S   K/C   L/A   ;/G    '
  Shft   Z     X     C     V     B                      NAV   |  SYM                      N     M     ,     .     /    Shft
   `     [     ]     (     )                Bspc  NUM   Del   |  Del   Ent   Spc                <-    v     ^     ->   SYS
 ```
@@ -122,9 +128,9 @@ clusters appear in the middle, separated by `|`. See the PNGs for key shapes.
 
 ```text
    ^^      ^^      ^^      ^^      ^^      ^^      ^^                                                         ^^      ^^      ^^      ^^      ^^      ^^      ^^
-   ^^     G-A     G-S     G-F    G-S-F    G-P      ^^                                                         ^^     G-^     A-<-    PgDn    PgUp    A-->    G-v
-   ^^     Ctrl    Alt     Cmd     Shft   G-S-Z     ^^              ^^      ^^    |    ^^      ^^              ^^     G-<-     <-      v       ^       ->     G-->
-   ^^     G-Z     G-X     G-C     G-V    G-S-Z                             ^^    |    ^^                            A-Bspc  A-Del    Bspc    Del    G-Bspc    ^^
+   ^^      ^^      ^^      ^^      ^^      ^^      ^^                                                         ^^     G-^     A-<-    PgDn    PgUp    A-->    G-v
+   ^^     Ctrl    Alt     Cmd     Shft     ^^      ^^              ^^      ^^    |    ^^      ^^              ^^     G-<-     <-      v       ^       ->     G-->
+   ^^      ^^      ^^      ^^      ^^      ^^                              ^^    |    ^^                            A-Bspc  A-Del    Bspc    Del    G-Bspc    ^^
   Home    End    C-Home  C-End    Ins                      ^^      ^^      ^^    |    ^^      ^^      ^^                      ^^      ^^      ^^      ^^      ^^
 ```
 
