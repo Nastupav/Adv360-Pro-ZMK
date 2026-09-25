@@ -1,0 +1,107 @@
+diff --git a/README.md b/README.md
+index 5388ed3..3c4d706 100644
+--- a/README.md
++++ b/README.md
+@@ -1,11 +1,12 @@
+ # Advantage360 Pro — macOS daily driver
+ 
+-Five layers, plain QWERTY and immediate thumb holds for ABC/US coding and Czech
+-writing. No home-row modifiers, letter layer-taps, sticky modifiers or layer
+-toggles. VS Code and Neovim keep their normal typing keys.
++Five layers, QWERTY with bilateral home-row modifiers, and immediate thumb holds
++for ABC/US coding and Czech writing. HRMs are tuned for fast typing with a 150 ms
++prior-idle gate; dedicated thumb/inner modifiers remain available for deterministic
++zero-delay chords. No sticky modifiers or layer toggles.
+ 
+-**Start here:** [current overhaul report](docs/overhaul-20260925.md),
+-[cheat sheet](docs/cheat-sheet.md), [installation and rollback](docs/setup.md),
++**Start here:** [current HRM profile](docs/hrm-profile-20260925.md),
++[baseline overhaul report](docs/overhaul-20260925.md), [cheat sheet](docs/cheat-sheet.md), [installation and rollback](docs/setup.md),
+ [editor/input-source notes](docs/editor.md), [validation results](docs/validation.md),
+ [design and source audit](docs/research.md).
+ 
+@@ -41,12 +42,15 @@ Stock keycap names are useful landmarks; follow the actual diagrams after flashi
+ | 37/38, upper right | Control / Command | Plain dedicated modifiers |
+ 
+ Option stays on the inner home-row keys (34/39); both outer Shift keys remain
+-ordinary Shift. Tab and Escape stay on the outer left Q/home rows. Caps Word is
+-on inner left Q-row key 20. Inner right Q-row key 21 is a second Tab.
++ordinary Shift. BASE also adds mirrored HRMs: **A/S/D/F = Cmd/Option/Ctrl/Shift**
++and **J/K/L/; = Shift/Ctrl/Option/Cmd**. Tapping still types the normal character.
++The dedicated modifiers stay in place as the fast, timing-free fallback. Tab and
++Escape stay on the outer left Q/home rows. Caps Word is on inner left Q-row key 20.
++Inner right Q-row key 21 is a second Tab.
+ 
+ ## Five layers
+ 
+-- **BASE (0):** ordinary physical US QWERTY, dedicated modifiers and editing keys.
++- **BASE (0):** physical US QWERTY with fast-typing bilateral HRMs plus dedicated modifiers and editing keys.
+ - **NAV (1):** hold 52. ASDF = **Ctrl / Option / Command / Shift**;
+   JKL; = **Left / Down / Up / Right** — deliberately JKL;, never HJKL. H/quote =
+   line start/end; U/P = word left/right; Y/backslash = document start/end; I/O =
+@@ -115,7 +119,7 @@ clusters appear in the middle, separated by `|`. See the PNGs for key shapes.
+ ```text
+   =     1     2     3     4     5    F11                                          F12    6     7     8     9     0     -
+  Tab    Q     W     E     R     T    Caps                                         Tab    Y     U     I     O     P     \
+- Esc    A     S     D     F     G    Alt         Cmd   Ctrl  |  Ctrl  Cmd         Alt    H     J     K     L     ;     '
++ Esc   A/G   S/A   D/C   F/S    G    Alt         Cmd   Ctrl  |  Ctrl  Cmd         Alt    H    J/S   K/C   L/A   ;/G    '
+  Shft   Z     X     C     V     B                      NAV   |  SYM                      N     M     ,     .     /    Shft
+   `     [     ]     (     )                Bspc  NUM   Del   |  Del   Ent   Spc                <-    v     ^     ->   SYS
+ ```
+diff --git a/bin/render_layer_images.py b/bin/render_layer_images.py
+index 568bcc0..2ff21b5 100644
+--- a/bin/render_layer_images.py
++++ b/bin/render_layer_images.py
+@@ -22,7 +22,7 @@ SOURCES = ['config/adv360.keymap', 'config/macros.dtsi', GEOMETRY,
+ CONTEXTS = {name: [name, 'BASE'] for name in ORDER}
+ CONTEXTS['BASE'] = ['BASE']
+ NOTES = {
+- 'BASE': 'Plain US QWERTY · hold large left thumb 66 for NUM',
++ 'BASE': 'HRM: ASDF = Cmd / Option / Ctrl / Shift · JKL; = Shift / Ctrl / Option / Cmd',
+  'NAV': 'Hold left middle thumb 52 · ASDF = Ctrl / Option / Cmd / Shift',
+  'SYM': 'Hold right middle thumb 53 · symbols require ABC / US input',
+  'NUM': 'Hold large left thumb 66 · keypad digits work in ABC and Czech',
+@@ -67,6 +67,8 @@ def generic_action(binding):
+     parts=binding.split(); kind=parts[0]; args=parts[1:]
+     if kind=='none': return 'Inactive'
+     if kind=='kp': return KEY_NAMES.get(args[0],label(binding))
++    if kind in ('hml','hmr'):
++        return f"{KEY_NAMES.get(args[1],label('kp '+args[1]))} / hold {KEY_NAMES.get(args[0],args[0])}"
+     if kind=='mo': return 'Hold '+args[0]
+     if kind=='tog': return 'Toggle '+args[0]
+     if kind=='to': return 'Select '+args[0]
+@@ -109,7 +111,7 @@ def build_model(root=ROOT):
+             secondary=label(effective)
+             category='normal'
+             if kind in ('mo','to','tog'): category='layers'
+-            elif kind in ('oneshot_shift',) or effective in ['kp '+k for k in ('LGUI','RGUI','LCTRL','RCTRL','LALT','RALT','LSHFT','RSHFT')]: category='modifiers'
++            elif kind in ('hml','hmr','oneshot_shift') or effective in ['kp '+k for k in ('LGUI','RGUI','LCTRL','RCTRL','LALT','RALT','LSHFT','RSHFT')]: category='modifiers'
+             elif effective in ('kp LEFT','kp RIGHT','kp UP','kp DOWN'): category='direction'
+             elif re.fullmatch(r'kp (?:KP_)?N\d',effective): category='digits'
+             elif effective.startswith('m_') or (len(action)==1 and not action.isalnum()): category='operators'
+diff --git a/bin/test_behaviors.py b/bin/test_behaviors.py
+index 514c725..fe014f5 100644
+--- a/bin/test_behaviors.py
++++ b/bin/test_behaviors.py
+@@ -13,10 +13,22 @@ ROOT=Path(__file__).resolve().parents[1]
+ def fixture(positions,events):
+     source=(ROOT/'config/adv360.keymap').read_text()
+     layers=parse_layers(source)
+-    defines='\n'.join(re.findall(r'^#define\s+(?:BASE|NAV|SYM|NUM|SYS)\s+\d+\s*$',source,re.M))
++    layer_defines='\n'.join(re.findall(r'^#define\s+(?:BASE|NAV|SYM|NUM|SYS)\s+\d+\s*$',source,re.M))
++    timing_defines='\n'.join(re.findall(r'^#define\s+HRM_(?:TAPPING_TERM|QUICK_TAP|PRIOR_IDLE)_MS\s+\d+\s*$',source,re.M))
++    def source_positions(name):
++        raw=re.search(rf'^#define\s+{name}\s+(.+)$',source,re.M)[1]
++        return {int(x) for x in re.findall(r'\d+',raw)}
++    groups={name:source_positions(name) for name in ('KEYS_L','KEYS_R','THUMBS')}
++    # The native fixture remaps selected production positions to 0..N-1. Remap
++    # positional-HRM trigger sets too so same/cross-hand behavior stays realistic.
++    pos_defines=[]
++    for name,original in groups.items():
++        slots=[i for i,p in enumerate(positions) if p in original]
++        pos_defines.append(f'#define {name} '+(' '.join(map(str,slots)) if slots else '99'))
+     caps=re.search(r'&caps_word\s*\{.*?\};',source,re.S)[0]
+-    text='#include <behaviors.dtsi>\n#include <dt-bindings/zmk/keys.h>\n#include <dt-bindings/zmk/kscan_mock.h>\n'+defines+'\n'+caps
+-    text+='\n/ { keymap { compatible = "zmk,keymap";\n'
++    behaviors=re.search(r'\n    behaviors \{(.*?)\n    \};\n\n    combos',source,re.S)[1]
++    text='#include <behaviors.dtsi>\n#include <dt-bindings/zmk/keys.h>\n#include <dt-bindings/zmk/kscan_mo
