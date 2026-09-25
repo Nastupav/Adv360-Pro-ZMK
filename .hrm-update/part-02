@@ -1,0 +1,111 @@
+     errors.append(f'{layer}: unapproved timing/latching behavior {b}')
++            if kind in ('hml','hmr') and (layer!='BASE' or pos not in HRMS):
++                errors.append(f'{layer}[{pos}]: HRM outside approved BASE positions: {b}')
+     # Distinct physical sources are required for left/right bootloader routing.
+     for pos,b in {6:'bootloader',7:'bootloader',20:'sys_reset',21:'sys_reset',64:'to BASE'}.items():expect('SYS',pos,b)
+     required=set('LPAR RPAR LBKT RBKT LBRC RBRC LT GT SQT DQT GRAVE COLON SEMI COMMA DOT UNDER EQUAL PLUS MINUS ASTRK FSLH BSLH PIPE DLLR AT HASH PRCNT AMPS EXCL QMARK CARET TILDE'.split())
+@@ -64,4 +70,4 @@ def validate(root=ROOT):
+ if __name__=='__main__':
+     errors=validate()
+     if errors:raise SystemExit('\n'.join(errors))
+-    print('Workflow: plain QWERTY, exact NUM/JKL; grid, modifier access, recovery and all 16 layer combinations pass')
++    print('Workflow: fast-typing HRMs, exact NUM/JKL; grid, modifier access, recovery and all 16 layer combinations pass')
+diff --git a/config/adv360.keymap b/config/adv360.keymap
+index a15ce1a..87d022f 100644
+--- a/config/adv360.keymap
++++ b/config/adv360.keymap
+@@ -1,6 +1,6 @@
+ /* Advantage360 Pro daily driver. Physical US QWERTY; host selects ABC or Czech.
+- * No hold-taps, typing combos, or layer toggles. All layer access is immediate.
+- * Priority: SYS > NUM > SYM > NAV > BASE. Release layer keys to return to BASE.
++ * BASE uses fast-typing-biased bilateral home-row mods; dedicated modifiers remain.
++ * Layers are immediate holds: SYS > NUM > SYM > NAV > BASE.
+  * Thumb NUM uses the large left Delete position (66); Delete moves to 67/68.
+  */
+ #include <behaviors.dtsi>
+@@ -20,6 +20,12 @@
+ #define KEYS_R  7 8 9 10 11 12 13 21 22 23 24 25 26 27 39 40 41 42 43 44 45 54 55 56 57 58 59 71 72 73 74 75
+ #define THUMBS 35 36 37 38 52 53 65 66 67 68 69 70
+ 
++// Fast-typing-biased "timeless" HRMs. 150 ms prior-idle resolves rapid typing
++// immediately as taps; positional triggers keep same-hand rolls as letters.
++#define HRM_TAPPING_TERM_MS 280
++#define HRM_QUICK_TAP_MS 175
++#define HRM_PRIOR_IDLE_MS 150
++
+ // The pinned Caps Word only auto-continues number-row digits; add keypad digits.
+ &caps_word {
+     continue-list = <UNDERSCORE BACKSPACE DELETE KP_N0 KP_N1 KP_N2 KP_N3
+@@ -27,6 +33,32 @@
+ };
+ 
+ / {
++    behaviors {
++        hml: home_row_mod_left {
++            compatible = "zmk,behavior-hold-tap";
++            #binding-cells = <2>;
++            flavor = "balanced";
++            tapping-term-ms = <HRM_TAPPING_TERM_MS>;
++            quick-tap-ms = <HRM_QUICK_TAP_MS>;
++            require-prior-idle-ms = <HRM_PRIOR_IDLE_MS>;
++            bindings = <&kp>, <&kp>;
++            hold-trigger-key-positions = <KEYS_R THUMBS>;
++            hold-trigger-on-release;
++        };
++
++        hmr: home_row_mod_right {
++            compatible = "zmk,behavior-hold-tap";
++            #binding-cells = <2>;
++            flavor = "balanced";
++            tapping-term-ms = <HRM_TAPPING_TERM_MS>;
++            quick-tap-ms = <HRM_QUICK_TAP_MS>;
++            require-prior-idle-ms = <HRM_PRIOR_IDLE_MS>;
++            bindings = <&kp>, <&kp>;
++            hold-trigger-key-positions = <KEYS_L THUMBS>;
++            hold-trigger-on-release;
++        };
++    };
++
+     combos {
+         compatible = "zmk,combos";
+         // Hold SYS, then both outer number-row keys. Clears ONLY selected host bond.
+@@ -42,13 +74,14 @@
+     keymap {
+         compatible = "zmk,keymap";
+ 
+-        // Plain letters, dedicated modifiers; NAV 52, SYM 53, NUM 66, SYS 75.
++        // BASE HRMs: ASDF = Cmd/Option/Ctrl/Shift; JKL; = Shift/Ctrl/Option/Cmd.
++        // Dedicated thumb/inner modifiers remain for immediate or same-hand chords.
+         layer_base {
+             display-name = "BASE";
+             bindings = <
+                 &kp EQUAL           &kp N1              &kp N2              &kp N3              &kp N4              &kp N5              &kp F11             &kp F12             &kp N6              &kp N7              &kp N8              &kp N9              &kp N0              &kp MINUS
+                 &kp TAB             &kp Q               &kp W               &kp E               &kp R               &kp T               &caps_word          &kp TAB             &kp Y               &kp U               &kp I               &kp O               &kp P               &kp BSLH
+-                &kp ESC             &kp A               &kp S               &kp D               &kp F               &kp G               &kp LALT            &kp LGUI            &kp LCTRL           &kp RCTRL           &kp RGUI            &kp RALT            &kp H               &kp J               &kp K               &kp L               &kp SEMI            &kp SQT
++                &kp ESC             &hml LGUI A          &hml LALT S          &hml LCTRL D         &hml LSHFT F         &kp G               &kp LALT            &kp LGUI            &kp LCTRL           &kp RCTRL           &kp RGUI            &kp RALT            &kp H               &hmr RSHFT J         &hmr RCTRL K         &hmr RALT L          &hmr RGUI SEMI       &kp SQT
+                 &kp LSHFT           &kp Z               &kp X               &kp C               &kp V               &kp B               &mo NAV             &mo SYM             &kp N               &kp M               &kp COMMA           &kp DOT             &kp FSLH            &kp RSHFT
+                 &kp GRAVE           &kp LBKT            &kp RBKT            &kp LPAR            &kp RPAR            &kp BSPC            &mo NUM             &kp DEL             &kp DEL             &kp ENTER           &kp SPACE           &kp LEFT            &kp DOWN            &kp UP              &kp RIGHT           &mo SYS
+             >;
+diff --git a/docs/cheat-sheet.md b/docs/cheat-sheet.md
+index 16ffcba..cc89b35 100644
+--- a/docs/cheat-sheet.md
++++ b/docs/cheat-sheet.md
+@@ -1,7 +1,10 @@
+ # Daily-driver cheat sheet
+ 
+-**BASE:** ordinary QWERTY. ASDF and JKL; always type normally. Escape is left of
+-A; Tab is left of Q. Hold plain thumb Command/Control or inner-home-row Option.
++**BASE:** QWERTY with bilateral home-row mods. Tap normally; hold for modifiers:
++**A/S/D/F = Cmd / Option / Ctrl / Shift** and **J/K/L/; = Shift / Ctrl / Option / Cmd**.
++The 150 ms prior-idle gate makes rapid rolls resolve immediately as taps. Dedicated
++thumb Cmd/Ctrl, inner Option, and outer Shift remain timing-free fallbacks. Escape
++is left of A; Tab is left of Q.
+ 
+ | Hold | Location | Main actions |
+ |---|---|---|
+@@ -22,8 +25,8 @@ Neovim and remote Windows may interpret them differently.
+ **NAV extras:** H/quote = line start/end; U/P = word left/right; I/O = page down/up;
+ Y/backslash = document start/end. N/M = delete word backward/forward; comma/period =
+ Backspace/Delete. QWERT, G and ZXCVB intentionally fall through to BASE: use the
+-dedicated thumb Command/Control keys with normal letters for app shortcuts instead of
+-memorizing a second shortcut bank. Bottom-left five = 
