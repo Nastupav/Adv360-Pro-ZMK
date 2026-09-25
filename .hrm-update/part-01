@@ -1,0 +1,119 @@
+ck.h>\n'+layer_defines+'\n'+timing_defines+'\n'+'\n'.join(pos_defines)+'\n'+caps
++    text+='\n/ { behaviors {'+behaviors+'\n}; keymap { compatible = "zmk,keymap";\n'
+     for i,(_,bindings) in enumerate(layers):
+         text+=f'layer_{i} {{ bindings = <'+' '.join('&none' if i==4 else '&'+bindings[p] for p in positions)+'>; };\n'
+     text+='}; };\n&kscan { events = <\n'
+@@ -31,6 +43,11 @@ def run(zmk,output):
+     cases={
+         'plain-asdf':((29,30,31,32),sum((tap(i,1) for i in range(4)),[]),['0x04','0x16','0x07','0x09']),
+         'plain-jkl-semi':((41,42,43,44),sum((tap(i,1) for i in range(4)),[]),['0x0D','0x0E','0x0F','0x33']),
++        # Same-hand rolls must remain taps; l-i mirrors the open Kinesis HRM issue.
++        'hrm-fast-roll-as':((29,30,40,41),press(0,1)+press(1,25)+release(0,25)+release(1,25),['0x04','0x16']),
++        'hrm-fast-roll-li':((43,24,29,40),press(0,1)+press(1,25)+release(0,25)+release(1,25),['0x0F','0x0C']),
++        # Opposite-hand interrupt should turn A into Command while H remains H.
++        'hrm-cross-hand-cmd':((29,40,30,41),press(0,1)+press(1,25)+release(1,25)+release(0,25),['0xE3','0x0B']),
+         # Digit is held 1 second; releasing NUM first must release the same usage.
+         'num-hold-release':((66,23,70,28),press(0,1)+press(1,1000)+release(0,1)+release(1)+tap(1)+press(0)+tap(2)+tap(3)+tap(1)+release(0)+tap(2),
+                             ['0x5F','0x18','0x62','0x29','0x5F','0x2C']),
+diff --git a/bin/validate_keymap.py b/bin/validate_keymap.py
+index 40da188..f885985 100755
+--- a/bin/validate_keymap.py
++++ b/bin/validate_keymap.py
+@@ -5,7 +5,7 @@ Checks that are cheap here and expensive on the keyboard:
+   1. Every keymap layer binds exactly KEY_COUNT positions.
+   2. The expected layers exist, in the expected order, with matching #defines.
+   3. KEYS_L / KEYS_R / THUMBS partition 0..KEY_COUNT-1 exactly once.
+-  4. No hold-tap behaviors delay letters or dedicated modifiers.
++  4. The only hold-taps are the approved fast-typing home-row modifiers.
+   5. Combo key-positions are in range.
+   6. Studio is enabled and unlocked on the central, with USB transport.
+   7. Braces and angle brackets balance.
+@@ -116,9 +116,38 @@ if total != KEY_COUNT or union != set(range(KEY_COUNT)):
+         f"{len(union)} unique, {overlap} overlapping, missing {missing}"
+     )
+ 
+-# Immediate typing is an explicit contract, not a hold-tap tuning target.
+-if 'zmk,behavior-hold-tap' in src:
+-    fail("hold-tap behavior present in dedicated-modifier configuration")
++# --- 4. home-row mod contract ----------------------------------------------
++# HRMs are intentionally the only hold-taps in the daily driver. Their prior-idle
++# gate makes rapid typing resolve immediately as taps; positional triggers and
++# hold-trigger-on-release protect same-hand rolls when the vendor fork honors them.
++for name, trigger in (("hml", "KEYS_R THUMBS"), ("hmr", "KEYS_L THUMBS")):
++    body = extract_block(src, rf"{name}:\s*home_row_mod_(?:left|right)\s*\{{")
++    if body is None:
++        fail(f"missing {name} home-row-mod behavior")
++        continue
++    required = [
++        'compatible = "zmk,behavior-hold-tap";',
++        '#binding-cells = <2>;',
++        'flavor = "balanced";',
++        'tapping-term-ms = <HRM_TAPPING_TERM_MS>;',
++        'quick-tap-ms = <HRM_QUICK_TAP_MS>;',
++        'require-prior-idle-ms = <HRM_PRIOR_IDLE_MS>;',
++        'bindings = <&kp>, <&kp>;',
++        f'hold-trigger-key-positions = <{trigger}>;',
++        'hold-trigger-on-release;',
++    ]
++    for snippet in required:
++        if snippet not in body:
++            fail(f"{name} missing fast-typing HRM setting: {snippet}")
++
++for define, expected in (("HRM_TAPPING_TERM_MS", "280"),
++                         ("HRM_QUICK_TAP_MS", "175"),
++                         ("HRM_PRIOR_IDLE_MS", "150")):
++    if defines.get(define, "").strip() != expected:
++        fail(f"{define} must be {expected} for the validated HRM profile")
++
++if src.count('compatible = "zmk,behavior-hold-tap";') != 2:
++    fail("only hml/hmr may define hold-tap behaviors in the production keymap")
+ 
+ # --- 5. combos --------------------------------------------------------------
+ # Behaviors that lose data or drop the keyboard off the bus. A combo bound to
+@@ -185,6 +214,7 @@ ARITY = {
+     "trans": 0, "none": 0, "caps_word": 0, "key_repeat": 0,
+     "bootloader": 0, "sys_reset": 0,
+     "kp": 1, "mo": 1, "to": 1, "tog": 1, "sl": 1, "sk": 1, "out": 1,
++    "hml": 2, "hmr": 2,
+     "oneshot_shift": 1, "mkp": 1, "mmv": 1, "msc": 1,
+ }
+ 
+diff --git a/bin/validate_workflow.py b/bin/validate_workflow.py
+index 6257c12..09f0fc0 100644
+--- a/bin/validate_workflow.py
++++ b/bin/validate_workflow.py
+@@ -10,6 +10,8 @@ NUM_BLOCK={22:'KP_DIVIDE',23:'KP_N7',24:'KP_N8',25:'KP_N9',26:'KP_MULTIPLY',27:'
+            54:'KP_N0',55:'KP_N1',56:'KP_N2',57:'KP_N3',58:'DOT',68:'BSPC',70:'KP_N0'}
+ ACCESS={52:'NAV',53:'SYM',66:'NUM',75:'SYS'}
+ MODS={34:'LALT',35:'LGUI',36:'LCTRL',37:'RCTRL',38:'RGUI',39:'RALT',46:'LSHFT',59:'RSHFT'}
++HRMS={29:'hml LGUI A',30:'hml LALT S',31:'hml LCTRL D',32:'hml LSHFT F',
++      41:'hmr RSHFT J',42:'hmr RCTRL K',43:'hmr RALT L',44:'hmr RGUI SEMI'}
+ 
+ def resolve(layers, active, pos):
+     for name in reversed(ORDER):
+@@ -25,10 +27,11 @@ def validate(root=ROOT):
+         return ['Expected five ordered 76-position layers']
+     def expect(layer,pos,binding):
+         if layers[layer][pos]!=binding: errors.append(f'{layer}[{pos}]: expected {binding}, got {layers[layer][pos]}')
+-    for positions,letters in [(range(15,20),'QWERT'),(range(22,27),'YUIOP'),(range(29,34),'ASDFG'),
+-                              (range(40,44),'HJKL'),(range(47,52),'ZXCVB'),(range(54,56),'NM')]:
++    for positions,letters in [(range(15,20),'QWERT'),(range(22,27),'YUIOP'),
++                              ([33],'G'),([40],'H'),(range(47,52),'ZXCVB'),(range(54,56),'NM')]:
+         for pos,letter in zip(positions,letters):expect('BASE',pos,'kp '+letter)
+-    for pos,key in {44:'SEMI',56:'COMMA',57:'DOT',58:'FSLH',14:'TAB',28:'ESC',65:'BSPC',67:'DEL',68:'DEL',69:'ENTER',70:'SPACE',**MODS}.items():
++    for pos,binding in HRMS.items(): expect('BASE',pos,binding)
++    for pos,key in {56:'COMMA',57:'DOT',58:'FSLH',14:'TAB',28:'ESC',65:'BSPC',67:'DEL',68:'DEL',69:'ENTER',70:'SPACE',**MODS}.items():
+         expect('BASE',pos,'kp '+key)
+     for pos,layer in ACCESS.items():
+         expect('BASE',pos,'mo '+layer)
+@@ -50,9 +53,12 @@ def validate(root=ROOT):
+         for pos,key in MODS.items():
+             if resolve(layers,active,pos)!='kp '+key:errors.append(f'{active}: blocked modifier {key}')
+     for layer in ORDER:
+-        for b in layers[layer]:
+-            if b.split()[0] in ('lt','mt','tog','sk','sl','oneshot_shift'):
+-                errors.append(f'{layer}: timing/latching behavior {b}')
++        for pos,b in enumerate(layers[layer]):
++            kind=b.split()[0]
++            if kind in ('lt','mt','tog','sk','sl','oneshot_shift'):
++
